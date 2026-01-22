@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --zsg-blue: #0c274a;
+  --zsg-blue-dark: #061a35;
+  --zsg-blue-light: #163a66;
+}
+
+/* Brand Blue Fallback Classes */
+.text-brandblue {
+  color: #0c274a !important;
+}
+
+.bg-brandblue {
+  background-color: #0c274a !important;
+}
+
+.border-brandblue {
+  border-color: #0c274a !important;
+}
+
+.border-brandblue-dark {
+  border-color: #061a35 !important;
+}
+
+.bg-brandblue\/5 {
+  background-color: rgba(12, 39, 74, 0.05) !important;
+}
+
+.bg-brandblue\/10 {
+  background-color: rgba(12, 39, 74, 0.1) !important;
+}
+
+.border-brandblue\/20 {
+  border-color: rgba(12, 39, 74, 0.2) !important;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Date/Time Input Icons */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+
+/* Leaflet Popup Styling */
+.leaflet-popup-content-wrapper {
+  border-radius: 8px;
+}
+
+.custom-station-icon,
+.custom-ship-icon {
+  background: transparent !important;
+  border: none !important;
+  transition: all 1s linear;
+  z-index: 1000 !important;
+}
+
+.custom-station-icon {
+  z-index: 500 !important;
+}
