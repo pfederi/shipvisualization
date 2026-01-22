@@ -175,22 +175,17 @@ function findRouteInDeployment(deployment: DailyDeployment, courseNumber: string
     const rNumStr = r.courseNumber.toString().trim()
     const rNumClean = rNumStr.replace(/^0+/, '') || rNumStr
     
-    // 1. Exaktes Matching
+    // 1. Exaktes Matching (bevorzugt) - sowohl mit als auch ohne führende Nullen
     if (rNumStr === cnStr || rNumClean === cnClean) return true
     
-    // 2. Numerisches Matching (wenn beide rein numerisch sind)
+    // 2. Numerisches Matching (wenn beide rein numerisch sind und nach Kürzung identisch)
     const rNumVal = parseInt(rNumClean, 10)
     const cnVal = parseInt(cnClean, 10)
     if (!isNaN(rNumVal) && !isNaN(cnVal) && rNumVal === cnVal) return true
     
-    // 3. ZVV-ZSG-Matching (z.B. ZVV "3720" -> ZSG "20")
-    // Wir matchen, wenn die letzten 2 oder 3 Ziffern übereinstimmen
-    if (cnClean.length >= 2 && rNumClean.length >= 3) {
-      if (rNumClean.endsWith(cnClean)) return true
-    }
-    if (rNumClean.length >= 2 && cnClean.length >= 3) {
-      if (cnClean.endsWith(rNumClean)) return true
-    }
+    // WICHTIG: Kein "endsWith" Matching mehr, da es zu viele falsche Matches verursacht
+    // z.B. würde "2529" mit "29" gematcht werden, obwohl es unterschiedliche Schiffe sind
+    // Nur exakte Matches werden verwendet
     
     return false
   })

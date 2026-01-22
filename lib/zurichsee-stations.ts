@@ -30,7 +30,7 @@ export const ZURICHSEE_STATIONS: Station[] = [
   { name: 'Stäfa (See)', latitude: 47.238703, longitude: 8.718443, uic_ref: '8503665' },
   { name: 'Männedorf (See)', latitude: 47.252789, longitude: 8.689093, uic_ref: '8503664' },
   { name: 'Meilen (See)', latitude: 47.267547, longitude: 8.640329, uic_ref: '8503661' },
-  { name: 'Herrliberg (See)', latitude: 47.283303, longitude: 8.6095295, uic_ref: '8503661' },
+  { name: 'Herrliberg (See)', latitude: 47.283303, longitude: 8.6095295, uic_ref: '8503660' },
   { name: 'Erlenbach ZH (See)', latitude: 47.303025, longitude: 8.589302, uic_ref: '8503659' },
   { name: 'Küsnacht ZH Heslibach', latitude: 47.308399, longitude: 8.584392, uic_ref: '8503682' },
   { name: 'Küsnacht ZH (See)', latitude: 47.318993, longitude: 8.578297, uic_ref: '8503657' },
@@ -42,34 +42,74 @@ export const ZURICHSEE_STATIONS: Station[] = [
 // Mapping für verschiedene Namensvarianten (Transport API verwendet manchmal andere Namen)
 const STATION_NAME_MAPPING: Record<string, string> = {
   'Zürich Bürkliplatz': 'Zürich Bürkliplatz (See)',
+  'Zürich Wollishofen': 'Zürich Wollishofen (See)',
   'Zürich Tiefenbrunnen': 'Zürich Tiefenbrunnen (See)',
-  'Küsnacht': 'Küsnacht ZH (See)',
+  'Zürichhorn': 'Zürichhorn (See)',
+  'Zollikon': 'Zollikon (See)',
+  'Küsnacht ZH (See)': 'Küsnacht ZH (See)',
   'Küsnacht ZH': 'Küsnacht ZH (See)',
-  'Erlenbach': 'Erlenbach ZH (See)',
+  'Küsnacht': 'Küsnacht ZH (See)',
+  'Erlenbach ZH (See)': 'Erlenbach ZH (See)',
   'Erlenbach ZH': 'Erlenbach ZH (See)',
+  'Erlenbach': 'Erlenbach ZH (See)',
+  'Herrliberg-Feldmeilen': 'Herrliberg (See)',
   'Herrliberg': 'Herrliberg (See)',
   'Meilen': 'Meilen (See)',
+  'Uerikon': 'Uerikon (See)',
   'Uetikon': 'Uerikon (See)',
   'Männedorf': 'Männedorf (See)',
   'Stäfa': 'Stäfa (See)',
   'Rapperswil': 'Rapperswil SG (See)',
-  'Horgen': 'Horgen (See)',
-  'Wädenswil': 'Wädenswil (See)',
-  'Thalwil': 'Thalwil (See)',
-  'Richterswil': 'Richterswil (See)',
-  'Pfäffikon': 'Pfäffikon SZ (See)',
-  'Lachen': 'Lachen SZ (See)',
+  'Rapperswil SG': 'Rapperswil SG (See)',
   'Schmerikon': 'Schmerikon (See)',
-  'Zollikon': 'Zollikon (See)',
+  'Lachen': 'Lachen SZ (See)',
+  'Lachen SZ': 'Lachen SZ (See)',
+  'Altendorf': 'Altendorf Seestatt',
+  'Pfäffikon SZ': 'Pfäffikon SZ (See)',
+  'Pfäffikon': 'Pfäffikon SZ (See)',
+  'Richterswil': 'Richterswil (See)',
+  'Richterswil ZH': 'Richterswil (See)',
+  'Wädenswil': 'Wädenswil (See)',
+  'Wädenswil ZH': 'Wädenswil (See)',
+  'Au': 'Halbinsel Au',
+  'Au ZH': 'Halbinsel Au',
+  'Au (See)': 'Halbinsel Au',
+  'Horgen': 'Horgen (See)',
+  'Horgen ZH': 'Horgen (See)',
+  'Oberrieden': 'Oberrieden (See)',
+  'Oberrieden ZH': 'Oberrieden (See)',
+  'Thalwil': 'Thalwil (See)',
+  'Thalwil ZH': 'Thalwil (See)',
+  'Rüschlikon': 'Rüschlikon (See)',
   'Kilchberg': 'Kilchberg ZH (See)',
   'Kilchberg ZH': 'Kilchberg ZH (See)',
-  'Rüschlikon': 'Rüschlikon (See)',
-  'Zürich Wollishofen': 'Zürich Wollishofen (See)',
-  'Zürichhorn': 'Zürichhorn (See)',
 }
 
 export function normalizeStationName(name: string): string {
-  return STATION_NAME_MAPPING[name] || name
+  if (!name) return name
+  
+  // Bekannte Varianten abfangen
+  const upperName = name.toUpperCase()
+  for (const [key, value] of Object.entries(STATION_NAME_MAPPING)) {
+    if (key.toUpperCase() === upperName) return value
+  }
+
+  // Entferne bekannte Suffixe für besseres Matching
+  const cleanName = name
+    .replace(/\s\(See\)/gi, '')
+    .replace(/\s\(See-Schiff\)/gi, '')
+    .replace(/\sZH/gi, '')
+    .replace(/\sSG/gi, '')
+    .replace(/\sSZ/gi, '')
+    .trim()
+  
+  // Erneuter Check mit cleanName
+  const upperCleanName = cleanName.toUpperCase()
+  for (const [key, value] of Object.entries(STATION_NAME_MAPPING)) {
+    if (key.toUpperCase() === upperCleanName) return value
+  }
+  
+  return name
 }
 
 export function getStationCoordinates(): Map<string, { lat: number; lon: number }> {

@@ -35,7 +35,7 @@ export interface RouteSegment {
 // Geschwindigkeiten in Knoten (ca.)
 const CRUISING_SPEED = 12 // Normale Fahrtgeschwindigkeit
 const APPROACH_SPEED = 6 // Langsamere Geschwindigkeit bei Ankunft/Abfahrt
-const APPROACH_DISTANCE = 0.5 // km vor/nach Haltestelle
+const APPROACH_DISTANCE = 0.25 // km vor/nach Haltestelle (250m)
 const AVERAGE_SPEED_KMH = 22 // Durchschnittliche Geschwindigkeit in km/h für Schätzung
 
 // Haversine-Formel für Distanzberechnung
@@ -58,8 +58,8 @@ function findRouteBetweenStations(
   to: { lat: number; lon: number; name: string },
   courseNumber?: string
 ): RouteCoordinate[] | null {
-  const IDEAL_DISTANCE = 0.5 // ~500m
-  const MAX_DISTANCE = 1.0 // ~1km
+  const IDEAL_DISTANCE = 0.8 // Erhöht auf 800m für bessere Treffer in großen Häfen
+  const MAX_DISTANCE = 1.5 // Erhöht auf 1.5km
   const FALLBACK_DISTANCE = 5.0 // ~5km
   
   let bestMatch: RouteCoordinate[] | null = null
@@ -123,6 +123,11 @@ function findRouteBetweenStations(
         const fromName = from.name.toLowerCase()
         const toName = to.name.toLowerCase()
         
+        // Extra-Bonus für Wädenswil-Shuttle (Kurs 3733)
+        if (courseNumber === "3733" && (routeName.includes("3733") || routeName.includes("männedorf") || routeName.includes("stäfa") || routeName.includes("wädenswil"))) {
+          nameBonus += 50000 // Riesiger Bonus für den Wädenswil-Shuttle
+        }
+
         // 1. Kursnummer-Matching (z.B. "3732" in "3732: Personenfähre..." oder im ref-Feld)
         if (courseNumber) {
           const cnClean = courseNumber.replace(/^0+/, '')
@@ -159,23 +164,15 @@ function findRouteBetweenStations(
       // Wenn dieser Match besser ist als der bisherige beste Match
       if (typePriority < currentTypePriority || 
           (typePriority === currentTypePriority && score < bestScore)) {
-        // Stelle sicher, dass endIdx nach startIdx kommt
-        let actualStartIdx = startIdx
-        let actualEndIdx = endIdx
-        if (endIdx < startIdx) {
-          [actualStartIdx, actualEndIdx] = [endIdx, startIdx]
-        }
         
         // Extrahiere den relevanten Teil der Route
-        const routeSegment = route.coordinates.slice(actualStartIdx, actualEndIdx + 1)
+        const actualStart = Math.min(startIdx, endIdx)
+        const actualEnd = Math.max(startIdx, endIdx)
+        const routeSegment = route.coordinates.slice(actualStart, actualEnd + 1)
         
-        // Wenn die Route in die falsche Richtung geht, kehre sie um
-        // Prüfe die Distanz vom ersten Punkt zu 'from' vs. 'to'
-        const firstToFrom = getDistance(routeSegment[0].lat, routeSegment[0].lon, from.lat, from.lon)
-        const firstToTo = getDistance(routeSegment[0].lat, routeSegment[0].lon, to.lat, to.lon)
-        
-        if (firstToTo < firstToFrom) {
-          // Route geht in die falsche Richtung, kehre sie um
+        // Wenn startIdx > endIdx, muss die Route umgekehrt werden, 
+        // da das Schiff gegen die Digitalisierungsrichtung des GeoJSON fährt
+        if (startIdx > endIdx) {
           routeSegment.reverse()
         }
         
@@ -310,11 +307,11 @@ export async function calculateShipPosition(
       const elapsed = (currentTime.getTime() - segment.departureTime.getTime()) / 1000 / 60 // Minuten
       const totalDuration = (segment.arrivalTime.getTime() - segment.departureTime.getTime()) / 1000 / 60
       
-      // Nicht-lineare Progress-Berechnung (Langsamer bei Start und Ende)
+      // Nicht-lineare Progress-Berechnung (Langsamer bei Start und Ende, schnelleres Beschleunigen/Verzögern)
       // Wir berechnen einen gewichteten Fortschritt
       let progress: number
       const D = segment.distance
-      const dA = APPROACH_DISTANCE // 0.5 km
+      const dA = APPROACH_DISTANCE // 0.25 km (250m)
       
       if (D > 2 * dA) {
         // Zeitanteile berechnen (Annahme: Approach ist halb so schnell wie Cruising)
@@ -325,15 +322,21 @@ export async function calculateShipPosition(
         
         if (elapsed < tA) {
           // Phase 1: Abfahrt (Beschleunigung/Langsamfahrt)
-          progress = (elapsed / tA) * (dA / D)
+          // Quadratische Kurve für schnelleres Beschleunigen
+          const normalizedTime = elapsed / tA
+          const accelerationFactor = normalizedTime * normalizedTime // Quadratisch für schnelleres Beschleunigen
+          progress = accelerationFactor * (dA / D)
         } else if (elapsed < tA + tC) {
           // Phase 2: Reiseflug (Konstante Geschwindigkeit)
           const cruisingElapsed = elapsed - tA
           progress = (dA / D) + (cruisingElapsed / tC) * ((D - 2 * dA) / D)
         } else {
           // Phase 3: Ankunft (Verzögerung/Langsamfahrt)
+          // Quadratische Kurve für schnelleres Verzögern
           const arrivalElapsed = elapsed - (tA + tC)
-          progress = ((D - dA) / D) + (arrivalElapsed / tA) * (dA / D)
+          const normalizedTime = arrivalElapsed / tA
+          const decelerationFactor = 1 - (1 - normalizedTime) * (1 - normalizedTime) // Umgekehrte Quadratik für schnelleres Verzögern
+          progress = ((D - dA) / D) + decelerationFactor * (dA / D)
         }
       } else {
         // Wenn Strecke extrem kurz ist, einfach linear
@@ -549,7 +552,7 @@ export function createRouteSegmentFromStationboard(
   const fromCoords = stationCoordinates.get(fromStation)
   const toCoords = stationCoordinates.get(toStation)
   
-  if (!fromCoords || !toCoords) {
+  if (!fromCoords || !toCoords || fromStation === toStation) {
     return null
   }
   
@@ -561,53 +564,52 @@ export function createRouteSegmentFromStationboard(
   )
   
   if (!routeCoordinates || routeCoordinates.length < 2) {
-    console.warn(`⚠️ Keine GeoJSON-Route gefunden für ${fromStation} -> ${toStation}`)
-    console.log(`   Von Station: ${fromStation} (${fromCoords.lat.toFixed(6)}, ${fromCoords.lon.toFixed(6)})`)
-    console.log(`   Zu Station: ${toStation} (${toCoords.lat.toFixed(6)}, ${toCoords.lon.toFixed(6)})`)
-    console.log(`   Verfügbare Routen: ${geoJSONRoutes.length}`)
-    
-    if (geoJSONRoutes.length === 0) {
-      console.error(`   ❌ KEINE ROUTEN GELADEN! Prüfe ob GeoJSON korrekt geladen wird.`)
-    } else {
-      // Debug: Zeige die besten Matches (nicht nur die ersten 5)
-      const matches: Array<{ route: ShipRouteData; fromDist: number; toDist: number; score: number }> = []
+    // Log nur bei wichtigen Routen (Kurs 3733) oder wenn es wirklich keine Routen gibt
+    if ((courseNumber === "3733" || internalCourseNumber === "3733") || geoJSONRoutes.length === 0) {
+      console.warn(`⚠️ Keine GeoJSON-Route gefunden für ${fromStation} -> ${toStation} (Kurs ${courseNumber})`)
+      console.log(`   Von Station: ${fromStation} (${fromCoords.lat.toFixed(6)}, ${fromCoords.lon.toFixed(6)})`)
+      console.log(`   Zu Station: ${toStation} (${toCoords.lat.toFixed(6)}, ${toCoords.lon.toFixed(6)})`)
+      console.log(`   Verfügbare Routen: ${geoJSONRoutes.length}`)
       
-      for (const route of geoJSONRoutes) {
-        if (!route.coordinates || route.coordinates.length < 2) continue
+      if (geoJSONRoutes.length === 0) {
+        console.error(`   ❌ KEINE ROUTEN GELADEN! Prüfe ob GeoJSON korrekt geladen wird.`)
+      } else {
+        // Debug: Zeige die besten Matches
+        const matches: Array<{ route: ShipRouteData; fromDist: number; toDist: number; score: number }> = []
         
-        // Finde den nächsten Punkt zu beiden Stationen
-        let minFromDist = Infinity
-        let minToDist = Infinity
-        
-        for (const point of route.coordinates) {
-          const fromDist = getDistance(fromCoords.lat, fromCoords.lon, point.lat, point.lon)
-          const toDist = getDistance(toCoords.lat, toCoords.lon, point.lat, point.lon)
-          if (fromDist < minFromDist) minFromDist = fromDist
-          if (toDist < minToDist) minToDist = toDist
+        for (const route of geoJSONRoutes) {
+          if (!route.coordinates || route.coordinates.length < 2) continue
+          
+          let minFromDist = Infinity
+          let minToDist = Infinity
+          
+          for (const point of route.coordinates) {
+            const fromDist = getDistance(fromCoords.lat, fromCoords.lon, point.lat, point.lon)
+            const toDist = getDistance(toCoords.lat, toCoords.lon, point.lat, point.lon)
+            if (fromDist < minFromDist) minFromDist = fromDist
+            if (toDist < minToDist) minToDist = toDist
+          }
+          
+          matches.push({
+            route,
+            fromDist: minFromDist,
+            toDist: minToDist,
+            score: minFromDist + minToDist
+          })
         }
         
-        matches.push({
-          route,
-          fromDist: minFromDist,
-          toDist: minToDist,
-          score: minFromDist + minToDist
-        })
-      }
-      
-      // Sortiere nach Score und zeige die besten 10
-      matches.sort((a, b) => a.score - b.score)
-      console.log(`   Beste Matches (Top 10):`)
-      for (let i = 0; i < Math.min(10, matches.length); i++) {
-        const match = matches[i]
-        console.log(`   ${i + 1}. ${match.route.name || 'Unbenannt'}:`)
-        console.log(`      Von ${fromStation}: ${match.fromDist.toFixed(3)} km`)
-        console.log(`      Zu ${toStation}: ${match.toDist.toFixed(3)} km`)
-        console.log(`      Score: ${match.score.toFixed(3)} km`)
-        console.log(`      Punkte: ${match.route.coordinates.length}`)
+        matches.sort((a, b) => a.score - b.score)
+        console.log(`   Beste Matches (Top 5):`)
+        for (let i = 0; i < Math.min(5, matches.length); i++) {
+          const match = matches[i]
+          console.log(`   ${i + 1}. ${match.route.name || 'Unbenannt'}: ${match.fromDist.toFixed(3)}km + ${match.toDist.toFixed(3)}km = ${match.score.toFixed(3)}km`)
+        }
       }
     }
   } else {
-    console.log(`✅ GeoJSON-Route gefunden für ${fromStation} -> ${toStation}: ${routeCoordinates.length} Punkte`)
+    if (courseNumber === "3733" || internalCourseNumber === "3733") {
+      console.log(`✅ GeoJSON-Route gefunden für ${fromStation} -> ${toStation} (Kurs ${courseNumber}): ${routeCoordinates.length} Punkte`)
+    }
   }
   
   // Berechne Distanz

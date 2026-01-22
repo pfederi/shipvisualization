@@ -101,7 +101,8 @@ async function fetchStationboardFromAPI(
   station: string,
   date?: string,
   time: string = '00:00',
-  retryCount = 0
+  retryCount = 0,
+  force = false
 ): Promise<StationboardEntry[]> {
   const dateStr = date || new Date().toISOString().split('T')[0]
   
@@ -116,10 +117,11 @@ async function fetchStationboardFromAPI(
     time: time 
   })
   if (dateStr) params.append('date', dateStr)
+  if (force) params.append('force', 'true')
 
   try {
     const response = await fetch(`${baseUrl}/api/stationboard?${params.toString()}`, {
-      // Kurzer Timeout-Schutz
+      cache: force ? 'no-store' : 'default',
       signal: AbortSignal.timeout(15000) 
     })
     
@@ -152,12 +154,13 @@ async function fetchStationboardFromAPI(
 export async function getStationboard(
   station: string,
   date?: string,
-  time: string = '00:00'
+  time: string = '00:00',
+  force = false
 ): Promise<StationboardEntry[]> {
   const dateStr = date || new Date().toISOString().split('T')[0]
   
-  // Verwende unstable_cache für server-seitiges Caching
-  if (typeof window === 'undefined') {
+  // Verwende unstable_cache für server-seitiges Caching (nur wenn force false ist)
+  if (typeof window === 'undefined' && !force) {
     const getCachedStationboard = unstable_cache(
       async () => fetchStationboardFromAPI(station, dateStr, time),
       [`stationboard-${station}-${dateStr}-${time}`],
@@ -169,8 +172,8 @@ export async function getStationboard(
     
     return await getCachedStationboard()
   } else {
-    // Client-seitig: Direkter API-Call
-    return fetchStationboardFromAPI(station, dateStr, time)
+    // Client-seitig oder Force: Direkter API-Call
+    return fetchStationboardFromAPI(station, dateStr, time, 0, force)
   }
 }
 
@@ -186,12 +189,13 @@ const SB_CACHE_DURATION = 1000 * 60 * 60 * 12 // 12 Stunden Client-Cache
 export async function getAllStationsStationboard(
   stations: string[],
   date?: string,
-  time: string = '00:00'
+  time: string = '00:00',
+  force = false
 ): Promise<Map<string, StationboardEntry[]>> {
   const result = new Map<string, StationboardEntry[]>()
   const dateStr = date || new Date().toISOString().split('T')[0]
   
-  console.log(`🚀 Starte paralleles Laden von ${stations.length} Stationen ab ${time}...`)
+  console.log(`🚀 Starte paralleles Laden von ${stations.length} Stationen ab ${time} (Force: ${force})...`)
 
   // Erstelle alle Anfragen gleichzeitig
   const promises = stations.map(async (station, index) => {
@@ -201,7 +205,12 @@ export async function getAllStationsStationboard(
         await new Promise(resolve => setTimeout(resolve, index * 150))
       }
       
-      const entries = await getStationboard(station, dateStr, time)
+      const entries = await getStationboard(station, dateStr, time, force)
+      if (entries.length === 0) {
+        console.warn(`⚠️ Station ${station} lieferte 0 Abfahrten.`)
+      } else {
+        console.log(`✅ Station ${station}: ${entries.length} Abfahrten geladen.`)
+      }
       return { station, entries }
     } catch (error) {
       // Fehler werden bereits in getStationboard / fetchStationboardFromAPI geloggt

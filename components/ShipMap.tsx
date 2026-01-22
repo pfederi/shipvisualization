@@ -135,7 +135,7 @@ export default function ShipMap({ ships = [], onShipClick, selectedShipId }: Shi
               }}
             >
               <Tooltip direction="top" offset={[0, -15]} opacity={1}>
-                <div className="font-bold text-gray-900">{ship.name || 'Schiff'}</div>
+                <div className="font-bold text-gray-900 dark:text-gray-100">{ship.name || 'Schiff'}</div>
               </Tooltip>
             </Marker>
           )

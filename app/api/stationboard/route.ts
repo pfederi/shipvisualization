@@ -10,6 +10,7 @@ export async function GET(request: Request) {
   const date = searchParams.get('date')
   const time = searchParams.get('time') || '00:00' // Standardmäßig ab Mitternacht
   const show_passlist = searchParams.get('show_passlist') || '1'
+  const force = searchParams.get('force') === 'true'
 
   if (!station) {
     return NextResponse.json({ error: 'Station is required' }, { status: 400 })
@@ -18,24 +19,27 @@ export async function GET(request: Request) {
   const cacheKey = `${station}-${date || 'today'}-${time}`
   const now = Date.now()
 
-  // 1. Prüfe In-Memory Cache
-  const cached = serverCache.get(cacheKey)
-  if (cached && (now - cached.timestamp < CACHE_DURATION)) {
-    return NextResponse.json(cached.data)
+  // 1. Prüfe In-Memory Cache (nur wenn force nicht gesetzt ist)
+  if (!force) {
+    const cached = serverCache.get(cacheKey)
+    if (cached && (now - cached.timestamp < CACHE_DURATION)) {
+      return NextResponse.json(cached.data)
+    }
   }
 
   try {
     const externalUrl = new URL('https://transport.opendata.ch/v1/stationboard')
     externalUrl.searchParams.append('station', station)
-    externalUrl.searchParams.append('limit', '100') // Mehr Daten laden, um seltener anzufragen
+    externalUrl.searchParams.append('limit', '200') // Erhöht auf 200
     if (date) externalUrl.searchParams.append('date', date)
     if (time) externalUrl.searchParams.append('time', time)
     externalUrl.searchParams.append('type', 'departure')
     externalUrl.searchParams.append('show_passlist', show_passlist)
-    externalUrl.searchParams.append('transportations[]', 'ship') // NUR Schiffe laden!
+    externalUrl.searchParams.append('transportations[]', 'ship')
 
     const response = await fetch(externalUrl.toString(), {
-      next: { revalidate: 43200 } // Next.js Cache für 12 Stunden
+      cache: force ? 'no-store' : 'default',
+      next: { revalidate: force ? 0 : 43200 }
     })
 
     if (!response.ok) {
@@ -48,8 +52,14 @@ export async function GET(request: Request) {
 
     const data = await response.json()
     
-    // 2. Im Server-Memory speichern
-    serverCache.set(cacheKey, { data, timestamp: now })
+    // 2. Im Server-Memory speichern (ABER NUR WENN DATEN GEFUNDEN WURDEN)
+    // Wenn die Liste leer ist, cachen wir sie nicht, um bei Fehlern erneut zu versuchen
+    if (data.stationboard && data.stationboard.length > 0) {
+      console.log(`✅ Caching ${data.stationboard.length} entries for ${station}`)
+      serverCache.set(cacheKey, { data, timestamp: now })
+    } else {
+      console.warn(`⚠️ No entries found for ${station}, skipping cache.`)
+    }
 
     // Cache-Cleanup (verhindert Memory Leaks)
     if (serverCache.size > 500) {

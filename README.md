@@ -6,10 +6,12 @@ A modern web application for live visualization of ship movements on Lake Zurich
 
 - **Live Tracking**: Real-time tracking of all active ships on Lake Zurich
 - **Interactive Map**: Leaflet-based map with OpenStreetMap (free, open source)
-- **Simulation Mode**: Time-based simulation with speed controls (1x, 2x, 4x, 10x)
+- **Simulation Mode**: Time-based simulation with speed controls (1x, 2x, 4x, 10x, 100x)
 - **Ship Details**: Display of ship names, course numbers, departure and arrival times
 - **Route Visualization**: Precise routes based on GeoJSON data
 - **Intelligent Position Calculation**: Accounts for slower speed at arrival/departure
+- **Smart Ship Deduplication**: Prevents duplicate ship displays when transitioning between routes
+- **Course Number Handling**: Properly distinguishes between different courses (e.g., course 29 vs 2529)
 - **MS Albis Highlight**: Special marking for the flagship MS Albis
 
 ## 🛠️ Technology Stack
@@ -95,13 +97,17 @@ vercel
 │   └── globals.css          # Global Styles
 ├── components/              # React Components
 │   ├── ShipMap.tsx         # Map Component
-│   └── SchedulePanel.tsx   # Ship List & Details
+│   ├── SchedulePanel.tsx   # Ship List & Details
+│   └── ThemeLanguageToggle.tsx # Theme & Language Switcher
 ├── lib/                     # Utilities and Logic
 │   ├── transport-api.ts    # Transport API Client
 │   ├── ship-position.ts    # Position Calculation
 │   ├── ship-names-api.ts   # Ship Names API Integration
 │   ├── geojson-routes.ts   # GeoJSON Route Loader
-│   └── zurichsee-stations.ts # Station Coordinates
+│   ├── zurichsee-stations.ts # Station Coordinates
+│   ├── i18n.ts             # Internationalization
+│   ├── i18n-context.tsx    # i18n React Context
+│   └── theme.tsx           # Theme Management
 ├── public/
 │   └── data/
 │       └── export.geojson   # Ship Routes (GeoJSON)
@@ -226,6 +232,30 @@ Ship positions are calculated based on timetable data and route geometry:
    - Ships are shown at the station location with status "at_station"
    - Prevents duplicate display when ship is in transit
 
+### Ship Deduplication & Course Number Handling
+
+The app includes intelligent logic to prevent duplicate ship displays and correctly handle course numbers:
+
+1. **Segment Linking**:
+   - When a ship arrives at a station and departs again, the segments are automatically linked
+   - The arrival time of the previous segment becomes the `arrivalAtFromStation` of the next segment
+   - This ensures smooth transitions without duplicate displays
+
+2. **Course Number Preservation**:
+   - Full course numbers are preserved (e.g., "029", "2529") without truncation
+   - This prevents conflicts between different courses (e.g., course 29 vs course 2529)
+   - Ships are uniquely identified by `${shipName}|${fullCourseNumber}`
+
+3. **Deduplication Logic**:
+   - Ships are deduplicated based on ship name and full course number
+   - Priority rules: driving ships take precedence over stationary ships
+   - When multiple segments are active, the temporally closest one is selected
+
+4. **Ship Name Matching**:
+   - Exact matching only (no aggressive "endsWith" matching)
+   - Prevents false matches between similar course numbers
+   - Ensures correct ship assignment for each course
+
 ### Caching
 
 - **Server-Side Caching**: 12 hours for timetable data
@@ -240,9 +270,10 @@ Ship positions are calculated based on timetable data and route geometry:
 
 ### Simulation Mode
 - Time-based simulation with manual time control
-- Speed controls: 1x, 2x, 4x, 10x
+- Speed controls: 1x, 2x, 4x, 10x, 100x (for fast-forwarding through the day)
 - Timeline slider to scrub through the day
-- Reset button to reset
+- Date picker to view different days
+- Reset button to reset to initial time
 
 ## 🔒 Security & Privacy
 
