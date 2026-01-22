@@ -12,7 +12,7 @@ export default function Footer() {
           lakeshorestudios
         </a>
         <br />
-        Made with AI
+        Made with AI • v.1.0.0
       </p>
     </div>
   )
