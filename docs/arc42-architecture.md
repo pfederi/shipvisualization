@@ -286,12 +286,12 @@ flowchart TD
 
 ```mermaid
 stateDiagram-v2
-    [*] --> LiveMode: App Start
+    [*] --> LiveMode
     LiveMode --> SimulationMode: User clicks Simulation
     
     state SimulationMode {
-        [*] --> SetTime: Set to 13:32
-        SetTime --> Ready
+        [*] --> SetTime
+        SetTime --> Ready: Time set to 13:32
         Ready --> Dragging: User drags slider
         Ready --> SpeedChange: User changes speed
         Ready --> TimeInput: User enters time
@@ -303,17 +303,17 @@ stateDiagram-v2
         SpeedChange --> UpdateRate: Adjust progression
         TimeInput --> Calculate: New time set
         
-        Calculate --> UpdatePositions: Recalculate all ships
+        Calculate --> UpdatePositions: Recalculate ships
         UpdatePositions --> Ready
         
         state UpdatePositions {
-            [*] --> ForEach: For each ship
-            ForEach --> CheckActive: Is active?
-            CheckActive --> CalcProgress: Yes
-            CalcProgress --> ApplySpeed: Speed profile
-            ApplySpeed --> Interpolate: Find position
+            [*] --> ForEach
+            ForEach --> CheckActive: For each ship
+            CheckActive --> CalcProgress: Is active
+            CalcProgress --> ApplySpeed: Calculate progress
+            ApplySpeed --> Interpolate: Apply speed profile
             Interpolate --> ForEach: Next ship
-            ForEach --> [*]: Done
+            ForEach --> [*]: All done
         }
     }
     
