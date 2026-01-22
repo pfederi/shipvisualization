@@ -4,6 +4,10 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'Zürichsee Schiffsvisualisierung',
   description: 'Live-Schiffspositionen auf dem Zürichsee mit Fahrplan',
+  icons: {
+    icon: '/favicon.svg',
+    apple: '/favicon.svg',
+  },
 }
 
 export default function RootLayout({
