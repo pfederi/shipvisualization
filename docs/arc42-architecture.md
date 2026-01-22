@@ -285,40 +285,38 @@ flowchart TD
 ### 6.3 Scenario: Simulation Mode
 
 ```mermaid
-stateDiagram-v2
-    [*] --> LiveMode
-    LiveMode --> SimulationMode: User clicks Simulation
+flowchart TD
+    Start([User Clicks Simulation]) --> SetTime[Set Time to 13:32]
+    SetTime --> Ready{Ready State}
     
-    state SimulationMode {
-        [*] --> SetTime
-        SetTime --> Ready: Time set to 13:32
-        Ready --> Dragging: User drags slider
-        Ready --> SpeedChange: User changes speed
-        Ready --> TimeInput: User enters time
-        
-        Dragging --> VisualUpdate: onInput event
-        VisualUpdate --> Dragging: Continue dragging
-        Dragging --> Calculate: onRelease event
-        
-        SpeedChange --> UpdateRate: Adjust progression
-        TimeInput --> Calculate: New time set
-        
-        Calculate --> UpdatePositions: Recalculate ships
-        UpdatePositions --> Ready
-        
-        state UpdatePositions {
-            [*] --> ForEach
-            ForEach --> CheckActive: For each ship
-            CheckActive --> CalcProgress: Is active
-            CalcProgress --> ApplySpeed: Calculate progress
-            ApplySpeed --> Interpolate: Apply speed profile
-            Interpolate --> ForEach: Next ship
-            ForEach --> [*]: All done
-        }
-    }
+    Ready -->|Drag Slider| Dragging[Visual Update<br/>onInput Event]
+    Dragging -->|Continue| Dragging
+    Dragging -->|Release| Calculate
     
-    SimulationMode --> LiveMode: User clicks Live
-    LiveMode --> [*]
+    Ready -->|Change Speed| SpeedChange[Update Speed<br/>1x to 100x]
+    SpeedChange --> UpdateRate[Adjust Time<br/>Progression Rate]
+    UpdateRate --> Ready
+    
+    Ready -->|Enter Time| TimeInput[Manual Time Input]
+    TimeInput --> Calculate
+    
+    Calculate[Calculate Positions] --> Loop{For Each<br/>Ship}
+    Loop -->|Yes| CheckActive{Is Ship<br/>Active?}
+    CheckActive -->|No| Loop
+    CheckActive -->|Yes| CalcProgress[Calculate Progress<br/>Elapsed / Duration]
+    CalcProgress --> ApplySpeed[Apply Speed Profile<br/>Slow-Fast-Slow]
+    ApplySpeed --> Interpolate[Find Position<br/>on Route]
+    Interpolate --> Loop
+    Loop -->|Done| UpdateMap[Update Map Markers]
+    UpdateMap --> Ready
+    
+    Ready -->|Click Live| End([Return to Live Mode])
+    
+    style Start fill:#52c41a,stroke:#389e0d,color:#fff
+    style End fill:#52c41a,stroke:#389e0d,color:#fff
+    style Ready fill:#4a90e2,stroke:#2e5c8a,color:#fff
+    style Calculate fill:#ff6b6b,stroke:#c92a2a,color:#fff
+    style CheckActive fill:#ffd93d,stroke:#f59f00,color:#000
 ```
 
 ---
