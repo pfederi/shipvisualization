@@ -9,6 +9,7 @@ import { ShipPosition, calculateShipPosition } from '@/lib/ship-position'
 import { getStationCoordinates, normalizeStationName, ZURICHSEE_STATIONS } from '@/lib/zurichsee-stations'
 import { useI18n } from '@/lib/i18n-context'
 import ThemeLanguageToggle from '@/components/ThemeLanguageToggle'
+import Documentation from '@/components/Documentation'
 
 // Components
 const ShipMap = dynamic(() => import('@/components/ShipMap'), { 
@@ -33,6 +34,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true)
   const [selectedShipId, setSelectedShipId] = useState<string | null>(null)
   const [routeSegments, setRouteSegments] = useState<any[]>([])
+  const [isDocOpen, setIsDocOpen] = useState(false)
   const [geoJSONRoutes, setGeoJSONRoutes] = useState<any[]>([])
   const [isInitialCalcDone, setIsInitialCalcDone] = useState(false)
   
@@ -423,9 +425,18 @@ export default function Home() {
   const toggleMode = () => {
     const now = new Date()
     resetTimeBasis(isLiveMode ? now.getTime() : Date.now())
-    if (isLiveMode) setSimulationTime(now.toTimeString().slice(0, 5))
+    if (isLiveMode) {
+      // Beim Wechsel zur Simulation Zeit auf 13:32 setzen
+      setSimulationTime(INITIAL_TIME)
+      const [h, m] = INITIAL_TIME.split(':').map(Number)
+      const d = new Date(selectedDate)
+      d.setHours(h, m, 0, 0)
+      resetTimeBasis(d.getTime())
+      loadDailySchedule(d)
+    } else {
+      loadDailySchedule(now)
+    }
     setIsLiveMode(!isLiveMode)
-    loadDailySchedule(now)
   }
 
   const handleReset = () => {
@@ -585,18 +596,14 @@ export default function Home() {
     setIsInitialCalcDone(true)
   }, [routeSegments, geoJSONRoutes, isLiveMode, simSpeed, simulationTime, baseSimTimeRef, baseRealTimeRef, selectedDate, isTimelineDragging, ships])
 
-  // Timeline drag handler (muss nach updatePositions definiert werden)
+  // Timeline drag handler - nur visuelle Updates während des Ziehens (keine teuren Berechnungen)
   const handleTimelineDrag = useCallback((minutes: number) => {
     setIsTimelineDragging(true)
     const newTimeStr = minutesToTimeString(minutes)
+    // Nur visuelle Updates während des Ziehens - keine Positionsberechnung
     setTimelineValue(minutes)
     setSimulationTime(newTimeStr)
-    const [h, m] = newTimeStr.split(':').map(Number)
-    const d = new Date(selectedDate)
-    d.setHours(h, m, 0, 0)
-    // Sofortige Positionsberechnung mit der neuen Zeit
-    updatePositions(d)
-  }, [selectedDate, updatePositions, minutesToTimeString])
+  }, [minutesToTimeString])
 
   // Initial Calculation Trigger
   useEffect(() => {
@@ -612,80 +619,93 @@ export default function Home() {
   }, [updatePositions])
 
   return (
-    <main className="h-screen w-screen flex flex-col bg-slate-50 dark:bg-gray-900 overflow-hidden">
-      <header className="bg-brandblue text-white px-4 shadow-lg z-10 border-b border-brandblue-dark h-[72px] flex items-center">
-        <div className="flex justify-between items-center w-full gap-8">
-          <div className="flex justify-start items-center gap-8">
-            <h1 className="text-xl font-black tracking-tight uppercase whitespace-nowrap">{t.title}</h1>
-            <div className="flex items-center bg-black/10 rounded-xl p-1 gap-1 border border-white/10 h-[52px]">
-              <button onClick={toggleMode} className={`px-4 h-full rounded-lg text-xs font-black transition-all flex items-center gap-2 ${isLiveMode ? 'bg-green-500 text-white shadow-lg' : 'text-white/60 hover:text-white'}`}>
-                <div className={`w-1.5 h-1.5 rounded-full ${isLiveMode ? 'bg-white animate-pulse' : 'bg-white/20'}`} /> {t.liveMode}
-              </button>
-              <button onClick={() => isLiveMode && toggleMode()} className={`px-4 h-full rounded-lg text-xs font-black transition-all ${!isLiveMode ? 'bg-orange-500 text-white shadow-lg' : 'text-white/60 hover:text-white'}`}>
-                {t.simulationMode}
-              </button>
-            {!isLiveMode && (
-              <div className="flex items-center gap-5 px-4 border-l border-white/10 ml-1 h-full">
-                <div className="flex flex-col min-w-[140px] justify-center">
-                  <span className="text-[9px] uppercase font-black text-white/80 mb-1">Timeline</span>
-                  <input 
-                    type="range" 
-                    min={timeRange.min} 
-                    max={timeRange.max} 
-                    value={timelineValue || timeStringToMinutes(simulationTime)} 
-                    onInput={(e) => handleTimelineDrag(parseInt((e.target as HTMLInputElement).value))}
-                    onChange={(e) => handleTimelineChange(parseInt(e.target.value))} 
-                    className="w-full h-1 bg-white/20 rounded-full appearance-none cursor-pointer accent-white" 
-                  />
-                </div>
-                <div className="relative group flex items-center h-full">
-                  <input type="date" value={selectedDate} onChange={(e) => handleDateChange(e.target.value)} className={`bg-white/10 rounded-md px-2 py-1.5 text-xs font-bold border-none focus:ring-1 focus:ring-white/30 cursor-pointer ${isDateOutOfRange ? 'text-orange-300' : 'text-white'}`} />
-                  {isDateOutOfRange && <div className="absolute top-full left-0 mt-2 w-48 bg-orange-600 text-white text-[10px] p-2 rounded shadow-2xl z-[100] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">⚠️ {t.shipNamesWarning}</div>}
-                </div>
-                <div className="flex items-center h-full">
-                  <input type="time" value={simulationTime} onChange={(e) => handleTimeChange(e.target.value)} className="bg-white/10 rounded-md px-2 py-1.5 text-xs font-bold border-none focus:ring-1 focus:ring-white/30 cursor-pointer text-white" />
-                </div>
-                <div className="flex gap-1 bg-black/20 p-1 rounded-lg h-8 items-center">
-                  {[1, 2, 4, 10, 100].map(s => (
-                    <button 
-                      key={s} 
-                      onClick={() => setSimSpeed(s)} 
-                      className={`${s === 100 ? 'w-9' : 'w-7'} h-6 flex items-center justify-center rounded text-[9px] font-black transition-all ${simSpeed === s ? 'bg-white text-brandblue shadow-md' : 'text-white/80 hover:text-white'}`}
-                    >
-                      {s}x
-                    </button>
-                  ))}
-                </div>
-                <button onClick={handleReset} className="p-2 hover:bg-white/10 rounded-lg text-white transition-colors" title={t.reset}>
-                  <RotateCcw size={16} strokeWidth={3} />
+    <>
+      <main className="h-screen w-screen flex flex-col bg-slate-50 dark:bg-gray-900 overflow-hidden">
+        <header className="bg-brandblue text-white px-4 shadow-lg z-10 border-b border-brandblue-dark h-[72px] flex items-center">
+          <div className="flex justify-between items-center w-full gap-8">
+            <div className="flex justify-start items-center gap-8">
+              <h1 className="text-xl font-black tracking-tight uppercase whitespace-nowrap">{t.title}</h1>
+              <div className="flex items-center bg-black/10 rounded-xl p-1 gap-1 border border-white/10 h-[52px]">
+                <button onClick={toggleMode} className={`px-4 h-full rounded-lg text-xs font-black transition-all flex items-center gap-2 ${isLiveMode ? 'bg-green-500 text-white shadow-lg' : 'text-white/60 hover:text-white'}`}>
+                  <div className={`w-1.5 h-1.5 rounded-full ${isLiveMode ? 'bg-white animate-pulse' : 'bg-white/20'}`} /> {t.liveMode}
                 </button>
+                <button onClick={() => isLiveMode && toggleMode()} className={`px-4 h-full rounded-lg text-xs font-black transition-all ${!isLiveMode ? 'bg-orange-500 text-white shadow-lg' : 'text-white/60 hover:text-white'}`}>
+                  {t.simulationMode}
+                </button>
+              {!isLiveMode && (
+                <div className="flex items-center gap-5 px-4 border-l border-white/10 ml-1 h-full">
+                  <div className="flex flex-col min-w-[140px] justify-center">
+                    <span className="text-[9px] uppercase font-black text-white/80 mb-1">Timeline</span>
+                    <input 
+                      type="range" 
+                      min={timeRange.min} 
+                      max={timeRange.max} 
+                      value={timelineValue || timeStringToMinutes(simulationTime)} 
+                      onInput={(e) => handleTimelineDrag(parseInt((e.target as HTMLInputElement).value))}
+                      onChange={(e) => handleTimelineChange(parseInt(e.target.value))} 
+                      className="w-full h-1 bg-white/20 rounded-full appearance-none cursor-pointer accent-white" 
+                    />
+                  </div>
+                  <div className="flex items-center h-full">
+                    <input type="time" value={simulationTime} onChange={(e) => handleTimeChange(e.target.value)} className="bg-white/10 rounded-md px-2 py-1.5 text-xs font-bold border-none focus:ring-1 focus:ring-white/30 cursor-pointer text-white" />
+                  </div>
+                  <div className="flex gap-1 bg-black/20 p-1 rounded-lg h-8 items-center">
+                    {[1, 2, 4, 10, 100].map(s => (
+                      <button 
+                        key={s} 
+                        onClick={() => setSimSpeed(s)} 
+                        className={`${s === 100 ? 'w-9' : 'w-7'} h-6 flex items-center justify-center rounded text-[9px] font-black transition-all ${simSpeed === s ? 'bg-white text-brandblue shadow-md' : 'text-white/80 hover:text-white'}`}
+                      >
+                        {s}x
+                      </button>
+                    ))}
+                  </div>
+                  <button onClick={handleReset} className="p-2 hover:bg-white/10 rounded-lg text-white transition-colors" title={t.reset}>
+                    <RotateCcw size={16} strokeWidth={3} />
+                  </button>
+                </div>
+              )}
               </div>
-            )}
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsDocOpen(true)}
+                className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-md text-[10px] font-black uppercase transition-all flex items-center gap-2 border border-white/10 cursor-pointer"
+                title={t.documentation}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                {t.documentation}
+              </button>
+              <button
+                onClick={() => loadDailySchedule(new Date(selectedDate), true)}
+                disabled={isLoading}
+                className={`px-3 py-1.5 bg-white/10 hover:bg-white/20 disabled:opacity-50 rounded-md text-[10px] font-black uppercase transition-all flex items-center gap-2 border border-white/10 ${isLoading ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                title={isLiveMode ? 'Daten frisch vom Server laden' : `Fahrplan neu laden`}
+              >
+                <RotateCcw size={12} strokeWidth={3} className={isLoading ? 'animate-spin' : ''} />
+                {isLoading ? 'Lädt...' : 'Aktualisieren'}
+              </button>
+              <ThemeLanguageToggle />
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => loadDailySchedule(new Date(selectedDate), true)}
-              disabled={isLoading}
-              className={`px-3 py-1.5 bg-white/10 hover:bg-white/20 disabled:opacity-50 rounded-md text-[10px] font-black uppercase transition-all flex items-center gap-2 border border-white/10 ${isLoading ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-              title={isLiveMode ? 'Daten frisch vom Server laden' : `Fahrplan neu laden`}
-            >
-              <RotateCcw size={12} strokeWidth={3} className={isLoading ? 'animate-spin' : ''} />
-              {isLoading ? 'Lädt...' : 'Aktualisieren'}
-            </button>
-            <ThemeLanguageToggle />
-          </div>
+        </header>
+        <div className="flex-1 flex overflow-hidden">
+          <ShipMap ships={ships} onShipClick={(ship) => setSelectedShipId(ship.id)} selectedShipId={selectedShipId} />
+          <SchedulePanel 
+            ships={ships} 
+            selectedShipId={selectedShipId} 
+            onShipClick={setSelectedShipId} 
+            isLoading={isLoading || (routeSegments.length > 0 && !isInitialCalcDone)} 
+            isLiveMode={isLiveMode}
+            onToggleMode={toggleMode}
+          />
         </div>
-      </header>
-      <div className="flex-1 flex overflow-hidden">
-        <ShipMap ships={ships} onShipClick={(ship) => setSelectedShipId(ship.id)} selectedShipId={selectedShipId} />
-        <SchedulePanel 
-          ships={ships} 
-          selectedShipId={selectedShipId} 
-          onShipClick={setSelectedShipId} 
-          isLoading={isLoading || (routeSegments.length > 0 && !isInitialCalcDone)} 
-        />
-      </div>
-    </main>
+      </main>
+      <Documentation isOpen={isDocOpen} onClose={() => setIsDocOpen(false)} />
+    </>
   )
 }

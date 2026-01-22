@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 
 // In-Memory Cache für den Server (als zusätzliche Schicht zu Next.js Cache)
 const serverCache = new Map<string, { data: any, timestamp: number }>()
-const CACHE_DURATION = 1000 * 60 * 60 * 12 // 12 Stunden für Fahrplan-Daten
+const CACHE_DURATION = 1000 * 60 * 60 * 6 // 6 Stunden - Cache wird alle 6h geleert für neue Tagesdaten
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -72,4 +72,17 @@ export async function GET(request: Request) {
     console.error('Stationboard Proxy Error:', error)
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
+}
+
+// OPTIONS Handler für Preflight-Requests
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Max-Age': '86400',
+    },
+  })
 }

@@ -11,9 +11,11 @@ interface SchedulePanelProps {
   selectedShipId?: string | null
   onShipClick?: (shipId: string) => void
   isLoading?: boolean
+  isLiveMode?: boolean
+  onToggleMode?: () => void
 }
 
-export default function SchedulePanel({ ships = [], selectedShipId, onShipClick, isLoading }: SchedulePanelProps) {
+export default function SchedulePanel({ ships = [], selectedShipId, onShipClick, isLoading, isLiveMode = false, onToggleMode }: SchedulePanelProps) {
   const { t, language } = useI18n()
   const { theme } = useTheme()
   
@@ -45,10 +47,22 @@ export default function SchedulePanel({ ships = [], selectedShipId, onShipClick,
           <Ship className="text-brandblue" size={24} />
           <h2 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{t.activeShips}</h2>
         </div>
-        <div className="p-4 flex-1">
-          <p className={`text-center py-8 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-            {t.noActiveShips}
+        <div className="p-4 flex-1 flex flex-col items-center justify-center">
+          <p className={`text-center mb-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+            {isLiveMode ? t.noActiveShipsLive : t.noActiveShipsSim}
           </p>
+          {isLiveMode && onToggleMode && (
+            <button
+              onClick={onToggleMode}
+              className={`px-6 py-3 rounded-lg font-bold transition-all ${
+                theme === 'dark' 
+                  ? 'bg-orange-500 hover:bg-orange-600 text-white' 
+                  : 'bg-orange-500 hover:bg-orange-600 text-white'
+              } shadow-md hover:shadow-lg`}
+            >
+              {t.switchToSimulation}
+            </button>
+          )}
         </div>
         <Footer />
       </div>

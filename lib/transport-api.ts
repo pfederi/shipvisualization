@@ -148,7 +148,7 @@ async function fetchStationboardFromAPI(
 
 /**
  * Lädt Stationboard-Daten mit Next.js unstable_cache
- * Cache wird pro Station + Datum für 24 Stunden gespeichert (einmal pro Tag)
+ * Cache wird alle 6 Stunden geleert, damit neue Tagesdaten schneller verfügbar sind
  * Lädt standardmäßig alle Abfahrten ab 00:00 Uhr
  */
 export async function getStationboard(
@@ -165,7 +165,7 @@ export async function getStationboard(
       async () => fetchStationboardFromAPI(station, dateStr, time),
       [`stationboard-${station}-${dateStr}-${time}`],
       {
-        revalidate: 43200, // 12 Stunden
+        revalidate: 21600, // 6 Stunden - Cache wird alle 6h geleert für neue Tagesdaten
         tags: [`stationboard-${station}`, `stationboard-${dateStr}`]
       }
     )
@@ -179,7 +179,7 @@ export async function getStationboard(
 
 // Client-seitiger Cache für Stationboards (verhindert mehrfaches Laden in einer Sitzung)
 const stationboardMemoryCache = new Map<string, { data: StationboardEntry[], timestamp: number }>()
-const SB_CACHE_DURATION = 1000 * 60 * 60 * 12 // 12 Stunden Client-Cache
+const SB_CACHE_DURATION = 1000 * 60 * 60 * 6 // 6 Stunden Client-Cache - wird alle 6h geleert für neue Tagesdaten
 
 /**
  * Lädt Stationboard-Daten für alle Stationen eines Tages
