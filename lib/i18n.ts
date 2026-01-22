@@ -55,3 +55,7 @@ export function detectLanguage(): Language {
 export function getTranslations(lang: Language) {
   return translations[lang]
 }
+
+// Type for translations that accepts both languages
+// Use Record to create a type that describes the structure without specific string literals
+export type Translations = Record<keyof typeof translations.de, string>
