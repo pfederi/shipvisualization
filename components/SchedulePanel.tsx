@@ -2,6 +2,7 @@
 
 import { ShipPosition } from '@/lib/ship-position'
 import { Ship, Clock, Navigation, Crown } from 'lucide-react'
+import Footer from './Footer'
 
 interface SchedulePanelProps {
   ships?: ShipPosition[]
@@ -27,21 +28,7 @@ export default function SchedulePanel({ ships = [], selectedShipId, onShipClick,
             Dies kann einige Sekunden dauern
           </p>
         </div>
-        <div className="p-4 border-t border-gray-200 mt-auto">
-          <p className="text-[9px] text-gray-400 text-center leading-relaxed">
-            © {new Date().getFullYear()} Created by{' '}
-            <a 
-              href="https://lakeshorestudios.ch/" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-brandblue underline hover:no-underline"
-            >
-              lakeshorestudios
-            </a>
-            <br />
-            Made with AI
-          </p>
-        </div>
+        <Footer />
       </div>
     )
   }
@@ -58,21 +45,7 @@ export default function SchedulePanel({ ships = [], selectedShipId, onShipClick,
             Keine aktiven Schiffe
           </p>
         </div>
-        <div className="p-4 border-t border-gray-200 mt-auto">
-          <p className="text-[9px] text-gray-400 text-center leading-relaxed">
-            © {new Date().getFullYear()} Created by{' '}
-            <a 
-              href="https://lakeshorestudios.ch/" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-brandblue underline hover:no-underline"
-            >
-              lakeshorestudios
-            </a>
-            <br />
-            Made with AI
-          </p>
-        </div>
+        <Footer />
       </div>
     )
   }
@@ -159,21 +132,7 @@ export default function SchedulePanel({ ships = [], selectedShipId, onShipClick,
           )
         })}
       </div>
-      <div className="p-4 border-t border-gray-200 mt-auto">
-        <p className="text-[11px] text-gray-800 text-center leading-relaxed">
-          © {new Date().getFullYear()} Created by{' '}
-          <a 
-            href="https://lakeshorestudios.ch/" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-brandblue underline hover:no-underline"
-          >
-            lakeshorestudios
-          </a>
-          <br />
-          Made with AI
-        </p>
-      </div>
+      <Footer />
     </div>
   )
 }
