@@ -6,13 +6,17 @@ A modern web application for live visualization of ship movements on Lake Zurich
 
 - **Live Tracking**: Real-time tracking of all active ships on Lake Zurich
 - **Interactive Map**: Leaflet-based map with OpenStreetMap (free, open source)
-- **Simulation Mode**: Time-based simulation with speed controls (1x, 2x, 4x, 10x, 100x)
+- **Simulation Mode**: Time-based simulation with speed controls (1x, 2x, 4x, 10x, 100x), always uses today's date
 - **Ship Details**: Display of ship names, course numbers, departure and arrival times
 - **Route Visualization**: Precise routes based on GeoJSON data
 - **Intelligent Position Calculation**: Accounts for slower speed at arrival/departure
 - **Smart Ship Deduplication**: Prevents duplicate ship displays when transitioning between routes
 - **Course Number Handling**: Properly distinguishes between different courses (e.g., course 29 vs 2529)
 - **MS Albis Highlight**: Special marking for the flagship MS Albis
+- **Bilingual**: German and English interface
+- **Dark Mode**: Automatic theme switching
+- **Mobile Optimized**: Responsive design for all screen sizes
+- **User Documentation**: Built-in documentation modal explaining how the app works
 
 ## 🛠️ Technology Stack
 
@@ -98,6 +102,8 @@ vercel
 ├── components/              # React Components
 │   ├── ShipMap.tsx         # Map Component
 │   ├── SchedulePanel.tsx   # Ship List & Details
+│   ├── Documentation.tsx   # User Documentation Modal
+│   ├── Footer.tsx          # Footer Component
 │   └── ThemeLanguageToggle.tsx # Theme & Language Switcher
 ├── lib/                     # Utilities and Logic
 │   ├── transport-api.ts    # Transport API Client
@@ -258,8 +264,9 @@ The app includes intelligent logic to prevent duplicate ship displays and correc
 
 ### Caching
 
-- **Server-Side Caching**: 12 hours for timetable data
-- **Client-Side Caching**: 12 hours for ship names
+- **Server-Side Caching**: 6 hours for timetable data (refreshes every 6 hours for new daily schedules)
+- **Client-Side Caching**: 6 hours for ship names
+- **Multi-Layer Cache**: In-Memory Cache + Next.js unstable_cache + Fetch Cache
 - **Rate-Limiting**: Automatic retry logic for API limits
 
 ## 🎮 Usage
@@ -269,11 +276,12 @@ The app includes intelligent logic to prevent duplicate ship displays and correc
 - Automatic updates every 1-2 minutes
 
 ### Simulation Mode
-- Time-based simulation with manual time control
+- Time-based simulation with manual time control (always uses today's date)
 - Speed controls: 1x, 2x, 4x, 10x, 100x (for fast-forwarding through the day)
 - Timeline slider to scrub through the day
-- Date picker to view different days
-- Reset button to reset to initial time
+- Time picker to jump to specific times
+- Reset button to reset to 13:32
+- Automatically switches to 13:32 when entering simulation mode
 
 ## 🔒 Security & Privacy
 
