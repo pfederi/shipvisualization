@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import dynamic from 'next/dynamic'
-import { RotateCcw } from 'lucide-react'
+import { RotateCcw, Ship } from 'lucide-react'
 
 // Types & Libs
 import { ShipPosition, calculateShipPosition } from '@/lib/ship-position'
@@ -37,6 +37,7 @@ export default function Home() {
   const [routeSegments, setRouteSegments] = useState<any[]>([])
   const [isDocOpen, setIsDocOpen] = useState(false)
   const [isReleaseNotesOpen, setIsReleaseNotesOpen] = useState(false)
+  const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false)
   const [geoJSONRoutes, setGeoJSONRoutes] = useState<any[]>([])
   const [isInitialCalcDone, setIsInitialCalcDone] = useState(false)
   
@@ -668,7 +669,8 @@ export default function Home() {
   return (
     <>
       <main className="h-screen w-screen flex flex-col bg-slate-50 dark:bg-gray-900 overflow-hidden">
-        <header className="bg-brandblue text-white px-4 shadow-lg z-10 border-b border-brandblue-dark h-[72px] flex items-center">
+        {/* Desktop Header */}
+        <header className="hidden lg:flex bg-brandblue text-white px-4 shadow-lg z-10 border-b border-brandblue-dark h-[72px] items-center">
           <div className="flex justify-between items-center w-full gap-8">
             <div className="flex justify-start items-center gap-8">
               <h1 className="text-xl font-black tracking-tight uppercase whitespace-nowrap">{t.title}</h1>
@@ -740,9 +742,52 @@ export default function Home() {
             </div>
           </div>
         </header>
-        <div className="flex-1 flex overflow-hidden">
-          <ShipMap ships={ships} onShipClick={(ship) => setSelectedShipId(ship.id)} selectedShipId={selectedShipId} />
-          <SchedulePanel 
+
+        {/* Mobile Header */}
+        <header className="lg:hidden bg-brandblue text-white px-3 py-2 shadow-lg z-10 border-b border-brandblue-dark">
+          <div className="flex justify-between items-center">
+            <h1 className="text-base font-black tracking-tight uppercase">{t.title}</h1>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsDocOpen(true)}
+                className="p-2 bg-white/10 hover:bg-white/20 rounded-md transition-all"
+                title={t.documentation}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+              </button>
+              <button
+                onClick={() => loadDailySchedule(new Date(selectedDate), true)}
+                disabled={isLoading}
+                className={`p-2 bg-white/10 hover:bg-white/20 disabled:opacity-50 rounded-md transition-all ${isLoading ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+              >
+                <RotateCcw size={16} strokeWidth={3} className={isLoading ? 'animate-spin' : ''} />
+              </button>
+              <ThemeLanguageToggle />
+            </div>
+          </div>
+        </header>
+
+        <div className="flex-1 flex overflow-hidden relative">
+          <div className={`flex-1 ${isLiveMode ? 'pb-[68px]' : 'pb-[180px]'} lg:pb-0`}>
+            <ShipMap ships={ships} onShipClick={(ship) => setSelectedShipId(ship.id)} selectedShipId={selectedShipId} />
+          </div>
+
+          {/* Mobile Panel Toggle Button */}
+          <button
+            onClick={() => setIsMobilePanelOpen(!isMobilePanelOpen)}
+            className={`lg:hidden fixed ${isLiveMode ? 'bottom-[80px]' : 'bottom-[192px]'} right-4 bg-brandblue text-white p-3 rounded-full shadow-xl transition-all ${isMobilePanelOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+            style={{ zIndex: 9999 }}
+          >
+            <Ship size={24} />
+          </button>
+
+          {/* Desktop Schedule Panel */}
+          <div className="hidden lg:block">
+            <SchedulePanel 
             ships={ships} 
             selectedShipId={selectedShipId} 
             onShipClick={setSelectedShipId} 
@@ -754,6 +799,124 @@ export default function Home() {
             simulationTime={simulationTime}
             selectedDate={selectedDate}
           />
+          </div>
+
+          {/* Mobile Sliding Panel */}
+          <div className={`lg:hidden fixed inset-0 w-[85%] max-w-sm ml-auto bg-white dark:bg-gray-800 shadow-2xl transition-transform duration-300 ${isMobilePanelOpen ? 'translate-x-0' : 'translate-x-full'}`} style={{ zIndex: 9998 }}>
+            {/* Panel Header */}
+            <div className="bg-brandblue text-white p-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Ship size={20} />
+                <h2 className="font-bold text-lg">{t.activeShips} ({ships.length})</h2>
+              </div>
+              <button
+                onClick={() => setIsMobilePanelOpen(false)}
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+
+            {/* Panel Content */}
+            <div className="h-[calc(100vh-64px)] overflow-y-auto">
+              <SchedulePanel 
+                ships={ships} 
+                selectedShipId={selectedShipId} 
+                onShipClick={(id) => {
+                  setSelectedShipId(id)
+                  setIsMobilePanelOpen(false)
+                }} 
+                isLoading={isLoading || (routeSegments.length > 0 && !isInitialCalcDone)} 
+                isLiveMode={isLiveMode}
+                onToggleMode={toggleMode}
+                nextDepartures={nextDepartures}
+                onReleaseNotesClick={() => setIsReleaseNotesOpen(true)}
+                simulationTime={simulationTime}
+                selectedDate={selectedDate}
+              />
+            </div>
+          </div>
+
+          {/* Mobile Panel Overlay */}
+          {isMobilePanelOpen && (
+            <div 
+              className="lg:hidden fixed inset-0 bg-black/50"
+              style={{ zIndex: 9997 }}
+              onClick={() => setIsMobilePanelOpen(false)}
+            />
+          )}
+
+          {/* Mobile Bottom Bar */}
+          <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-brandblue text-white z-20 border-t border-brandblue-dark">
+            {/* Live/Simulation Toggle */}
+            <div className="flex items-center justify-center p-2 gap-1">
+              <button 
+                onClick={toggleMode} 
+                className={`flex-1 py-3 rounded-lg text-xs font-black transition-all flex items-center justify-center gap-2 ${isLiveMode ? 'bg-green-500 text-white shadow-lg' : 'bg-white/10 text-white/60'}`}
+              >
+                <div className={`w-1.5 h-1.5 rounded-full ${isLiveMode ? 'bg-white animate-pulse' : 'bg-white/20'}`} />
+                {t.liveMode}
+              </button>
+              <button 
+                onClick={() => isLiveMode && toggleMode()} 
+                className={`flex-1 py-3 rounded-lg text-xs font-black transition-all ${!isLiveMode ? 'bg-orange-500 text-white shadow-lg' : 'bg-white/10 text-white/60'}`}
+              >
+                {t.simulationMode}
+              </button>
+            </div>
+
+            {/* Simulation Controls */}
+            {!isLiveMode && (
+              <div className="border-t border-white/10 p-3 space-y-3">
+                {/* Timeline Slider */}
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[9px] uppercase font-black text-white/80">Timeline</span>
+                    <input 
+                      type="time" 
+                      value={simulationTime} 
+                      onChange={(e) => handleTimeChange(e.target.value)} 
+                      className="bg-white/10 rounded-md px-2 py-1 text-xs font-bold border-none text-white"
+                    />
+                  </div>
+                  <input 
+                    type="range" 
+                    min={timeRange.min} 
+                    max={timeRange.max} 
+                    value={timelineValue || timeStringToMinutes(simulationTime)} 
+                    onInput={(e) => handleTimelineDrag(parseInt((e.target as HTMLInputElement).value))}
+                    onChange={(e) => handleTimelineChange(parseInt(e.target.value))} 
+                    className="w-full h-1.5 bg-white/20 rounded-full appearance-none cursor-pointer accent-white"
+                  />
+                </div>
+
+                {/* Speed Controls and Reset */}
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-1 bg-black/20 p-1 rounded-lg flex-1">
+                    {[1, 2, 4, 10, 100].map(s => (
+                      <button 
+                        key={s} 
+                        onClick={() => setSimSpeed(s)} 
+                        className={`flex-1 py-2 rounded text-[10px] font-black transition-all ${simSpeed === s ? 'bg-white text-brandblue shadow-md' : 'text-white/80'}`}
+                      >
+                        {s}x
+                      </button>
+                    ))}
+                  </div>
+                  <button 
+                    onClick={handleReset} 
+                    className="p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors" 
+                    title={t.reset}
+                  >
+                    <RotateCcw size={18} strokeWidth={3} />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </main>
       <Documentation isOpen={isDocOpen} onClose={() => setIsDocOpen(false)} />

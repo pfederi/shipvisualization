@@ -37,7 +37,7 @@ export default function SchedulePanel({ ships = [], selectedShipId, onShipClick,
   const renderContent = () => {
     if (isLoading) {
       return (
-        <div className="p-4 flex flex-col items-center justify-center py-12 flex-1">
+        <div className="p-4 flex flex-col items-center justify-center py-12 flex-1 pb-20">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brandblue mb-4"></div>
           <p className={`text-center animate-pulse ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
             {t.loadingSchedule}
@@ -51,7 +51,7 @@ export default function SchedulePanel({ ships = [], selectedShipId, onShipClick,
 
     if (ships.length === 0) {
       return (
-        <div className="p-4 flex-1">
+        <div className="p-4 flex-1 pb-20">
           <p className={`text-center mb-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
             {isLiveMode ? t.noActiveShipsLive : t.noActiveShipsSim}
           </p>
@@ -126,7 +126,7 @@ export default function SchedulePanel({ ships = [], selectedShipId, onShipClick,
     }
 
     return (
-      <div className="p-4 space-y-4 flex-1">
+      <div className="p-4 space-y-4 flex-1 pb-20">
         {ships.map((ship) => {
           const isAlbis = ship.name?.includes('MS Albis')
           
@@ -283,8 +283,8 @@ export default function SchedulePanel({ ships = [], selectedShipId, onShipClick,
   }
 
   return (
-    <div className={`w-96 shadow-xl overflow-y-auto z-20 flex flex-col ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
-      <div className={`p-4 border-b sticky top-0 flex items-center gap-2 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+    <div className={`w-96 h-full shadow-xl overflow-y-auto z-20 flex flex-col ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
+      <div className={`hidden lg:flex p-4 border-b sticky top-0 items-center gap-2 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
         <Ship className="text-brandblue" size={24} />
         <h2 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
           {t.activeShips}{ships.length > 0 && ` (${ships.length})`}
@@ -293,7 +293,7 @@ export default function SchedulePanel({ ships = [], selectedShipId, onShipClick,
 
       {renderContent()}
 
-      <div className="sticky bottom-0">
+      <div className="fixed bottom-0 left-0 right-0 lg:fixed lg:bottom-0 lg:left-auto lg:right-auto lg:w-96 mt-auto">
         <Footer onReleaseNotesClick={onReleaseNotesClick} />
       </div>
     </div>

@@ -1,3 +1,43 @@
+# Release Notes - Zürichsee Ship Live Tracker
+
+## Version 1.2.0 - January 23 2026
+
+### 🎉 New Features
+
+**Redesigned Mobile Experience**
+- Brand new mobile interface optimized for touch devices
+- Live/Simulation controls moved to the bottom for easier thumb access
+- Floating action button to open ship list
+- Sliding panel from the right showing all active ships
+- Panel doesn't cover the entire map - you can still see 15% of the map
+- Smooth animations and transitions
+
+**Mobile Ship Panel**
+- Swipe-friendly sliding panel with all ship information
+- Fixed footer with release notes always accessible
+- Close panel by tapping outside or using the X button
+- Automatically closes when selecting a ship
+
+**Improved Layout**
+- Fixed footer on both mobile and desktop for consistent access
+- Better spacing to prevent content overlap
+- Scrollable ship list with proper padding
+- Compact mobile header with essential controls only
+
+### 🔧 Improvements
+
+**Performance**
+- Optimized z-index hierarchy for better layering
+- Smoother panel animations
+- Better touch target sizes for mobile
+
+**Code Quality**
+- Fixed React Hook warnings
+- Improved component structure
+- Better separation of mobile and desktop layouts
+
+---
+
 ## Version 1.1.0 - January 23 2026
 
 ### 🎉 New Features
@@ -20,6 +60,11 @@
 - No more alphabetical sorting - see ships in chronological order
 - Easier to understand the sequence of departures
 
+**Release Notes**
+- New release notes system accessible from the footer
+- Always in English for consistency
+- See what's new in each version directly in the app
+
 **Improved Simulation**
 - Simulation now always starts at 13:32 (best time to see many ships)
 - Date is always today - no more confusion with old dates
@@ -36,6 +81,7 @@
 - When no ships are active in Live mode, you can directly switch to Simulation
 - Calendar icon is more visible on mobile devices
 - Slider responds smoother and more fluidly
+- Cleaner footer with white background
 
 ### 🔧 Improvements
 
