@@ -1,137 +1,78 @@
-# Release Notes - Zürichsee Ship Live Tracker
 
-## Version 1.2.0 - January 23 2026
+## Version 1.3.0 (January 2026)
 
-### 🎉 New Features
+### 🎨 UI/UX Improvements
+- **Smaller Harbor Icons**: Station markers (anchors) are now 50% smaller for a cleaner map view
+- **Golden MS Albis**: The flagship MS Albis now has a distinctive golden ship icon instead of a crown
+- **Improved Ship Icons**: Ships now have a blue circle background with white border for better visibility
+- **Date Warning in Panel**: Added warning banner in schedule panel when date is more than 5 days in the future
+- **Cleaner Ship Names**: Removed course number from ship name when no real name is available (shown separately in chip)
 
-**Redesigned Mobile Experience**
-- Brand new mobile interface optimized for touch devices
-- Live/Simulation controls moved to the bottom for easier thumb access
-- Floating action button to open ship list
-- Sliding panel from the right showing all active ships
-- Panel doesn't cover the entire map - you can still see 15% of the map
-- Smooth animations and transitions
+### 📱 Mobile Enhancements
+- **Full Mobile Support**: Complete responsive design for phones and tablets
+- **Mobile Bottom Bar**: Live/Simulation toggle and simulation controls at the bottom
+- **Sliding Ship Panel**: Full-screen sliding panel for ship details on mobile
+- **Mobile Loading Indicator**: Centered loading spinner when data is being fetched
+- **Date Selection on Mobile**: Added date picker to mobile simulation controls
+- **Safe Area Support**: Proper handling of notches and home indicators on modern devices
 
-**Mobile Ship Panel**
-- Swipe-friendly sliding panel with all ship information
-- Fixed footer with release notes always accessible
-- Close panel by tapping outside or using the X button
-- Automatically closes when selecting a ship
+### 🌓 Dark Mode
+- **Full Dark Mode Support**: Complete dark theme for all components
+- **Theme Toggle**: Easy switching between light and dark mode in header
+- **Persistent Theme**: Theme preference saved in browser storage
+- **Optimized Colors**: Improved text contrast and readability in dark mode
 
-**Improved Layout**
-- Fixed footer on both mobile and desktop for consistent access
-- Better spacing to prevent content overlap
-- Scrollable ship list with proper padding
-- Compact mobile header with essential controls only
+### 🌍 Internationalization
+- **Bilingual Support**: Full German and English translations
+- **Language Toggle**: Easy language switching in header
+- **Browser Detection**: Automatic language detection on first visit
+- **Persistent Language**: Language preference saved in browser storage
 
-### 🔧 Improvements
+### ⚡ Performance & Reliability
+- **Improved Route Matching**: Better tolerance (800m) for station-to-route matching
+- **Wädenswil Fix**: Fixed issue where some departures from Wädenswil were not displayed
+- **Parallel Position Calculation**: All ship positions now calculated in parallel for better performance
+- **Smarter Deduplication**: Improved logic to prevent duplicate ships from appearing
+- **Better Cache Management**: Empty results are no longer cached, preventing stale data
+- **Force Refresh**: Manual refresh button to bypass all caches
 
-**Performance**
-- Optimized z-index hierarchy for better layering
-- Smoother panel animations
-- Better touch target sizes for mobile
+### 🚢 Ship Movement
+- **Faster Acceleration**: Ships now accelerate/decelerate more realistically
+- **Shorter Approach Distance**: Reduced from 500m to 250m for more dynamic movement
+- **Quadratic Speed Curves**: More realistic speed profiles during departure and arrival
 
-**Code Quality**
-- Fixed React Hook warnings
-- Improved component structure
-- Better separation of mobile and desktop layouts
+### 🎮 Simulation Mode
+- **Live Timeline Updates**: Ship positions update in real-time while dragging the timeline slider
+- **Persistent Time**: Timeline stays at selected time when released (doesn't jump back)
+- **Date Selection**: Added date picker back to simulation controls
+- **Next Departures**: Preview of upcoming departures in schedule panel
 
----
+### 🐛 Bug Fixes
+- **Fixed Hydration Errors**: Resolved React hydration mismatches in theme system
+- **Fixed Station Name Normalization**: Better handling of station name variants
+- **Fixed Duplicate Station Bug**: Correctly handles API bug where stations appear multiple times in route
+- **Fixed Course Number Normalization**: Consistent handling of course numbers with leading zeros
+- **Fixed Herrliberg UIC**: Corrected duplicate UIC reference
 
-## Version 1.1.0 - January 23 2026
-
-### 🎉 New Features
-
-**Next Departures**
-- Always see the next 3 upcoming departures, even when no ships are currently active
-- Countdown in minutes until departure
-- Shows ship name, route, and departure time
-- Smart filtering: ships already active won't appear in next departures
-- Perfect for planning when the next ship arrives!
-
-**Countdown for Ships at Station**
-- Ships waiting at the station now show a countdown chip
-- See exactly how many minutes until departure
-- Works correctly in both Live and Simulation mode
-- Orange chip for easy recognition
-
-**Improved Ship List**
-- Ships are now sorted by departure time (earliest first)
-- No more alphabetical sorting - see ships in chronological order
-- Easier to understand the sequence of departures
-
-**Release Notes**
-- New release notes system accessible from the footer
-- Always in English for consistency
-- See what's new in each version directly in the app
-
-**Improved Simulation**
-- Simulation now always starts at 13:32 (best time to see many ships)
-- Date is always today - no more confusion with old dates
-- Faster switching between Live and Simulation modes
-- Countdown timers work correctly in simulation mode
-
-**Mobile Optimization**
-- Better experience on smartphones
-- Live/Simulation buttons at the bottom for easier access
-- Timeline slider now available on mobile
-- Optimized layout for smaller screens
-
-**User Experience**
-- When no ships are active in Live mode, you can directly switch to Simulation
-- Calendar icon is more visible on mobile devices
-- Slider responds smoother and more fluidly
-- Cleaner footer with white background
-
-### 🔧 Improvements
-
-**Performance**
-- Data now refreshes every 6 hours (instead of 12 hours)
-- Faster loading of ship positions
-- Reduced lag when moving the timeline slider
-- More efficient rendering of schedule panel
-
-**Documentation**
-- New user documentation directly in the app
-- Available in German and English
-- Explains how the app works (without technical details)
+### 🔧 Technical Improvements
+- **Reusable Footer Component**: Footer extracted into separate component
+- **Improved Type Safety**: Better TypeScript types throughout the codebase
+- **Better Error Handling**: More robust error handling and logging
+- **Debug Logging**: Comprehensive logging for troubleshooting
 
 ---
 
-## Version 1.0.0 - January 22 2026
+## Version 1.0.0 (January 2026)
 
-### 🚀 Initial Release
-
-**Live Tracking**
-- Real-time tracking of all ships on Lake Zurich
-- Interactive map with precise ship positions
-- Automatic updates every 1-2 seconds
-
-**Simulation**
-- Time-based simulation with speed control (1x to 100x)
-- Timeline slider to scroll through the day
-- Perfect for planning or reviewing past trips
-
-**Ship Information**
-- Display of ship names (e.g., MS Albis, MS Limmat)
-- Course numbers for each trip
-- Departure and arrival times
-- Current route (from station → to station)
-
-**Special Features**
-- MS Albis is marked with a crown (the flagship!)
-- Intelligent course number recognition (e.g., Course 29 vs. 2529)
-- No duplicates - each ship is only shown once
-- Precise routes based on actual shipping lanes
-
-**Design**
-- Light and dark mode (automatic or manual)
-- Bilingual: German and English
-- Modern, clean user interface
-- Responsive design for all devices
-
-**Technical Foundation**
-- Uses public timetable data from transport.opendata.ch
-- No registration or app installation required
-- Works directly in your browser
-- Free and ad-free
+### 🎉 Initial Release
+- **Live Ship Tracking**: Real-time visualization of ships on Lake Zurich
+- **Interactive Map**: Leaflet-based map with OpenStreetMap tiles
+- **Simulation Mode**: Time-based simulation with speed controls (1x, 2x, 4x, 10x)
+- **Ship Details**: Display of ship names, course numbers, departure and arrival times
+- **Route Visualization**: Precise routes based on GeoJSON data from OpenSeaMap
+- **Intelligent Position Calculation**: Non-linear speed profiles for realistic movement
+- **MS Albis Highlight**: Special marking for the flagship MS Albis
+- **Schedule Panel**: List of active ships with detailed information
+- **GeoJSON Route Matching**: Smart algorithm to match timetable data with maritime routes
+- **Ship Names API**: Integration with ZSG Ships API for accurate ship names
+- **Caching**: Server-side and client-side caching for optimal performance

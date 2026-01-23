@@ -128,6 +128,38 @@ export default function SchedulePanel({ ships = [], selectedShipId, onShipClick,
 
     return (
       <div className={`p-4 space-y-4 flex-1 ${isMobile ? 'pb-24' : 'pb-20'}`}>
+        {/* Warnung bei Datum in der Zukunft */}
+        {selectedDate && (() => {
+          const today = new Date()
+          today.setHours(0, 0, 0, 0)
+          const selected = new Date(selectedDate)
+          selected.setHours(0, 0, 0, 0)
+          const daysInFuture = Math.round((selected.getTime() - today.getTime()) / (24 * 60 * 60 * 1000))
+          
+          if (daysInFuture > 5) {
+            return (
+              <div className={`p-3 rounded-lg border ${
+                theme === 'dark' 
+                  ? 'bg-orange-900/30 border-orange-500 text-orange-300' 
+                  : 'bg-orange-50 border-orange-500 text-orange-700'
+              }`}>
+                <div className="flex items-start gap-2">
+                  <span className="text-lg">⚠️</span>
+                  <div className="flex-1">
+                    <p className="text-xs font-bold mb-1">{t.shipNamesWarning}</p>
+                    <p className="text-[11px] opacity-80">
+                      {language === 'de' 
+                        ? 'Die ZSG liefert in der Regel die Daten nur für die nächsten 5 Tage.' 
+                        : 'ZSG typically provides data only for the next 5 days.'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )
+          }
+          return null
+        })()}
+        
         {ships.map((ship) => {
           const isAlbis = ship.name?.includes('MS Albis')
           

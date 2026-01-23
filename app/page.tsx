@@ -8,6 +8,7 @@ import { RotateCcw, Ship } from 'lucide-react'
 import { ShipPosition, calculateShipPosition } from '@/lib/ship-position'
 import { getStationCoordinates, normalizeStationName, ZURICHSEE_STATIONS } from '@/lib/zurichsee-stations'
 import { useI18n } from '@/lib/i18n-context'
+import { useTheme } from '@/lib/theme'
 import ThemeLanguageToggle from '@/components/ThemeLanguageToggle'
 import Documentation from '@/components/Documentation'
 import ReleaseNotes from '@/components/ReleaseNotes'
@@ -29,6 +30,7 @@ const POST_ARRIVAL_GRACE_MS = 0 // Kein Puffer mehr nötig, da wir Segmente verk
 
 export default function Home() {
   const { t, language } = useI18n()
+  const { theme } = useTheme()
   
   // --- STATE ---
   const [ships, setShips] = useState<ShipPosition[]>([])
@@ -172,7 +174,9 @@ export default function Home() {
           const officialNumShort = officialNumRaw.replace(/^0+/, '') || internalNumShort
 
           const shipName = await getShipNameByCourseNumber(internalNumShort, targetDate)
-          const displayName = shipName || `Schiff (Kurs ${internalNumShort})`
+          // Wenn kein Schiffsname gefunden wurde, zeige nur "Schiff" ohne Kursnummer
+          // (Die Kursnummer wird separat als Chip angezeigt)
+          const displayName = shipName || `Schiff`
 
           for (let i = 0; i < entry.passList.length - 1; i++) {
             const currentPass = entry.passList[i]
@@ -718,6 +722,9 @@ export default function Home() {
                     />
                   </div>
                   <div className="flex items-center h-full">
+                    <input type="date" value={selectedDate} onChange={(e) => handleDateChange(e.target.value)} className="bg-white/10 rounded-md px-2 py-1.5 text-xs font-bold border-none focus:ring-1 focus:ring-white/30 cursor-pointer text-white" />
+                  </div>
+                  <div className="flex items-center h-full">
                     <input type="time" value={simulationTime} onChange={(e) => handleTimeChange(e.target.value)} className="bg-white/10 rounded-md px-2 py-1.5 text-xs font-bold border-none focus:ring-1 focus:ring-white/30 cursor-pointer text-white" />
                   </div>
                   <div className="flex gap-1 bg-black/20 p-1 rounded-lg h-8 items-center">
@@ -805,10 +812,23 @@ export default function Home() {
             <ShipMap ships={ships} onShipClick={(ship) => setSelectedShipId(ship.id)} selectedShipId={selectedShipId} />
           </div>
 
+          {/* Mobile Loading Indicator */}
+          {isLoading && (
+            <div className="lg:hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 flex flex-col items-center gap-3" style={{ zIndex: 10000 }}>
+              <div className={`animate-spin rounded-full h-12 w-12 border-b-4 ${theme === 'dark' ? 'border-white' : 'border-brandblue'}`}></div>
+              <p className={`text-sm font-bold text-center ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                {t.loadingSchedule}
+              </p>
+              <p className={`text-xs text-center ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                {t.loadingSubtext}
+              </p>
+            </div>
+          )}
+
           {/* Mobile Panel Toggle Button */}
           <button
             onClick={() => setIsMobilePanelOpen(!isMobilePanelOpen)}
-            className={`lg:hidden fixed ${isLiveMode ? 'bottom-[80px]' : 'bottom-[192px]'} right-4 bg-brandblue text-white p-3 rounded-full shadow-xl transition-all ${isMobilePanelOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+            className={`lg:hidden fixed ${isLiveMode ? 'bottom-[80px]' : 'bottom-[260px]'} right-4 bg-brandblue text-white p-3 rounded-full shadow-xl transition-all ${isMobilePanelOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
             style={{ zIndex: 9999 }}
           >
             <Ship size={24} />
@@ -901,17 +921,27 @@ export default function Home() {
             {/* Simulation Controls */}
             {!isLiveMode && (
               <div className="border-t border-white/10 p-3 space-y-3">
+                {/* Timeline Label */}
+                <span className="text-[9px] uppercase font-black text-white/80">Timeline</span>
+                
+                {/* Date and Time */}
+                <div className="flex items-center gap-2">
+                  <input 
+                    type="date" 
+                    value={selectedDate} 
+                    onChange={(e) => handleDateChange(e.target.value)} 
+                    className="flex-1 bg-white/10 rounded-md px-2 py-1.5 text-xs font-bold border-none text-white"
+                  />
+                  <input 
+                    type="time" 
+                    value={simulationTime} 
+                    onChange={(e) => handleTimeChange(e.target.value)} 
+                    className="flex-1 bg-white/10 rounded-md px-2 py-1.5 text-xs font-bold border-none text-white"
+                  />
+                </div>
+
                 {/* Timeline Slider */}
-                <div className="space-y-1">
-                  <div className="flex justify-between items-center">
-                    <span className="text-[9px] uppercase font-black text-white/80">Timeline</span>
-                    <input 
-                      type="time" 
-                      value={simulationTime} 
-                      onChange={(e) => handleTimeChange(e.target.value)} 
-                      className="bg-white/10 rounded-md px-2 py-1 text-xs font-bold border-none text-white"
-                    />
-                  </div>
+                <div>
                   <input 
                     type="range" 
                     min={timeRange.min} 
