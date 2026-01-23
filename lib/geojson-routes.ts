@@ -38,12 +38,12 @@ interface GeoJSON {
 /**
  * Lädt Schifffahrtsrouten aus dem GeoJSON-File
  */
-export async function loadRoutesFromGeoJSON(): Promise<ShipRouteData[]> {
+export async function loadRoutesFromGeoJSON(geojsonPath: string = '/data/export.geojson'): Promise<ShipRouteData[]> {
   try {
     // Lade das GeoJSON-File
-    const response = await fetch('/data/export.geojson')
+    const response = await fetch(geojsonPath)
     if (!response.ok) {
-      throw new Error(`Fehler beim Laden des GeoJSON-Files: ${response.statusText}`)
+      throw new Error(`Fehler beim Laden des GeoJSON-Files ${geojsonPath}: ${response.statusText}`)
     }
 
     const geojson: GeoJSON = await response.json()
@@ -121,13 +121,13 @@ export async function loadRoutesFromGeoJSON(): Promise<ShipRouteData[]> {
 /**
  * Lädt Routen mit Next.js unstable_cache (24 Stunden)
  */
-export async function getCachedGeoJSONRoutes(forceRefresh: boolean = false): Promise<ShipRouteData[]> {
+export async function getCachedGeoJSONRoutes(geojsonPath: string = '/data/export.geojson'): Promise<ShipRouteData[]> {
   // Verwende unstable_cache für server-seitiges Caching
   // Nur server-seitig verfügbar, daher Fallback für Client
   if (typeof window === 'undefined') {
     const getCachedRoutes = unstable_cache(
-      async () => loadRoutesFromGeoJSON(),
-      ['geojson-routes'],
+      async () => loadRoutesFromGeoJSON(geojsonPath),
+      [`geojson-routes-${geojsonPath}`],
       {
         revalidate: 86400, // 24 Stunden
         tags: ['geojson-routes']
@@ -137,6 +137,6 @@ export async function getCachedGeoJSONRoutes(forceRefresh: boolean = false): Pro
     return getCachedRoutes()
   } else {
     // Client-seitig: Direkter Load (Browser-Cache wird verwendet)
-    return loadRoutesFromGeoJSON()
+    return loadRoutesFromGeoJSON(geojsonPath)
   }
 }

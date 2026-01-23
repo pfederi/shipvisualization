@@ -110,7 +110,7 @@ vercel
 │   ├── ship-position.ts    # Position Calculation
 │   ├── ship-names-api.ts   # Ship Names API Integration
 │   ├── geojson-routes.ts   # GeoJSON Route Loader
-│   ├── zurichsee-stations.ts # Station Coordinates
+│   ├── lakes-config.ts     # Lake & Station Configurations
 │   ├── i18n.ts             # Internationalization
 │   ├── i18n-context.tsx    # i18n React Context
 │   └── theme.tsx           # Theme Management

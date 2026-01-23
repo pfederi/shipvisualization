@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, Marker, Tooltip } from 'react-leaflet'
 import { renderToString } from 'react-dom/server'
 import { Anchor, Ship as ShipIcon, Crown } from 'lucide-react'
 import { ShipPosition } from '@/lib/ship-position'
-import { ZURICHSEE_STATIONS } from '@/lib/zurichsee-stations'
+import { LAKES, LakeConfig } from '@/lib/lakes-config'
 import { getCachedGeoJSONRoutes } from '@/lib/geojson-routes'
 import type { ShipRouteData } from '@/lib/geojson-routes'
 
@@ -15,19 +15,21 @@ interface ShipMapProps {
   ships?: ShipPosition[]
   onShipClick?: (ship: ShipPosition) => void
   selectedShipId?: string | null
+  selectedLakeId?: string
 }
 
-export default function ShipMap({ ships = [], onShipClick, selectedShipId }: ShipMapProps) {
+export default function ShipMap({ ships = [], onShipClick, selectedShipId, selectedLakeId = 'zurichsee' }: ShipMapProps) {
   const [isClient, setIsClient] = useState(false)
   const mapInitialized = useRef(false)
+  const selectedLake = useMemo(() => LAKES[selectedLakeId], [selectedLakeId])
 
   useEffect(() => {
     setIsClient(true)
     if (!mapInitialized.current) {
       mapInitialized.current = true
-      getCachedGeoJSONRoutes().catch(console.error)
+      getCachedGeoJSONRoutes(selectedLake.geojsonPath).catch(console.error)
     }
-  }, [])
+  }, [selectedLake.geojsonPath])
 
   // Station Icon (einmalig erstellt)
   const stationIcon = useMemo(() => {
@@ -91,8 +93,9 @@ export default function ShipMap({ ships = [], onShipClick, selectedShipId }: Shi
   return (
     <div className="flex-1 relative h-full w-full" id="ship-map-container">
       <MapContainer
-        center={[47.3, 8.6]}
-        zoom={12}
+        key={selectedLakeId} // Force remount when lake changes
+        center={selectedLake.center}
+        zoom={selectedLake.zoom}
         className="absolute inset-0"
         scrollWheelZoom={true}
       >
@@ -102,9 +105,9 @@ export default function ShipMap({ ships = [], onShipClick, selectedShipId }: Shi
         />
         
         {/* Stationen */}
-        {stationIcon && ZURICHSEE_STATIONS.map((station, index) => (
+        {stationIcon && selectedLake.stations.map((station, index) => (
           <Marker
-            key={`station-${index}`}
+            key={`${selectedLakeId}-station-${index}`}
             position={[station.latitude, station.longitude]}
             icon={stationIcon}
           />

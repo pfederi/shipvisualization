@@ -189,7 +189,7 @@ lib/
 ├── ship-position.ts      # Position calculation engine
 ├── ship-names-api.ts     # Ship name resolution
 ├── geojson-routes.ts     # Route loading and matching
-├── zurichsee-stations.ts # Station coordinates
+├── lakes-config.ts     # Lake & Station Configurations
 ├── i18n.ts               # Translations
 ├── i18n-context.tsx      # i18n React context
 └── theme.tsx             # Theme management
