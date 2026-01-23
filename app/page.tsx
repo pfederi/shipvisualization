@@ -77,11 +77,11 @@ export default function Home() {
     baseSimTimeRef.current = newSimTimeMs
   }, [])
 
-  const minutesToTimeString = (totalMinutes: number) => {
+  const minutesToTimeString = useCallback((totalMinutes: number) => {
     const h = Math.floor(totalMinutes / 60)
     const m = totalMinutes % 60
     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`
-  }
+  }, [])
 
   const timeStringToMinutes = (timeStr: string) => {
     const [h, m] = timeStr.split(':').map(Number)
@@ -602,7 +602,7 @@ export default function Home() {
 
     setShips(finalShips)
     setIsInitialCalcDone(true)
-  }, [routeSegments, geoJSONRoutes, isLiveMode, simSpeed, simulationTime, baseSimTimeRef, baseRealTimeRef, selectedDate, isTimelineDragging, ships])
+  }, [routeSegments, geoJSONRoutes, isLiveMode, simSpeed, simulationTime, baseSimTimeRef, baseRealTimeRef, selectedDate, isTimelineDragging, ships, isInitialCalcDone])
 
   // Timeline drag handler - nur visuelle Updates während des Ziehens (keine teuren Berechnungen)
   const handleTimelineDrag = useCallback((minutes: number) => {
