@@ -794,7 +794,14 @@ export default function Home() {
         </header>
 
         <div className="flex-1 flex overflow-hidden relative lg:flex-row">
-          <div className="flex-1 lg:h-full overflow-hidden">
+          <div 
+            className="flex-1 lg:h-full overflow-hidden"
+            style={{
+              height: bottomBarHeight > 0 && headerHeight > 0
+                ? `calc(100svh - ${bottomBarHeight}px - ${headerHeight}px)`
+                : undefined
+            }}
+          >
             <ShipMap ships={ships} onShipClick={(ship) => setSelectedShipId(ship.id)} selectedShipId={selectedShipId} />
           </div>
 
