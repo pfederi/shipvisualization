@@ -1,6 +1,6 @@
 # Release Notes - Zürichsee Ship Live Tracker
 
-## Version 1.1.0 - January 2026
+## Version 1.1.0 - January 23 2026
 
 ### 🎉 New Features
 
@@ -8,12 +8,25 @@
 - Always see the next 3 upcoming departures, even when no ships are currently active
 - Countdown in minutes until departure
 - Shows ship name, route, and departure time
+- Smart filtering: ships already active won't appear in next departures
 - Perfect for planning when the next ship arrives!
+
+**Countdown for Ships at Station**
+- Ships waiting at the station now show a countdown chip
+- See exactly how many minutes until departure
+- Works correctly in both Live and Simulation mode
+- Orange chip for easy recognition
+
+**Improved Ship List**
+- Ships are now sorted by departure time (earliest first)
+- No more alphabetical sorting - see ships in chronological order
+- Easier to understand the sequence of departures
 
 **Improved Simulation**
 - Simulation now always starts at 13:32 (best time to see many ships)
 - Date is always today - no more confusion with old dates
 - Faster switching between Live and Simulation modes
+- Countdown timers work correctly in simulation mode
 
 **Mobile Optimization**
 - Better experience on smartphones
@@ -32,6 +45,7 @@
 - Data now refreshes every 6 hours (instead of 12 hours)
 - Faster loading of ship positions
 - Reduced lag when moving the timeline slider
+- More efficient rendering of schedule panel
 
 **Documentation**
 - New user documentation directly in the app
@@ -40,7 +54,7 @@
 
 ---
 
-## Version 1.0.0 - January 2026
+## Version 1.0.0 - January 22 2026
 
 ### 🚀 Initial Release
 

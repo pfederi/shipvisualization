@@ -65,13 +65,13 @@ export default function SchedulePanel({ ships = [], selectedShipId, onShipClick,
                 {nextDepartures.map((dep, idx) => (
                   <div 
                     key={idx}
-                    className={`p-3 rounded-lg border ${
+                    className={`p-4 rounded-lg border-2 border-transparent shadow-sm ${
                       theme === 'dark' 
-                        ? 'bg-gray-700/50 border-gray-600' 
-                        : 'bg-gray-50 border-gray-200'
+                        ? 'bg-gray-700/50' 
+                        : 'bg-gray-50'
                     }`}
                   >
-                    <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
                         <div className={`font-bold text-sm ${theme === 'dark' ? 'text-white' : 'text-brandblue'}`}>
                           {dep.resolvedShipName}
