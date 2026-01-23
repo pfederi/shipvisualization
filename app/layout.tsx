@@ -20,6 +20,7 @@ export default function RootLayout({
   return (
     <html lang="de" suppressHydrationWarning>
       <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -35,7 +36,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body>
+      <body className="overflow-hidden">
         <ThemeProvider>
           <I18nProvider>
             {children}

@@ -27,9 +27,10 @@ interface SchedulePanelProps {
   onReleaseNotesClick?: () => void
   simulationTime?: string
   selectedDate?: string
+  isMobile?: boolean
 }
 
-export default function SchedulePanel({ ships = [], selectedShipId, onShipClick, isLoading, isLiveMode = false, onToggleMode, nextDepartures = [], onReleaseNotesClick, simulationTime, selectedDate }: SchedulePanelProps) {
+export default function SchedulePanel({ ships = [], selectedShipId, onShipClick, isLoading, isLiveMode = false, onToggleMode, nextDepartures = [], onReleaseNotesClick, simulationTime, selectedDate, isMobile = false }: SchedulePanelProps) {
   const { t, language } = useI18n()
   const { theme } = useTheme()
   
@@ -37,7 +38,7 @@ export default function SchedulePanel({ ships = [], selectedShipId, onShipClick,
   const renderContent = () => {
     if (isLoading) {
       return (
-        <div className="p-4 flex flex-col items-center justify-center py-12 flex-1 pb-20">
+        <div className={`p-4 flex flex-col items-center justify-center py-12 flex-1 ${isMobile ? 'pb-24' : 'pb-20'}`}>
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brandblue mb-4"></div>
           <p className={`text-center animate-pulse ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
             {t.loadingSchedule}
@@ -51,7 +52,7 @@ export default function SchedulePanel({ ships = [], selectedShipId, onShipClick,
 
     if (ships.length === 0) {
       return (
-        <div className="p-4 flex-1 pb-20">
+        <div className={`p-4 flex-1 ${isMobile ? 'pb-24' : 'pb-20'}`}>
           <p className={`text-center mb-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
             {isLiveMode ? t.noActiveShipsLive : t.noActiveShipsSim}
           </p>
@@ -126,7 +127,7 @@ export default function SchedulePanel({ ships = [], selectedShipId, onShipClick,
     }
 
     return (
-      <div className="p-4 space-y-4 flex-1 pb-20">
+      <div className={`p-4 space-y-4 flex-1 ${isMobile ? 'pb-24' : 'pb-20'}`}>
         {ships.map((ship) => {
           const isAlbis = ship.name?.includes('MS Albis')
           
@@ -283,7 +284,7 @@ export default function SchedulePanel({ ships = [], selectedShipId, onShipClick,
   }
 
   return (
-    <div className={`w-96 h-full shadow-xl overflow-y-auto z-20 flex flex-col ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
+    <div className={`${isMobile ? 'w-full' : 'w-96'} h-full shadow-xl overflow-y-auto z-20 flex flex-col ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
       <div className={`hidden lg:flex p-4 border-b sticky top-0 items-center gap-2 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
         <Ship className="text-brandblue" size={24} />
         <h2 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>

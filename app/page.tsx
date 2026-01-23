@@ -38,7 +38,11 @@ export default function Home() {
   const [isDocOpen, setIsDocOpen] = useState(false)
   const [isReleaseNotesOpen, setIsReleaseNotesOpen] = useState(false)
   const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false)
+  const [bottomBarHeight, setBottomBarHeight] = useState(0)
+  const [headerHeight, setHeaderHeight] = useState(0)
   const [geoJSONRoutes, setGeoJSONRoutes] = useState<any[]>([])
+  const bottomBarRef = useRef<HTMLDivElement>(null)
+  const headerRef = useRef<HTMLDivElement>(null)
   const [isInitialCalcDone, setIsInitialCalcDone] = useState(false)
   
   const [isLiveMode, setIsLiveMode] = useState<boolean>(true)
@@ -52,6 +56,24 @@ export default function Home() {
   const baseRealTimeRef = useRef<number>(Date.now())
   const baseSimTimeRef = useRef<number>(0)
   const lastLoadedKeyRef = useRef<string>("")
+
+  // Update bottom bar and header height dynamically
+  useEffect(() => {
+    const updateHeights = () => {
+      if (bottomBarRef.current) {
+        setBottomBarHeight(bottomBarRef.current.offsetHeight)
+      }
+      if (headerRef.current) {
+        setHeaderHeight(headerRef.current.offsetHeight)
+      }
+    }
+    
+    updateHeights()
+    setTimeout(updateHeights, 100)
+    setTimeout(updateHeights, 500) // Extra delay for slower devices
+    window.addEventListener('resize', updateHeights)
+    return () => window.removeEventListener('resize', updateHeights)
+  }, [isLiveMode])
 
   // --- DERIVED ---
   const isDateOutOfRange = useMemo(() => {
@@ -668,7 +690,7 @@ export default function Home() {
 
   return (
     <>
-      <main className="h-screen w-screen flex flex-col bg-slate-50 dark:bg-gray-900 overflow-hidden">
+      <main className="h-screen w-screen flex flex-col bg-slate-50 dark:bg-gray-900 overflow-hidden" style={{ height: '100svh' }}>
         {/* Desktop Header */}
         <header className="hidden lg:flex bg-brandblue text-white px-4 shadow-lg z-10 border-b border-brandblue-dark h-[72px] items-center">
           <div className="flex justify-between items-center w-full gap-8">
@@ -744,7 +766,7 @@ export default function Home() {
         </header>
 
         {/* Mobile Header */}
-        <header className="lg:hidden bg-brandblue text-white px-3 py-2 shadow-lg z-10 border-b border-brandblue-dark">
+        <header ref={headerRef} className="lg:hidden bg-brandblue text-white px-3 py-2 shadow-lg z-10 border-b border-brandblue-dark" style={{ paddingTop: 'max(0.5rem, env(safe-area-inset-top))' }}>
           <div className="flex justify-between items-center">
             <h1 className="text-base font-black tracking-tight uppercase">{t.title}</h1>
             <div className="flex items-center gap-2">
@@ -771,8 +793,8 @@ export default function Home() {
           </div>
         </header>
 
-        <div className="flex-1 flex overflow-hidden relative">
-          <div className={`flex-1 ${isLiveMode ? 'pb-[68px]' : 'pb-[180px]'} lg:pb-0`}>
+        <div className="flex-1 flex overflow-hidden relative lg:flex-row">
+          <div className="flex-1 lg:h-full overflow-hidden">
             <ShipMap ships={ships} onShipClick={(ship) => setSelectedShipId(ship.id)} selectedShipId={selectedShipId} />
           </div>
 
@@ -802,7 +824,7 @@ export default function Home() {
           </div>
 
           {/* Mobile Sliding Panel */}
-          <div className={`lg:hidden fixed inset-0 w-[85%] max-w-sm ml-auto bg-white dark:bg-gray-800 shadow-2xl transition-transform duration-300 ${isMobilePanelOpen ? 'translate-x-0' : 'translate-x-full'}`} style={{ zIndex: 9998 }}>
+          <div className={`lg:hidden fixed inset-0 w-full bg-white dark:bg-gray-800 shadow-2xl transition-transform duration-300 ${isMobilePanelOpen ? 'translate-x-0' : 'translate-x-full'}`} style={{ zIndex: 9998 }}>
             {/* Panel Header */}
             <div className="bg-brandblue text-white p-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -821,7 +843,7 @@ export default function Home() {
             </div>
 
             {/* Panel Content */}
-            <div className="h-[calc(100vh-64px)] overflow-y-auto">
+            <div className="h-[calc(100svh-64px)] overflow-hidden">
               <SchedulePanel 
                 ships={ships} 
                 selectedShipId={selectedShipId} 
@@ -836,6 +858,7 @@ export default function Home() {
                 onReleaseNotesClick={() => setIsReleaseNotesOpen(true)}
                 simulationTime={simulationTime}
                 selectedDate={selectedDate}
+                isMobile={true}
               />
             </div>
           </div>
@@ -850,7 +873,7 @@ export default function Home() {
           )}
 
           {/* Mobile Bottom Bar */}
-          <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-brandblue text-white z-20 border-t border-brandblue-dark">
+          <div ref={bottomBarRef} className="lg:hidden fixed bottom-0 left-0 right-0 bg-brandblue text-white z-20 border-t border-brandblue-dark" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
             {/* Live/Simulation Toggle */}
             <div className="flex items-center justify-center p-2 gap-1">
               <button 
