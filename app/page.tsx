@@ -10,6 +10,7 @@ import { getStationCoordinates, normalizeStationName, ZURICHSEE_STATIONS } from 
 import { useI18n } from '@/lib/i18n-context'
 import ThemeLanguageToggle from '@/components/ThemeLanguageToggle'
 import Documentation from '@/components/Documentation'
+import ReleaseNotes from '@/components/ReleaseNotes'
 
 // Components
 const ShipMap = dynamic(() => import('@/components/ShipMap'), { 
@@ -35,6 +36,7 @@ export default function Home() {
   const [selectedShipId, setSelectedShipId] = useState<string | null>(null)
   const [routeSegments, setRouteSegments] = useState<any[]>([])
   const [isDocOpen, setIsDocOpen] = useState(false)
+  const [isReleaseNotesOpen, setIsReleaseNotesOpen] = useState(false)
   const [geoJSONRoutes, setGeoJSONRoutes] = useState<any[]>([])
   const [isInitialCalcDone, setIsInitialCalcDone] = useState(false)
   
@@ -618,6 +620,29 @@ export default function Home() {
     return () => clearInterval(timer)
   }, [updatePositions])
 
+  // Berechne die nächsten 3 Abfahrten
+  const nextDepartures = useMemo(() => {
+    if (routeSegments.length === 0) return []
+    
+    const now = isLiveMode ? new Date() : (() => {
+      const [h, m] = simulationTime.split(':').map(Number)
+      const d = new Date(selectedDate)
+      d.setHours(h, m, 0, 0)
+      return d
+    })()
+    
+    const upcoming = routeSegments
+      .map(seg => ({
+        ...seg.segment,
+        minutesUntil: Math.round((new Date(seg.segment.departureTime).getTime() - now.getTime()) / 60000)
+      }))
+      .filter(seg => seg.minutesUntil > 0)
+      .sort((a, b) => a.minutesUntil - b.minutesUntil)
+      .slice(0, 3)
+    
+    return upcoming
+  }, [routeSegments, isLiveMode, simulationTime, selectedDate])
+
   return (
     <>
       <main className="h-screen w-screen flex flex-col bg-slate-50 dark:bg-gray-900 overflow-hidden">
@@ -702,10 +727,13 @@ export default function Home() {
             isLoading={isLoading || (routeSegments.length > 0 && !isInitialCalcDone)} 
             isLiveMode={isLiveMode}
             onToggleMode={toggleMode}
+            nextDepartures={nextDepartures}
+            onReleaseNotesClick={() => setIsReleaseNotesOpen(true)}
           />
         </div>
       </main>
       <Documentation isOpen={isDocOpen} onClose={() => setIsDocOpen(false)} />
+      <ReleaseNotes isOpen={isReleaseNotesOpen} onClose={() => setIsReleaseNotesOpen(false)} />
     </>
   )
 }

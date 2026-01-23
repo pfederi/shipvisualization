@@ -3,7 +3,11 @@
 import { useI18n } from '@/lib/i18n-context'
 import { useTheme } from '@/lib/theme'
 
-export default function Footer() {
+interface FooterProps {
+  onReleaseNotesClick?: () => void
+}
+
+export default function Footer({ onReleaseNotesClick }: FooterProps) {
   const { t } = useI18n()
   const { theme } = useTheme()
   
@@ -20,7 +24,18 @@ export default function Footer() {
           lakeshorestudios
         </a>
         <br />
-        {t.madeWithAI} • {t.version}
+        {t.madeWithAI} • v1.1.0
+        {onReleaseNotesClick && (
+          <>
+            {' • '}
+            <button
+              onClick={onReleaseNotesClick}
+              className={`underline hover:no-underline ${theme === 'dark' ? 'text-blue-400' : 'text-brandblue'}`}
+            >
+              {t.releaseNotes}
+            </button>
+          </>
+        )}
       </p>
     </div>
   )
