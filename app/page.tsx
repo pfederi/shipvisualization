@@ -578,7 +578,13 @@ export default function Home() {
       }
     })
     
-    const finalShips = Array.from(finalMap.values())
+    const finalShips = Array.from(finalMap.values()).sort((a, b) => {
+      // Sortiere nach Abfahrtszeit (früheste zuerst)
+      if (!a.departureTime && !b.departureTime) return 0
+      if (!a.departureTime) return 1
+      if (!b.departureTime) return -1
+      return a.departureTime.getTime() - b.departureTime.getTime()
+    })
     
     // Logge nur wenn sich etwas Relevantes ändert oder alle X Sekunden
     const shipsString = finalShips.map(s => `${s.name} (${s.status})`).sort().join(', ')
@@ -631,17 +637,33 @@ export default function Home() {
       return d
     })()
     
+    // Erstelle ein Set von aktiven Schiff-IDs (Name + Kursnummer)
+    const activeShipIds = new Set(
+      ships.map(ship => {
+        const courseNum = ship.internalCourseNumber || ship.courseNumber || ''
+        return `${ship.name}|${courseNum}`
+      })
+    )
+    
     const upcoming = routeSegments
       .map(seg => ({
         ...seg.segment,
         minutesUntil: Math.round((new Date(seg.segment.departureTime).getTime() - now.getTime()) / 60000)
       }))
-      .filter(seg => seg.minutesUntil > 0)
+      .filter(seg => {
+        // Nur zukünftige Abfahrten
+        if (seg.minutesUntil <= 0) return false
+        
+        // Filtere Abfahrten heraus, die bereits bei den aktiven Schiffen sind
+        const courseNum = seg.internalCourseNumber || seg.officialCourseNumber || ''
+        const segmentId = `${seg.resolvedShipName}|${courseNum}`
+        return !activeShipIds.has(segmentId)
+      })
       .sort((a, b) => a.minutesUntil - b.minutesUntil)
       .slice(0, 3)
     
     return upcoming
-  }, [routeSegments, isLiveMode, simulationTime, selectedDate])
+  }, [routeSegments, isLiveMode, simulationTime, selectedDate, ships])
 
   return (
     <>
@@ -729,6 +751,8 @@ export default function Home() {
             onToggleMode={toggleMode}
             nextDepartures={nextDepartures}
             onReleaseNotesClick={() => setIsReleaseNotesOpen(true)}
+            simulationTime={simulationTime}
+            selectedDate={selectedDate}
           />
         </div>
       </main>

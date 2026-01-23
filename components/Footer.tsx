@@ -12,7 +12,7 @@ export default function Footer({ onReleaseNotesClick }: FooterProps) {
   const { theme } = useTheme()
   
   return (
-    <div className={`p-4 border-t mt-auto ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
+    <div className={`p-4 border-t mt-auto ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
       <p className={`text-[11px] text-center leading-relaxed ${theme === 'dark' ? 'text-gray-300' : 'text-gray-800'}`}>
         © {new Date().getFullYear()} {t.createdBy}{' '}
         <a 

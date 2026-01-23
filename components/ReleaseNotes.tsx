@@ -60,7 +60,7 @@ export default function ReleaseNotes({ isOpen, onClose }: ReleaseNotesProps) {
   // Einfaches Markdown-Parsing für Überschriften, Listen und Fettdruck
   const parseMarkdown = (text: string) => {
     const lines = text.split('\n')
-    const elements: JSX.Element[] = []
+    const elements: React.ReactElement[] = []
     let key = 0
 
     for (let i = 0; i < lines.length; i++) {

@@ -25,19 +25,18 @@ interface SchedulePanelProps {
   onToggleMode?: () => void
   nextDepartures?: NextDeparture[]
   onReleaseNotesClick?: () => void
+  simulationTime?: string
+  selectedDate?: string
 }
 
-export default function SchedulePanel({ ships = [], selectedShipId, onShipClick, isLoading, isLiveMode = false, onToggleMode, nextDepartures = [], onReleaseNotesClick }: SchedulePanelProps) {
+export default function SchedulePanel({ ships = [], selectedShipId, onShipClick, isLoading, isLiveMode = false, onToggleMode, nextDepartures = [], onReleaseNotesClick, simulationTime, selectedDate }: SchedulePanelProps) {
   const { t, language } = useI18n()
   const { theme } = useTheme()
   
-  if (isLoading) {
-    return (
-      <div className={`w-96 shadow-xl overflow-y-auto z-20 flex flex-col ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
-        <div className={`p-4 border-b sticky top-0 flex items-center gap-2 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
-          <Ship className="text-brandblue" size={24} />
-          <h2 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{t.activeShips}</h2>
-        </div>
+  // Render content based on state
+  const renderContent = () => {
+    if (isLoading) {
+      return (
         <div className="p-4 flex flex-col items-center justify-center py-12 flex-1">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brandblue mb-4"></div>
           <p className={`text-center animate-pulse ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
@@ -47,18 +46,11 @@ export default function SchedulePanel({ ships = [], selectedShipId, onShipClick,
             {t.loadingSubtext}
           </p>
         </div>
-        <Footer onReleaseNotesClick={onReleaseNotesClick} />
-      </div>
-    )
-  }
+      )
+    }
 
-  if (ships.length === 0) {
-    return (
-      <div className={`w-96 shadow-xl overflow-y-auto z-20 flex flex-col ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
-        <div className={`p-4 border-b sticky top-0 flex items-center gap-2 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
-          <Ship className="text-brandblue" size={24} />
-          <h2 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{t.activeShips}</h2>
-        </div>
+    if (ships.length === 0) {
+      return (
         <div className="p-4 flex-1">
           <p className={`text-center mb-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
             {isLiveMode ? t.noActiveShipsLive : t.noActiveShipsSim}
@@ -84,19 +76,19 @@ export default function SchedulePanel({ ships = [], selectedShipId, onShipClick,
                         <div className={`font-bold text-sm ${theme === 'dark' ? 'text-white' : 'text-brandblue'}`}>
                           {dep.resolvedShipName}
                         </div>
-                        {(dep.internalCourseNumber || dep.officialCourseNumber) && (
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                            theme === 'dark' ? 'bg-brandblue/30 text-white' : 'bg-brandblue/10 text-brandblue'
-                          }`}>
-                            {t.course} {(dep.internalCourseNumber || dep.officialCourseNumber || '').toString().replace(/^0+/, '')}
-                          </span>
-                        )}
+                        <div className={`text-xs font-bold px-2 py-1 rounded inline-block mt-1 ${
+                          theme === 'dark' ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-700'
+                        }`}>
+                          {t.in} {dep.minutesUntil} {t.minutes}
+                        </div>
                       </div>
-                      <div className={`text-xs font-bold px-2 py-1 rounded ${
-                        theme === 'dark' ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-700'
-                      }`}>
-                        {t.in} {dep.minutesUntil} {t.minutes}
-                      </div>
+                      {(dep.internalCourseNumber || dep.officialCourseNumber) && (
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                          theme === 'dark' ? 'bg-brandblue/30 text-white' : 'bg-brandblue/10 text-brandblue'
+                        }`}>
+                          {t.course} {(dep.internalCourseNumber || dep.officialCourseNumber || '').toString().replace(/^0+/, '')}
+                        </span>
+                      )}
                     </div>
                     <div className={`text-xs ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
                       <Navigation size={10} className="inline mr-1" />
@@ -130,21 +122,33 @@ export default function SchedulePanel({ ships = [], selectedShipId, onShipClick,
             </div>
           )}
         </div>
-        <Footer onReleaseNotesClick={onReleaseNotesClick} />
-      </div>
-    )
-  }
+      )
+    }
 
-  return (
-    <div className={`w-96 shadow-xl overflow-y-auto z-20 flex flex-col ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
-      <div className={`p-4 border-b sticky top-0 flex items-center gap-2 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
-        <Ship className="text-brandblue" size={24} />
-        <h2 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{t.activeShips} ({ships.length})</h2>
-      </div>
-
+    return (
       <div className="p-4 space-y-4 flex-1">
         {ships.map((ship) => {
           const isAlbis = ship.name?.includes('MS Albis')
+          
+          // Berechne Minuten bis zur Abfahrt, wenn Schiff noch nicht in Fahrt ist
+          let minutesUntilDeparture: number | null = null
+          if (ship.status === 'at_station' && ship.departureTime) {
+            // Verwende Simulationszeit wenn nicht im Live-Modus, sonst aktuelle Zeit
+            const now = isLiveMode ? new Date() : (() => {
+              if (!simulationTime || !selectedDate) return new Date()
+              const [h, m] = simulationTime.split(':').map(Number)
+              const d = new Date(selectedDate)
+              d.setHours(h, m, 0, 0)
+              return d
+            })()
+            
+            const depTime = new Date(ship.departureTime)
+            minutesUntilDeparture = Math.round((depTime.getTime() - now.getTime()) / 60000)
+            // Nur anzeigen wenn positiv (in der Zukunft)
+            if (minutesUntilDeparture <= 0) {
+              minutesUntilDeparture = null
+            }
+          }
           
           return (
             <div
@@ -174,6 +178,13 @@ export default function SchedulePanel({ ships = [], selectedShipId, onShipClick,
                   <Navigation size={12} className={theme === 'dark' ? 'text-gray-400' : 'text-gray-400'} />
                   {ship.fromStation} → {ship.toStation}
                 </p>
+                {minutesUntilDeparture !== null && (
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded inline-block mt-1 ${
+                    theme === 'dark' ? 'bg-orange-900/50 text-orange-300' : 'bg-orange-100 text-orange-700'
+                  }`}>
+                    {t.in} {minutesUntilDeparture} {t.minutes}
+                  </span>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-sm">
@@ -237,19 +248,19 @@ export default function SchedulePanel({ ships = [], selectedShipId, onShipClick,
                       <div className={`font-bold text-sm ${theme === 'dark' ? 'text-white' : 'text-brandblue'}`}>
                         {dep.resolvedShipName}
                       </div>
-                      {(dep.internalCourseNumber || dep.officialCourseNumber) && (
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                          theme === 'dark' ? 'bg-brandblue/30 text-white' : 'bg-brandblue/10 text-brandblue'
-                        }`}>
-                          {t.course} {(dep.internalCourseNumber || dep.officialCourseNumber || '').toString().replace(/^0+/, '')}
-                        </span>
-                      )}
+                      <div className={`text-xs font-bold px-2 py-1 rounded inline-block mt-1 ${
+                        theme === 'dark' ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-700'
+                      }`}>
+                        {t.in} {dep.minutesUntil} {t.minutes}
+                      </div>
                     </div>
-                    <div className={`text-xs font-bold px-2 py-1 rounded ${
-                      theme === 'dark' ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-700'
-                    }`}>
-                      {t.in} {dep.minutesUntil} {t.minutes}
-                    </div>
+                    {(dep.internalCourseNumber || dep.officialCourseNumber) && (
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        theme === 'dark' ? 'bg-brandblue/30 text-white' : 'bg-brandblue/10 text-brandblue'
+                      }`}>
+                        {t.course} {(dep.internalCourseNumber || dep.officialCourseNumber || '').toString().replace(/^0+/, '')}
+                      </span>
+                    )}
                   </div>
                   <div className={`text-xs ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
                     <Navigation size={10} className="inline mr-1" />
@@ -268,8 +279,23 @@ export default function SchedulePanel({ ships = [], selectedShipId, onShipClick,
           </div>
         )}
       </div>
+    )
+  }
 
-      <Footer />
+  return (
+    <div className={`w-96 shadow-xl overflow-y-auto z-20 flex flex-col ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
+      <div className={`p-4 border-b sticky top-0 flex items-center gap-2 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+        <Ship className="text-brandblue" size={24} />
+        <h2 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+          {t.activeShips}{ships.length > 0 && ` (${ships.length})`}
+        </h2>
+      </div>
+
+      {renderContent()}
+
+      <div className="sticky bottom-0">
+        <Footer onReleaseNotesClick={onReleaseNotesClick} />
+      </div>
     </div>
   )
 }
