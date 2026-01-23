@@ -1,5 +1,3 @@
-# Release Notes - Zürichsee Ship Live Tracker
-
 ## Version 1.1.0 - January 23 2026
 
 ### 🎉 New Features
