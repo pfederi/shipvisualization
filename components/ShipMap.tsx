@@ -34,15 +34,15 @@ export default function ShipMap({ ships = [], onShipClick, selectedShipId }: Shi
     if (typeof window === 'undefined') return null
     const L = require('leaflet')
     const anchorHtml = renderToString(
-      <div className="bg-white rounded-full p-1 shadow-lg border-2 border-brandblue flex items-center justify-center">
-        <Anchor size={16} className="text-brandblue" />
+      <div className="bg-white rounded-full p-0.5 shadow-md border border-brandblue flex items-center justify-center">
+        <Anchor size={10} className="text-brandblue" />
       </div>
     )
     return L.divIcon({
       className: 'custom-station-icon',
       html: anchorHtml,
-      iconSize: [28, 28],
-      iconAnchor: [14, 14],
+      iconSize: [18, 18],
+      iconAnchor: [9, 9],
     })
   }, [])
 
@@ -66,18 +66,11 @@ export default function ShipMap({ ships = [], onShipClick, selectedShipId }: Shi
                 className="absolute inset-0 -m-1.5 border-[3px] border-brandblue rounded-full shadow-[0_0_10px_rgba(12,39,74,0.8)]" 
               />
             )}
-            {isAlbis && (
-              <div className="absolute -top-6 left-1/2 -translate-x-1/2 z-10">
-                <Crown 
-                  size={22} 
-                  className="text-yellow-400 fill-yellow-400 drop-shadow-[0_0_2px_rgba(255,255,255,1)] filter drop-shadow-[0_0_1px_white]" 
-                />
-              </div>
-            )}
             <div 
-              className={`bg-red-500 rounded-full p-1.5 shadow-xl border-2 flex items-center justify-center ${isSelected ? 'border-brandblue' : 'border-white'}`}
+              className={`rounded-full p-1.5 shadow-xl border-2 border-white flex items-center justify-center ${isSelected ? 'ring-2 ring-brandblue ring-offset-1' : ''}`}
+              style={{ backgroundColor: '#0c274a' }}
             >
-              <ShipIcon size={20} className="text-white" />
+              <ShipIcon size={20} className={isAlbis ? 'text-yellow-400' : 'text-white'} />
             </div>
           </div>
         )
