@@ -6,7 +6,7 @@ import { RotateCcw, Ship } from 'lucide-react'
 
 // Types & Libs
 import { ShipPosition, calculateShipPosition } from '@/lib/ship-position'
-import { getStationCoordinates, normalizeStationName, LAKES } from '@/lib/lakes-config'
+import { getStationCoordinates, normalizeStationName, LAKES, loadLakeData, Station } from '@/lib/lakes-config'
 import { useI18n } from '@/lib/i18n-context'
 import { useTheme } from '@/lib/theme'
 import ThemeLanguageToggle from '@/components/ThemeLanguageToggle'
@@ -34,6 +34,8 @@ export default function Home() {
   
   // --- STATE ---
   const [selectedLakeId, setSelectedLakeId] = useState<string>('zurichsee')
+  const [lakeStations, setLakeStations] = useState<Station[]>([])
+  const [lakeMapping, setLakeMapping] = useState<Record<string, string>>({})
   const [ships, setShips] = useState<ShipPosition[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [selectedShipId, setSelectedShipId] = useState<string | null>(null)
@@ -127,6 +129,12 @@ export default function Home() {
 
     try {
       setIsLoading(true)
+      
+      // Lade Stationsdaten für diesen See
+      const { stations, mapping } = await loadLakeData(selectedLakeId)
+      setLakeStations(stations)
+      setLakeMapping(mapping)
+
       const [
         { getCachedGeoJSONRoutes },
         { createRouteSegmentFromStationboard },
@@ -139,9 +147,11 @@ export default function Home() {
         import('@/lib/transport-api')
       ])
 
-      await getCachedShipData().catch(() => {})
-      const stationNames = selectedLake.stations.map(s => s.uic_ref || s.name)
-      const stationCoords = getStationCoordinates(selectedLakeId)
+      if (selectedLake.hasShipNames) {
+        await getCachedShipData().catch(() => {})
+      }
+      const stationNames = stations.map(s => s.uic_ref || s.name)
+      const stationCoords = getStationCoordinates(stations)
       
       const [stationboardMap, geoRoutes] = await Promise.all([
         getAllStationsStationboard(stationNames, dateStr, "00:00", force),
@@ -176,7 +186,10 @@ export default function Home() {
           const officialNumRaw = entry.number || internalNumRaw
           const officialNumShort = officialNumRaw.replace(/^0+/, '') || internalNumShort
 
-          const shipName = await getShipNameByCourseNumber(internalNumShort, targetDate)
+          const shipName = selectedLake.hasShipNames 
+            ? await getShipNameByCourseNumber(internalNumShort, targetDate)
+            : null
+            
           // Wenn kein Schiffsname gefunden wurde, zeige nur "Schiff" ohne Kursnummer
           // (Die Kursnummer wird separat als Chip angezeigt)
           const displayName = shipName || `Schiff`
@@ -185,10 +198,10 @@ export default function Home() {
             const currentPass = entry.passList[i]
             
             // WICHTIG: Wenn station null ist, ist es die Startstation (die Station für die wir das Stationboard laden)
-            let fromName = normalizeStationName(currentPass.station?.name || "", selectedLakeId)
+            let fromName = normalizeStationName(currentPass.station?.name || "", mapping)
             if (!fromName) {
               // Verwende die Hauptstation als Startpunkt
-              fromName = normalizeStationName(entry.stop.station.name, selectedLakeId)
+              fromName = normalizeStationName(entry.stop.station.name, mapping)
             }
             if (!fromName) continue
             
@@ -197,7 +210,7 @@ export default function Home() {
             let bestDeparture: string | null = currentPass.departure || currentPass.arrival || null
             
             while (lastSameStationIdx + 1 < entry.passList.length && 
-                   normalizeStationName(entry.passList[lastSameStationIdx + 1].station?.name || "", selectedLakeId) === fromName) {
+                   normalizeStationName(entry.passList[lastSameStationIdx + 1].station?.name || "", mapping) === fromName) {
               lastSameStationIdx++
               if (!bestDeparture) {
                 bestDeparture = entry.passList[lastSameStationIdx].departure || entry.passList[lastSameStationIdx].arrival || null
@@ -206,7 +219,7 @@ export default function Home() {
             
             // WICHTIG: Falls wir gerade an der Station sind, für die wir das Stationboard geladen haben,
             // und im passList keine Zeit steht, nimm die Zeit aus dem Haupt-Entry
-            const normalizedMainStation = normalizeStationName(entry.stop.station.name, selectedLakeId)
+            const normalizedMainStation = normalizeStationName(entry.stop.station.name, mapping)
             if (!bestDeparture && fromName === normalizedMainStation) {
               bestDeparture = entry.stop.departure || entry.stop.arrival || null
             }
@@ -248,7 +261,7 @@ export default function Home() {
               finalArrTime = new Date(depTime.getTime() + 5 * 60 * 1000)
             }
 
-            const toName = normalizeStationName(to.station.name, selectedLakeId)
+            const toName = normalizeStationName(to.station.name, mapping)
             const segment = createRouteSegmentFromStationboard(
               fromName, toName,
               depTime, officialNumShort, stationCoords, geoRoutes, finalArrTime, internalNumShort
@@ -265,7 +278,7 @@ export default function Home() {
               // Durchsuche vorherige PassList-Einträge nach einer Ankunft an dieser Station
               for (let j = 0; j < i; j++) {
                 const prevPass = entry.passList[j]
-                const prevStationName = normalizeStationName(prevPass.station?.name || "", selectedLakeId)
+                const prevStationName = normalizeStationName(prevPass.station?.name || "", mapping)
                 if (prevStationName === fromName && prevPass.arrival) {
                   const prevArrival = new Date(prevPass.arrival)
                   // Nur verwenden, wenn die Ankunft VOR der Abfahrt liegt
@@ -398,7 +411,7 @@ export default function Home() {
       console.error('Load failed:', error)
       setIsLoading(false)
     }
-  }, [isLiveMode, selectedLakeId, selectedLake.geojsonPath, selectedLake.stations, selectedLake.name])
+  }, [isLiveMode, selectedLakeId, selectedLake.geojsonPath, selectedLake.name, selectedLake.hasShipNames])
 
   // --- INITIALIZATION ---
   useEffect(() => {
@@ -632,7 +645,7 @@ export default function Home() {
 
     setShips(finalShips)
     setIsInitialCalcDone(true)
-  }, [routeSegments, geoJSONRoutes, isLiveMode, simSpeed, simulationTime, baseSimTimeRef, baseRealTimeRef, selectedDate, isTimelineDragging, ships, isInitialCalcDone])
+  }, [routeSegments, geoJSONRoutes, isLiveMode, simSpeed, simulationTime, baseSimTimeRef, baseRealTimeRef, isTimelineDragging, ships, isInitialCalcDone])
 
   // Timeline drag handler - nur visuelle Updates während des Ziehens (keine teuren Berechnungen)
   const handleTimelineDrag = useCallback((minutes: number) => {
@@ -714,6 +727,8 @@ export default function Home() {
                     // Reset everything when lake changes
                     setShips([])
                     setRouteSegments([])
+                    setLakeStations([])
+                    setLakeMapping({})
                     setIsInitialCalcDone(false)
                     lastLoadedKeyRef.current = ""
                     // loadDailySchedule wird durch useEffect getriggert
@@ -812,6 +827,8 @@ export default function Home() {
                   setSelectedLakeId(newLakeId)
                   setShips([])
                   setRouteSegments([])
+                  setLakeStations([])
+                  setLakeMapping({})
                   setIsInitialCalcDone(false)
                   lastLoadedKeyRef.current = ""
                 }}
@@ -849,16 +866,16 @@ export default function Home() {
         </header>
 
       <div className="flex-1 flex overflow-hidden relative lg:flex-row">
-        <div 
-          className="flex-1 lg:h-full overflow-hidden"
-          style={{
-            height: bottomBarHeight > 0 && headerHeight > 0
-              ? `calc(100svh - ${bottomBarHeight}px - ${headerHeight}px)`
-              : undefined
-          }}
-        >
-          <ShipMap ships={ships} onShipClick={(ship) => setSelectedShipId(ship.id)} selectedShipId={selectedShipId} selectedLakeId={selectedLakeId} />
-        </div>
+          <div 
+            className="flex-1 lg:h-full overflow-hidden"
+            style={{
+              height: bottomBarHeight > 0 && headerHeight > 0
+                ? `calc(100svh - ${bottomBarHeight}px - ${headerHeight}px)`
+                : undefined
+            }}
+          >
+            <ShipMap ships={ships} onShipClick={(ship) => setSelectedShipId(ship.id)} selectedShipId={selectedShipId} selectedLakeId={selectedLakeId} stations={lakeStations} />
+          </div>
 
           {/* Mobile Loading Indicator */}
           {isLoading && (

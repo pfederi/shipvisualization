@@ -116,7 +116,7 @@ vercel
 │   └── theme.tsx           # Theme Management
 ├── public/
 │   └── data/
-│       └── export.geojson   # Ship Routes (GeoJSON)
+│       └── zurichsee.geojson   # Ship Routes (GeoJSON)
 └── package.json
 ```
 
@@ -124,7 +124,7 @@ vercel
 
 ### Route Loading
 
-The app loads ship routes from a GeoJSON file (`public/data/export.geojson`) that contains maritime route data:
+The app loads ship routes from GeoJSON files (e.g., `public/data/zurichsee.geojson`) that contain maritime route data:
 
 #### GeoJSON Creation
 

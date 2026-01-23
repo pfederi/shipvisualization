@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, Marker, Tooltip } from 'react-leaflet'
 import { renderToString } from 'react-dom/server'
 import { Anchor, Ship as ShipIcon, Crown } from 'lucide-react'
 import { ShipPosition } from '@/lib/ship-position'
-import { LAKES, LakeConfig } from '@/lib/lakes-config'
+import { LAKES, LakeConfig, Station } from '@/lib/lakes-config'
 import { getCachedGeoJSONRoutes } from '@/lib/geojson-routes'
 import type { ShipRouteData } from '@/lib/geojson-routes'
 
@@ -16,9 +16,10 @@ interface ShipMapProps {
   onShipClick?: (ship: ShipPosition) => void
   selectedShipId?: string | null
   selectedLakeId?: string
+  stations?: Station[]
 }
 
-export default function ShipMap({ ships = [], onShipClick, selectedShipId, selectedLakeId = 'zurichsee' }: ShipMapProps) {
+export default function ShipMap({ ships = [], onShipClick, selectedShipId, selectedLakeId = 'zurichsee', stations = [] }: ShipMapProps) {
   const [isClient, setIsClient] = useState(false)
   const mapInitialized = useRef(false)
   const selectedLake = useMemo(() => LAKES[selectedLakeId], [selectedLakeId])
@@ -105,7 +106,7 @@ export default function ShipMap({ ships = [], onShipClick, selectedShipId, selec
         />
         
         {/* Stationen */}
-        {stationIcon && selectedLake.stations.map((station, index) => (
+        {stationIcon && stations.map((station, index) => (
           <Marker
             key={`${selectedLakeId}-station-${index}`}
             position={[station.latitude, station.longitude]}

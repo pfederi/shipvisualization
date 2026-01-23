@@ -38,7 +38,7 @@ interface GeoJSON {
 /**
  * Lädt Schifffahrtsrouten aus dem GeoJSON-File
  */
-export async function loadRoutesFromGeoJSON(geojsonPath: string = '/data/export.geojson'): Promise<ShipRouteData[]> {
+export async function loadRoutesFromGeoJSON(geojsonPath: string = '/data/zurichsee.geojson'): Promise<ShipRouteData[]> {
   try {
     // Lade das GeoJSON-File
     const response = await fetch(geojsonPath)
@@ -121,7 +121,7 @@ export async function loadRoutesFromGeoJSON(geojsonPath: string = '/data/export.
 /**
  * Lädt Routen mit Next.js unstable_cache (24 Stunden)
  */
-export async function getCachedGeoJSONRoutes(geojsonPath: string = '/data/export.geojson'): Promise<ShipRouteData[]> {
+export async function getCachedGeoJSONRoutes(geojsonPath: string = '/data/zurichsee.geojson'): Promise<ShipRouteData[]> {
   // Verwende unstable_cache für server-seitiges Caching
   // Nur server-seitig verfügbar, daher Fallback für Client
   if (typeof window === 'undefined') {
