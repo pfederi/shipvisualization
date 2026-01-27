@@ -1,5 +1,7 @@
 import { Station } from './types'
 
+export type { Station } from './types'
+
 export interface LakeConfig {
   id: string
   name: string
@@ -54,7 +56,7 @@ export const LAKES: Record<string, LakeConfig> = {
     id: 'aegerisee',
     name: 'Aegerisee',
     center: [47.13, 8.61],
-    zoom: 12,
+    zoom: 13,
     geojsonPath: '/data/aegerisee.geojson',
     hasShipNames: false,
   },
@@ -227,13 +229,21 @@ export async function loadLakeData(lakeId: string): Promise<{ stations: Station[
 
 /**
  * Hilfsfunktion zum Erstellen einer Koordinaten-Map aus Stationen
+ * Erstellt Einträge sowohl für UIC-Codes als auch für Stationsnamen
  */
 export function getStationCoordinates(stations: Station[]): Map<string, { lat: number; lon: number }> {
   const coords = new Map<string, { lat: number; lon: number }>()
 
   for (const station of stations) {
-    const key = station.uic_ref || station.name
-    coords.set(key, { lat: station.latitude, lon: station.longitude })
+    const coordData = { lat: station.latitude, lon: station.longitude }
+    
+    // Füge UIC-Code hinzu (falls vorhanden)
+    if (station.uic_ref) {
+      coords.set(station.uic_ref, coordData)
+    }
+    
+    // Füge auch den Stationsnamen hinzu
+    coords.set(station.name, coordData)
   }
 
   return coords

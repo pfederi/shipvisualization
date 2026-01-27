@@ -197,29 +197,40 @@ export async function getAllStationsStationboard(
   
   console.log(`🚀 Starte paralleles Laden von ${stations.length} Stationen ab ${time} (Force: ${force})...`)
 
-  // Erstelle alle Anfragen gleichzeitig
-  const promises = stations.map(async (station, index) => {
-    try {
-      // Höherer initialer Offset (150ms), um den Browser-Netzwerk-Stack zu entlasten
-      if (typeof window !== 'undefined') {
-        await new Promise(resolve => setTimeout(resolve, index * 150))
+  // Batch-Verarbeitung: Lade Stationen in Gruppen statt alle parallel
+  const BATCH_SIZE = 5 // 5 Stationen gleichzeitig
+  const BATCH_DELAY = 500 // 500ms Pause zwischen Batches
+  
+  const allResults: Array<{ station: string, entries: StationboardEntry[] }> = []
+  
+  for (let i = 0; i < stations.length; i += BATCH_SIZE) {
+    const batch = stations.slice(i, i + BATCH_SIZE)
+    console.log(`📦 Lade Batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(stations.length / BATCH_SIZE)} (${batch.length} Stationen)...`)
+    
+    const batchPromises = batch.map(async (station) => {
+      try {
+        const entries = await getStationboard(station, dateStr, time, force)
+        if (entries.length === 0) {
+          console.warn(`⚠️ Station ${station} lieferte 0 Abfahrten.`)
+        } else {
+          console.log(`✅ Station ${station}: ${entries.length} Abfahrten geladen.`)
+        }
+        return { station, entries }
+      } catch (error) {
+        // Fehler werden bereits in getStationboard / fetchStationboardFromAPI geloggt
+        return { station, entries: [] as StationboardEntry[] }
       }
-      
-      const entries = await getStationboard(station, dateStr, time, force)
-      if (entries.length === 0) {
-        console.warn(`⚠️ Station ${station} lieferte 0 Abfahrten.`)
-      } else {
-        console.log(`✅ Station ${station}: ${entries.length} Abfahrten geladen.`)
-      }
-      return { station, entries }
-    } catch (error) {
-      // Fehler werden bereits in getStationboard / fetchStationboardFromAPI geloggt
-      return { station, entries: [] as StationboardEntry[] }
+    })
+    
+    const batchResults = await Promise.all(batchPromises)
+    allResults.push(...batchResults)
+    
+    // Pause zwischen Batches (außer beim letzten)
+    if (i + BATCH_SIZE < stations.length) {
+      console.log(`⏳ Warte ${BATCH_DELAY}ms vor nächstem Batch...`)
+      await new Promise(resolve => setTimeout(resolve, BATCH_DELAY))
     }
-  })
-
-  // Warte auf alle Ergebnisse
-  const allResults = await Promise.all(promises)
+  }
   
   // In Map übertragen
   allResults.forEach(res => {

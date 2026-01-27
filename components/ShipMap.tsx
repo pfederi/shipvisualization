@@ -13,12 +13,13 @@ import 'leaflet/dist/leaflet.css'
 interface ShipMapProps {
   ships?: ShipPosition[]
   onShipClick?: (ship: ShipPosition) => void
+  onStationClick?: (station: Station) => void
   selectedShipId?: string | null
   selectedLakeId?: string
   stations?: Station[]
 }
 
-export default function ShipMap({ ships = [], onShipClick, selectedShipId, selectedLakeId = 'zurichsee', stations = [] }: ShipMapProps) {
+export default function ShipMap({ ships = [], onShipClick, onStationClick, selectedShipId, selectedLakeId = 'zurichsee', stations = [] }: ShipMapProps) {
   const [isClient, setIsClient] = useState(false)
   const mapInitialized = useRef(false)
   const selectedLake = useMemo(() => LAKES[selectedLakeId], [selectedLakeId])
@@ -27,9 +28,17 @@ export default function ShipMap({ ships = [], onShipClick, selectedShipId, selec
     setIsClient(true)
     if (!mapInitialized.current) {
       mapInitialized.current = true
-      getCachedGeoJSONRoutes(selectedLake.geojsonPath).catch(console.error)
     }
-  }, [selectedLake.geojsonPath])
+    
+    // Lade GeoJSON-Routen und logge die Anzahl
+    getCachedGeoJSONRoutes(selectedLake.geojsonPath)
+      .then(routes => {
+        console.log(`🗺️ ShipMap: ${routes.length} GeoJSON-Routen geladen für ${selectedLake.name}`)
+      })
+      .catch(error => {
+        console.error(`❌ ShipMap: Fehler beim Laden der GeoJSON-Routen:`, error)
+      })
+  }, [selectedLake.geojsonPath, selectedLake.name])
 
   // Station Icon (einmalig erstellt)
   const stationIcon = useMemo(() => {
@@ -110,7 +119,14 @@ export default function ShipMap({ ships = [], onShipClick, selectedShipId, selec
             key={`${selectedLakeId}-station-${index}`}
             position={[station.latitude, station.longitude]}
             icon={stationIcon}
-          />
+            eventHandlers={{
+              click: () => onStationClick?.(station),
+            }}
+          >
+            <Tooltip direction="top" offset={[0, -10]} opacity={0.9}>
+              <div className="text-xs font-semibold text-gray-900">{station.name}</div>
+            </Tooltip>
+          </Marker>
         ))}
 
         {/* Schiffe */}

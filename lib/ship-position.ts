@@ -56,7 +56,8 @@ function findRouteBetweenStations(
   routes: ShipRouteData[],
   from: { lat: number; lon: number; name: string },
   to: { lat: number; lon: number; name: string },
-  courseNumber?: string
+  courseNumber?: string,
+  lakeId?: string
 ): RouteCoordinate[] | null {
   const IDEAL_DISTANCE = 0.8 // Erhöht auf 800m für bessere Treffer in großen Häfen
   const MAX_DISTANCE = 1.5 // Erhöht auf 1.5km
@@ -103,7 +104,7 @@ function findRouteBetweenStations(
     
     // Wenn beide Stationen nahe an der Route sind
     if (matchType && startIdx >= 0 && endIdx >= 0) {
-      // Berechne die Länge des Segments auf dieser Route
+      // Berechne die Länge des direkten Segments
       let segmentLength = 0
       const actualStart = Math.min(startIdx, endIdx)
       const actualEnd = Math.max(startIdx, endIdx)
@@ -123,9 +124,10 @@ function findRouteBetweenStations(
         const fromName = from.name.toLowerCase()
         const toName = to.name.toLowerCase()
         
-        // Extra-Bonus für Wädenswil-Shuttle (Kurs 3733)
-        if (courseNumber === "3733" && (routeName.includes("3733") || routeName.includes("männedorf") || routeName.includes("stäfa") || routeName.includes("wädenswil"))) {
-          nameBonus += 50000 // Riesiger Bonus für den Wädenswil-Shuttle
+        // Seespezifische Bonuspunkte
+        if (lakeId === 'zurichsee') {
+          const { getZurichseeRouteBonus } = require('./lakes/zurichsee-routes')
+          nameBonus += getZurichseeRouteBonus(routeName, courseNumber)
         }
 
         // 1. Kursnummer-Matching (z.B. "3732" in "3732: Personenfähre..." oder im ref-Feld)
@@ -154,8 +156,9 @@ function findRouteBetweenStations(
 
       // Berechne einen Score basierend auf der Distanz zu beiden Stationen
       // UND der Länge des Segments (kürzere Routen bevorzugen)
-      // Wir gewichten die Station-Distanz stark, aber die Segment-Länge als Tie-Breaker
-      const score = (minStartDist + minEndDist) * 100 + segmentLength - nameBonus
+      // WICHTIG: Segment-Länge stark gewichten, um direkte Routen zu bevorzugen
+      // Kürzere Routen sind fast immer besser als lange Routen mit Kursnummer-Match
+      const score = (minStartDist + minEndDist) * 100 + segmentLength * 5 - nameBonus
       
       // Bevorzuge bessere Match-Typen (ideal > good > fallback)
       const typePriority = matchType === 'ideal' ? 0 : matchType === 'good' ? 1 : 2
@@ -623,7 +626,8 @@ export function createRouteSegmentFromStationboard(
   stationCoordinates: Map<string, { lat: number; lon: number }>,
   geoJSONRoutes: ShipRouteData[],
   manualArrivalTime?: Date,
-  internalCourseNumber?: string
+  internalCourseNumber?: string,
+  lakeId?: string
 ): RouteSegment | null {
   const fromCoords = stationCoordinates.get(fromStation)
   const toCoords = stationCoordinates.get(toStation)
@@ -632,20 +636,53 @@ export function createRouteSegmentFromStationboard(
     return null
   }
   
-  // Finde die Route aus GeoJSON
-  const routeCoordinates = findRouteBetweenStations(geoJSONRoutes, 
-    { lat: fromCoords.lat, lon: fromCoords.lon, name: fromStation },
-    { lat: toCoords.lat, lon: toCoords.lon, name: toStation },
-    courseNumber
-  )
+  // Seespezifische Route-Findung
+  let routeCoordinates: RouteCoordinate[] | null = null
+  
+  if (lakeId === 'aegerisee') {
+    // Ägerisee: Verwende spezielle Rundfahrten-Logik
+    const { findAegeriseeRoute } = require('./lakes/aegerisee-routes')
+    routeCoordinates = findAegeriseeRoute(geoJSONRoutes, 
+      { lat: fromCoords.lat, lon: fromCoords.lon, name: fromStation },
+      { lat: toCoords.lat, lon: toCoords.lon, name: toStation },
+      courseNumber
+    )
+  }
+  
+  // Fallback: Allgemeine Route-Findung
+  if (!routeCoordinates) {
+    routeCoordinates = findRouteBetweenStations(geoJSONRoutes, 
+      { lat: fromCoords.lat, lon: fromCoords.lon, name: fromStation },
+      { lat: toCoords.lat, lon: toCoords.lon, name: toStation },
+      courseNumber,
+      lakeId
+    )
+  }
   
   if (!routeCoordinates || routeCoordinates.length < 2) {
-    // Log nur bei wichtigen Routen (Kurs 3733) oder wenn es wirklich keine Routen gibt
-    if ((courseNumber === "3733" || internalCourseNumber === "3733") || geoJSONRoutes.length === 0) {
-      console.warn(`⚠️ Keine GeoJSON-Route gefunden für ${fromStation} -> ${toStation} (Kurs ${courseNumber})`)
-      console.log(`   Von Station: ${fromStation} (${fromCoords.lat.toFixed(6)}, ${fromCoords.lon.toFixed(6)})`)
-      console.log(`   Zu Station: ${toStation} (${toCoords.lat.toFixed(6)}, ${toCoords.lon.toFixed(6)})`)
-      console.log(`   Verfügbare Routen: ${geoJSONRoutes.length}`)
+    // Seespezifische Debug-Logik
+    let shouldDebug = geoJSONRoutes.length === 0
+    
+    if (lakeId === 'aegerisee') {
+      const { shouldDebugAegeriseeRoute } = require('./lakes/aegerisee-routes')
+      if (shouldDebugAegeriseeRoute(fromStation, toStation)) {
+        shouldDebug = true
+        console.warn(`⚠️ Keine GeoJSON-Route gefunden für ${fromStation} -> ${toStation} (Kurs ${courseNumber})`)
+        console.log(`   Von Station: ${fromStation} (${fromCoords.lat.toFixed(6)}, ${fromCoords.lon.toFixed(6)})`)
+        console.log(`   Zu Station: ${toStation} (${toCoords.lat.toFixed(6)}, ${toCoords.lon.toFixed(6)})`)
+        console.log(`   Verfügbare Routen: ${geoJSONRoutes.length}`)
+      }
+    }
+    
+    if (lakeId === 'zurichsee') {
+      const { shouldDebugZurichseeRoute } = require('./lakes/zurichsee-routes')
+      if (shouldDebugZurichseeRoute(courseNumber, internalCourseNumber)) {
+        shouldDebug = true
+      }
+    }
+    
+    // Log nur bei seespezifischen Debug-Fällen oder wenn es wirklich keine Routen gibt
+    if (shouldDebug) {
       
       if (geoJSONRoutes.length === 0) {
         console.error(`   ❌ KEINE ROUTEN GELADEN! Prüfe ob GeoJSON korrekt geladen wird.`)
@@ -683,8 +720,12 @@ export function createRouteSegmentFromStationboard(
       }
     }
   } else {
-    if (courseNumber === "3733" || internalCourseNumber === "3733") {
-      console.log(`✅ GeoJSON-Route gefunden für ${fromStation} -> ${toStation} (Kurs ${courseNumber}): ${routeCoordinates.length} Punkte`)
+    // Seespezifische Success-Logs
+    if (lakeId === 'zurichsee') {
+      const { shouldDebugZurichseeRoute } = require('./lakes/zurichsee-routes')
+      if (shouldDebugZurichseeRoute(courseNumber, internalCourseNumber)) {
+        console.log(`✅ GeoJSON-Route gefunden für ${fromStation} -> ${toStation} (Kurs ${courseNumber}): ${routeCoordinates.length} Punkte`)
+      }
     }
   }
   

@@ -4,6 +4,9 @@ import { NextResponse } from 'next/server'
 const serverCache = new Map<string, { data: any, timestamp: number }>()
 const CACHE_DURATION = 1000 * 60 * 60 * 6 // 6 Stunden - Cache wird alle 6h geleert für neue Tagesdaten
 
+// Request-Deduplication: Verhindere mehrfache gleichzeitige Anfragen für dieselbe Station
+const pendingRequests = new Map<string, Promise<any>>()
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const station = searchParams.get('station')
@@ -27,50 +30,79 @@ export async function GET(request: Request) {
     }
   }
 
-  try {
-    const externalUrl = new URL('https://transport.opendata.ch/v1/stationboard')
-    externalUrl.searchParams.append('station', station)
-    externalUrl.searchParams.append('limit', '200') // Erhöht auf 200
-    if (date) externalUrl.searchParams.append('date', date)
-    if (time) externalUrl.searchParams.append('time', time)
-    externalUrl.searchParams.append('type', 'departure')
-    externalUrl.searchParams.append('show_passlist', show_passlist)
-    externalUrl.searchParams.append('transportations[]', 'ship')
+  // 2. Request-Deduplication: Wenn bereits eine Anfrage für diese Station läuft, warte darauf
+  const pendingKey = cacheKey
+  if (pendingRequests.has(pendingKey)) {
+    console.log(`⏳ Warte auf laufende Anfrage für ${station}...`)
+    const result = await pendingRequests.get(pendingKey)
+    return NextResponse.json(result)
+  }
 
-    const response = await fetch(externalUrl.toString(), {
-      cache: force ? 'no-store' : 'default',
-      next: { revalidate: force ? 0 : 43200 }
-    })
+  // 3. Erstelle neue Anfrage und speichere Promise
+  const requestPromise = (async () => {
+    try {
+      const externalUrl = new URL('https://transport.opendata.ch/v1/stationboard')
+      externalUrl.searchParams.append('station', station)
+      externalUrl.searchParams.append('limit', '200') // Erhöht auf 200
+      if (date) externalUrl.searchParams.append('date', date)
+      if (time) externalUrl.searchParams.append('time', time)
+      externalUrl.searchParams.append('type', 'departure')
+      externalUrl.searchParams.append('show_passlist', show_passlist)
+      externalUrl.searchParams.append('transportations[]', 'ship')
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        console.error(`Rate limit hit for station: ${station}`)
-        return NextResponse.json({ error: 'External Rate Limit' }, { status: 429 })
+      const response = await fetch(externalUrl.toString(), {
+        cache: force ? 'no-store' : 'default',
+        next: { revalidate: force ? 0 : 43200 }
+      })
+
+      if (!response.ok) {
+        if (response.status === 429) {
+          console.error(`Rate limit hit for station: ${station}`)
+          
+          // Fallback auf alte gecachte Daten
+          const cached = serverCache.get(cacheKey)
+          if (cached) {
+            console.log(`📦 Verwende gecachte Daten für ${station} (wegen Rate-Limit)`)
+            return cached.data
+          }
+          
+          throw new Error('External Rate Limit')
+        }
+        throw new Error(`External API returned ${response.status}`)
       }
-      throw new Error(`External API returned ${response.status}`)
-    }
 
-    const data = await response.json()
-    
-    // 2. Im Server-Memory speichern (ABER NUR WENN DATEN GEFUNDEN WURDEN)
-    // Wenn die Liste leer ist, cachen wir sie nicht, um bei Fehlern erneut zu versuchen
-    if (data.stationboard && data.stationboard.length > 0) {
-      console.log(`✅ Caching ${data.stationboard.length} entries for ${station}`)
-      serverCache.set(cacheKey, { data, timestamp: now })
-    } else {
-      console.warn(`⚠️ No entries found for ${station}, skipping cache.`)
-    }
+      const data = await response.json()
+      
+      // Im Server-Memory speichern (ABER NUR WENN DATEN GEFUNDEN WURDEN)
+      // Wenn die Liste leer ist, cachen wir sie nicht, um bei Fehlern erneut zu versuchen
+      if (data.stationboard && data.stationboard.length > 0) {
+        serverCache.set(cacheKey, { data, timestamp: now })
+      }
 
-    // Cache-Cleanup (verhindert Memory Leaks)
-    if (serverCache.size > 500) {
-      const oldestKey = serverCache.keys().next().value
-      if (oldestKey) serverCache.delete(oldestKey)
-    }
+      // Cache-Cleanup (verhindert Memory Leaks)
+      if (serverCache.size > 500) {
+        const oldestKey = serverCache.keys().next().value
+        if (oldestKey) serverCache.delete(oldestKey)
+      }
 
+      return data
+    } catch (error) {
+      console.error('Stationboard Proxy Error:', error)
+      throw error
+    }
+  })()
+
+  // Speichere Promise für Request-Deduplication
+  pendingRequests.set(pendingKey, requestPromise)
+
+  try {
+    const data = await requestPromise
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Stationboard Proxy Error:', error)
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+    return NextResponse.json({ error: 'Internal Server Error', stationboard: [] }, { status: 500 })
+  } finally {
+    // Entferne Promise nach Abschluss
+    pendingRequests.delete(pendingKey)
   }
 }
 

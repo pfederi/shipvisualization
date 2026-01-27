@@ -44,7 +44,10 @@ export default function Home() {
   const [ships, setShips] = useState<ShipPosition[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [selectedShipId, setSelectedShipId] = useState<string | null>(null)
+  const [selectedStation, setSelectedStation] = useState<Station | null>(null)
+  const [viewMode, setViewMode] = useState<'ships' | 'station'>('ships')
   const [routeSegments, setRouteSegments] = useState<any[]>([])
+  const [stationboardData, setStationboardData] = useState<Map<string, any[]>>(new Map())
   const [isDocOpen, setIsDocOpen] = useState(false)
   const [isReleaseNotesOpen, setIsReleaseNotesOpen] = useState(false)
   const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false)
@@ -130,162 +133,6 @@ export default function Home() {
     return h * 60 + m
   }
 
-  // --- DATA LOADING ---
-  const debugLausanne = useCallback(async () => {
-    console.log('🔍 Debugge Lausanne-Ouchy Stationboard...')
-
-    const { getStationboard } = await import('@/lib/transport-api')
-
-    try {
-      const stationboard = await getStationboard('8501075', undefined, '00:00', true)
-      console.log('📡 Lausanne-Ouchy Stationboard:', stationboard)
-
-      if (stationboard.length === 0) {
-        console.log('❌ Keine Abfahrten gefunden für Lausanne-Ouchy (8501075)')
-      } else {
-        console.log(`✅ ${stationboard.length} Abfahrten gefunden`)
-        stationboard.slice(0, 5).forEach(entry => {
-          console.log(`   ${entry.name} → ${entry.to} um ${entry.stop.departure}`)
-        })
-      }
-    } catch (error) {
-      console.error('❌ Fehler bei Lausanne-Abfrage:', error)
-    }
-  }, [])
-
-  const debugGenferseeRoutes = useCallback(async () => {
-    console.log('🗺️ Debugge Genfersee GeoJSON Routen & Stationen...')
-
-    const { getCachedGeoJSONRoutes, getCachedFerryStations } = await import('@/lib/geojson-routes')
-
-    try {
-      // Routen laden
-      const routes = await getCachedGeoJSONRoutes('/data/genfersee.geojson')
-      console.log(`📊 ${routes.length} Routen gefunden`)
-
-      // Stationen aus GeoJSON laden
-      const geojsonStations = await getCachedFerryStations('/data/genfersee.geojson')
-      console.log(`📍 ${geojsonStations.length} Stationen aus GeoJSON gefunden`)
-
-      // Lausanne in GeoJSON-Stationen suchen
-      const lausanneStations = geojsonStations.filter(station =>
-        station.name.toLowerCase().includes('lausanne')
-      )
-      console.log(`🎯 ${lausanneStations.length} Lausanne-Stationen in GeoJSON:`)
-      lausanneStations.forEach(station => {
-        console.log(`   📍 ${station.name} (${station.latitude}, ${station.longitude})`)
-      })
-
-      // Alle Routen mit Lausanne-Koordinatenbereich durchsuchen
-      const lausanneRoutes = routes.filter(route => {
-        if (!route.geometry?.coordinates) return false
-
-        return route.geometry.coordinates.some(coord => {
-          if (!coord || coord.length < 2) return false
-          const [lng, lat] = coord
-          // Lausanne-Bereich: ~46.45-46.55°N, ~6.55-6.75°E
-          return lat >= 46.45 && lat <= 46.55 && lng >= 6.55 && lng <= 6.75
-        })
-      })
-
-      console.log(`🚢 ${lausanneRoutes.length} Routen durch Lausanne-Bereich:`)
-      lausanneRoutes.forEach((route, index) => {
-        console.log(`   ${index + 1}. ${route.properties?.name || 'Unbenannt'} (${route.properties?.ref || 'Keine Ref'})`)
-      })
-
-      // Prüfe auch, ob Routen von/nach französischer Seite kommen
-      const crossBorderRoutes = routes.filter(route => {
-        if (!route.geometry?.coordinates) return false
-
-        let hasSwiss = false
-        let hasFrench = false
-
-        route.geometry.coordinates.forEach(coord => {
-          if (!coord || coord.length < 2) return
-          const [lng, lat] = coord
-
-          // Schweizer Seite (rechts vom See)
-          if (lng > 6.3) hasSwiss = true
-          // Französische Seite (links vom See)
-          if (lng < 6.3) hasFrench = true
-        })
-
-        return hasSwiss && hasFrench
-      })
-
-      console.log(`🇫🇷🇨🇭 ${crossBorderRoutes.length} grenzüberschreitende Routen:`)
-      crossBorderRoutes.forEach((route, index) => {
-        console.log(`   ${index + 1}. ${route.properties?.name || 'Unbenannt'} (${route.properties?.ref || 'Keine Ref'})`)
-      })
-
-    } catch (error) {
-      console.error('❌ Fehler beim Laden der GeoJSON-Daten:', error)
-    }
-  }, [])
-
-
-  const debugGenferseeStations = useCallback(async () => {
-    console.log('🔍 Debugge alle Genfersee-Stationen (sequentiell)...')
-
-    const { getStationboard } = await import('@/lib/transport-api')
-    const { GENFERSEE_STATIONS } = await import('@/lib/stations/genfersee')
-
-    const results: Array<{ station: string, uic: string, hasDepartures: boolean, count: number, sample?: string }> = []
-
-    console.log(`📊 Teste ${GENFERSEE_STATIONS.length} Stationen sequentiell...`)
-
-    for (let i = 0; i < GENFERSEE_STATIONS.length; i++) {
-      const station = GENFERSEE_STATIONS[i]
-      console.log(`🔄 [${i + 1}/${GENFERSEE_STATIONS.length}] Teste ${station.name}...`)
-
-      try {
-        const stationboard = await getStationboard(station.uic_ref!, undefined, '00:00', true)
-        const hasDepartures = stationboard.length > 0
-        const sample = hasDepartures ? `${stationboard[0].name} → ${stationboard[0].to}` : undefined
-
-        results.push({
-          station: station.name,
-          uic: station.uic_ref!,
-          hasDepartures,
-          count: stationboard.length,
-          sample
-        })
-
-        console.log(`${hasDepartures ? '✅' : '❌'} ${station.name}: ${stationboard.length} Abfahrten`)
-
-      } catch (error) {
-        console.log(`❌ Fehler bei ${station.name}:`, error)
-        results.push({
-          station: station.name,
-          uic: station.uic_ref!,
-          hasDepartures: false,
-          count: 0
-        })
-      }
-
-      // Längere Pause um API-Rate-Limit zu respektieren
-      if (i < GENFERSEE_STATIONS.length - 1) {
-        console.log(`⏳ Warte 1000ms vor nächster Station...`)
-        await new Promise(resolve => setTimeout(resolve, 1000))
-      }
-    }
-
-    console.log('📋 Zusammenfassung Genfersee-Stationen:')
-    console.table(results)
-
-    const withDepartures = results.filter(r => r.hasDepartures)
-    console.log(`🎯 ${withDepartures.length}/${GENFERSEE_STATIONS.length} Stationen haben Abfahrten`)
-
-    // Zeige Stationen mit Abfahrten
-    if (withDepartures.length > 0) {
-      console.log('🚢 Stationen mit Abfahrten:')
-      withDepartures.forEach(r => {
-        console.log(`   ${r.station} (${r.uic}): ${r.count} Abfahrten - ${r.sample}`)
-      })
-    }
-
-  }, [])
-
   const loadDailySchedule = useCallback(async (targetDate: Date, force = false) => {
     const dateStr = targetDate.toISOString().split('T')[0]
     const modeKey = isLiveMode ? 'live' : 'sim'
@@ -320,6 +167,13 @@ export default function Home() {
       const stationNames = stations.map(s => s.uic_ref || s.name)
       const stationCoords = getStationCoordinates(stations)
       
+      console.log(`🗺️ Station-Koordinaten erstellt: ${stationCoords.size} Einträge`)
+      const coordEntries = Array.from(stationCoords.entries()).slice(0, 5)
+      console.log(`📍 Erste 5 Stationen:`)
+      coordEntries.forEach(([key, coords]) => {
+        console.log(`   ${key}: (${coords.lat}, ${coords.lon})`)
+      })
+      
       const [stationboardMap, geoRoutes] = await Promise.all([
         getAllStationsStationboard(stationNames, dateStr, "00:00", force),
         getCachedGeoJSONRoutes(selectedLake.geojsonPath)
@@ -327,6 +181,9 @@ export default function Home() {
       
       const totalEntries = Array.from(stationboardMap.values()).reduce((sum, arr) => sum + arr.length, 0)
       console.log(`📡 Stationboard geladen für ${selectedLake.name}: ${stationboardMap.size} Stationen, ${totalEntries} Einträge`)
+      
+      // Speichere Stationboard-Daten für Station-Ansicht
+      setStationboardData(stationboardMap)
       
       const processedSegments: any[] = []
       const debugStats = {
@@ -352,6 +209,18 @@ export default function Home() {
           const internalNumShort = internalNumRaw.replace(/^0+/, '') || "0" // Gekürzt für API-Abfrage
           const officialNumRaw = entry.number || internalNumRaw
           const officialNumShort = officialNumRaw.replace(/^0+/, '') || internalNumShort
+          
+          // DEBUG: Zeige die ersten 3 Einträge
+          if (debugStats.totalEntries <= 3) {
+            console.log(`🔍 Kursnummer-Extraktion Entry ${debugStats.totalEntries}:`, {
+              'entry.name': entry.name,
+              'entry.number': entry.number,
+              internalNumRaw,
+              internalNumShort,
+              officialNumRaw,
+              officialNumShort
+            })
+          }
 
           const shipName = selectedLake.hasShipNames 
             ? await getShipNameByCourseNumber(internalNumShort, targetDate)
@@ -429,11 +298,69 @@ export default function Home() {
             }
 
             const toName = normalizeStationName(to.station.name, mapping)
+            
+            // DEBUG: Zeige warum keine Segmente erstellt werden
+            if (debugStats.totalEntries <= 3) {
+              console.log(`🔍 Segment-Erstellung für Entry ${debugStats.totalEntries}:`, {
+                fromName,
+                toName,
+                fromNameRaw: currentPass.station?.name || entry.stop.station.name,
+                toNameRaw: to.station.name,
+                hasFromCoords: stationCoords.has(fromName),
+                hasToCoords: stationCoords.has(toName),
+                depTime: depTime.toISOString(),
+                arrTime: finalArrTime.toISOString()
+              })
+            }
+            
+            // DEBUG: Spezifisch für Neuhaus-Interlaken Route
+            if ((fromName?.includes('Neuhaus') && toName?.includes('Interlaken')) || 
+                (fromName?.includes('Interlaken') && toName?.includes('Neuhaus'))) {
+              console.log(`🔍 Neuhaus-Interlaken Route:`, {
+                fromName,
+                toName,
+                hasFromCoords: stationCoords.has(fromName),
+                hasToCoords: stationCoords.has(toName),
+                courseNumber: officialNumShort
+              })
+            }
+            
+            // DEBUG: Brienzersee - zeige alle Routen
+            if (selectedLakeId === 'brienzersee') {
+              console.log(`🔍 Brienzersee Route ${debugStats.totalEntries}:`, {
+                fromName,
+                toName,
+                fromNameRaw: currentPass.station?.name || entry.stop.station.name,
+                toNameRaw: to.station.name,
+                hasFromCoords: stationCoords.has(fromName),
+                hasToCoords: stationCoords.has(toName),
+                courseNumber: officialNumShort
+              })
+            }
+            
+            // DEBUG: Ägerisee - zeige alle Routen
+            if (selectedLakeId === 'aegerisee') {
+              console.log(`🔍 Ägerisee Route ${debugStats.totalEntries}:`, {
+                fromName,
+                toName,
+                fromNameRaw: currentPass.station?.name || entry.stop.station.name,
+                toNameRaw: to.station.name,
+                hasFromCoords: stationCoords.has(fromName),
+                hasToCoords: stationCoords.has(toName),
+                courseNumber: officialNumShort
+              })
+              
+              // Spezifisch für Morgarten-Naas
+              if ((fromName?.includes('Morgarten') && toName?.includes('Naas')) || 
+                  (fromName?.includes('Naas') && toName?.includes('Morgarten'))) {
+                console.log(`⚠️ MORGARTEN-NAAS ROUTE GEFUNDEN!`)
+              }
+            }
+            
             const segment = createRouteSegmentFromStationboard(
               fromName, toName,
-              depTime, officialNumShort, stationCoords, geoRoutes, finalArrTime, internalNumShort
+              depTime, officialNumShort, stationCoords, geoRoutes, finalArrTime, internalNumShort, selectedLakeId
             )
-
 
             if (segment) {
               debugStats.created++
@@ -464,11 +391,10 @@ export default function Home() {
                 segment: {
                   ...segment,
                   arrivalAtFromStation: arrivalAtFrom,
-                  // WICHTIG: Speichere VOLLE Kursnummer (ohne Kürzung) für eindeutige Identifikation
-                  // So werden Kurs 29 und Kurs 2529 als unterschiedliche Schiffe behandelt
+                  // WICHTIG: Verwende entry.name für die Kursnummer-Anzeige (z.B. "B 29")
                   resolvedShipName: displayName, 
-                  internalCourseNumber: internalNumRaw, // VOLLE Nummer
-                  officialCourseNumber: officialNumRaw  // VOLLE Nummer
+                  internalCourseNumber: entry.name, // Name aus API (z.B. "B 29")
+                  officialCourseNumber: entry.number  // Offizielle Nummer (z.B. "3732")
                 }
               })
             }
@@ -1041,7 +967,22 @@ export default function Home() {
                 : undefined
             }}
           >
-            <ShipMap ships={ships} onShipClick={(ship) => setSelectedShipId(ship.id)} selectedShipId={selectedShipId} selectedLakeId={selectedLakeId} stations={lakeStations} />
+            <ShipMap 
+              ships={ships} 
+              onShipClick={(ship) => {
+                setSelectedShipId(ship.id)
+                setViewMode('ships')
+                setSelectedStation(null)
+              }} 
+              onStationClick={(station) => {
+                setSelectedStation(station)
+                setViewMode('station')
+                setSelectedShipId(null)
+              }}
+              selectedShipId={selectedShipId} 
+              selectedLakeId={selectedLakeId} 
+              stations={lakeStations} 
+            />
           </div>
 
           {/* Mobile Loading Indicator */}
@@ -1072,6 +1013,14 @@ export default function Home() {
             ships={ships}
             selectedShipId={selectedShipId}
             onShipClick={setSelectedShipId}
+            selectedStation={selectedStation}
+            viewMode={viewMode}
+            onBackToShips={() => {
+              setViewMode('ships')
+              setSelectedStation(null)
+            }}
+            routeSegments={routeSegments}
+            stationboardData={stationboardData}
             isLoading={isLoading || (routeSegments.length > 0 && !isInitialCalcDone)}
             isLiveMode={isLiveMode}
             onToggleMode={toggleMode}
@@ -1109,8 +1058,18 @@ export default function Home() {
                 selectedShipId={selectedShipId}
                 onShipClick={(id) => {
                   setSelectedShipId(id)
+                  setViewMode('ships')
+                  setSelectedStation(null)
                   setIsMobilePanelOpen(false)
                 }}
+                selectedStation={selectedStation}
+                viewMode={viewMode}
+                onBackToShips={() => {
+                  setViewMode('ships')
+                  setSelectedStation(null)
+                }}
+                routeSegments={routeSegments}
+                stationboardData={stationboardData}
                 isLoading={isLoading || (routeSegments.length > 0 && !isInitialCalcDone)}
                 isLiveMode={isLiveMode}
                 onToggleMode={toggleMode}
