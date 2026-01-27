@@ -7,7 +7,6 @@ import { Anchor, Ship as ShipIcon, Crown } from 'lucide-react'
 import { ShipPosition } from '@/lib/ship-position'
 import { LAKES, LakeConfig, Station } from '@/lib/lakes-config'
 import { getCachedGeoJSONRoutes } from '@/lib/geojson-routes'
-import type { ShipRouteData } from '@/lib/geojson-routes'
 
 import 'leaflet/dist/leaflet.css'
 

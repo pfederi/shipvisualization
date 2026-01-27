@@ -148,6 +148,24 @@ The GeoJSON file was created using **Overpass Turbo** (https://overpass-turbo.eu
      - `@id`: OpenStreetMap relation/way ID
    - Coordinates are stored in GeoJSON format `[longitude, latitude]`
 
+```javascript
+[out:json][timeout:25];
+{{geocodeArea:zürichsee}}->.searchArea;
+
+(
+  way["route"="ferry"](area.searchArea);
+  relation["route"="ferry"](area.searchArea);
+
+  node["amenity"="ferry_terminal"](area.searchArea);
+  way["amenity"="ferry_terminal"](area.searchArea);
+  relation["amenity"="ferry_terminal"](area.searchArea);
+);
+
+out body;
+>;
+out skel qt;
+```
+
 #### GeoJSON Processing
 
 1. **Loading**:

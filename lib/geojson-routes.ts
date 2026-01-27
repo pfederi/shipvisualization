@@ -1,6 +1,7 @@
 // Lädt Schifffahrtsrouten aus dem exportierten GeoJSON-File
 
 import { unstable_cache } from 'next/cache'
+import { Station } from './lakes-config'
 
 export interface RouteCoordinate {
   lat: number
@@ -115,6 +116,88 @@ export async function loadRoutesFromGeoJSON(geojsonPath: string = '/data/zurichs
   } catch (error) {
     console.error('Fehler beim Laden der Routen aus GeoJSON:', error)
     return []
+  }
+}
+
+/**
+ * Lädt Ferry-Stationen aus GeoJSON (Points mit ferry stop role)
+ */
+export async function loadFerryStationsFromGeoJSON(geojsonPath: string): Promise<Station[]> {
+  try {
+    const response = await fetch(geojsonPath)
+    if (!response.ok) {
+      console.warn(`GeoJSON für Stationen nicht verfügbar: ${response.statusText}`)
+      return []
+    }
+
+    const geojson: GeoJSON = await response.json()
+    const stations: Station[] = []
+
+    geojson.features.forEach((feature) => {
+      // Suche nach Point-Geometrien mit ferry-bezogenen Eigenschaften
+      if (feature.geometry.type === 'Point' &&
+          feature.properties &&
+          feature.geometry.coordinates) {
+
+        const props = feature.properties
+
+        // Prüfe auf verschiedene ferry/stop Indikatoren
+        const isFerryStop = props['@relations']?.some((rel: any) =>
+          rel.role === 'stop' &&
+          (rel.reltags?.route === 'ferry' ||
+           rel.reltags?.operator === 'SGV' ||
+           rel.reltags?.operator === 'ZSG')
+        )
+
+        if (isFerryStop) {
+          const [lon, lat] = feature.geometry.coordinates
+          const name = props.name || props['seamark:name'] || `Station ${stations.length + 1}`
+
+          // Bereinige den Namen - behalte SGV-spezifische Namen
+          let cleanName = name
+            .replace(/^\d+:\s*/, '') // Entferne führende Zahlen (z.B. "3600: ")
+            .replace(/\s*Kurs\s*\d+(?:,\d+)*$/, '') // Entferne Kursnummern am Ende
+            .trim()
+
+          // Spezielle Behandlung für bekannte Stationen - aber behalte die spezifischen Namen
+          // Die GeoJSON-Namen sollten bereits korrekt sein, wir müssen sie nur normalisieren
+          const finalName = cleanName
+
+          stations.push({
+            name: finalName,
+            latitude: lat,
+            longitude: lon,
+            uic_ref: undefined // OSM hat keine UIC-Refs
+          })
+        }
+      }
+    })
+
+    console.log(`📍 ${stations.length} Ferry-Stationen aus GeoJSON geladen`)
+    return stations
+  } catch (error) {
+    console.warn('Fehler beim Laden der Ferry-Stationen aus GeoJSON:', error)
+    return []
+  }
+}
+
+/**
+ * Lädt Ferry-Stationen mit Next.js unstable_cache
+ */
+export async function getCachedFerryStations(geojsonPath: string): Promise<Station[]> {
+  if (typeof window === 'undefined') {
+    const getCachedStations = unstable_cache(
+      async () => loadFerryStationsFromGeoJSON(geojsonPath),
+      [`geojson-stations-${geojsonPath}`],
+      {
+        revalidate: 86400, // 24 Stunden
+        tags: ['geojson-stations']
+      }
+    )
+
+    return getCachedStations()
+  } else {
+    return loadFerryStationsFromGeoJSON(geojsonPath)
   }
 }
 

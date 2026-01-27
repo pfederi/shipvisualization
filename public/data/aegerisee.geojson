@@ -1,0 +1,1502 @@
+{
+  "type": "FeatureCollection",
+  "generator": "overpass-turbo",
+  "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.",
+  "timestamp": "2026-01-23T15:06:33Z",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "relation/18594576",
+        "bicycle": "yes",
+        "duration": "01:56",
+        "foot": "yes",
+        "from": "Unterägeri",
+        "motor_vehicle": "no",
+        "name": "3661: Grosse Rundfahrt",
+        "network": "tarifverbund zug",
+        "opening_hours": "Apr - Oct",
+        "operator": "Ägerisee Schiffahrt",
+        "public_transport:version": "2",
+        "ref": "3661",
+        "route": "ferry",
+        "to": "Unterägeri",
+        "type": "route",
+        "via": "Morgarten",
+        "website": "https://www.aegerisee-schifffahrt.ch/"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            8.6214673,
+            47.1144079
+          ],
+          [
+            8.6208104,
+            47.1153732
+          ],
+          [
+            8.619976,
+            47.1163871
+          ],
+          [
+            8.619504,
+            47.1169127
+          ],
+          [
+            8.6191935,
+            47.1171623
+          ],
+          [
+            8.6185062,
+            47.117745
+          ],
+          [
+            8.6177552,
+            47.1182342
+          ],
+          [
+            8.6158463,
+            47.1193143
+          ],
+          [
+            8.6086893,
+            47.1229018
+          ],
+          [
+            8.6072624,
+            47.1237972
+          ],
+          [
+            8.6058032,
+            47.124936
+          ],
+          [
+            8.6047947,
+            47.1259433
+          ],
+          [
+            8.6036991,
+            47.1273015
+          ],
+          [
+            8.6010933,
+            47.1307217
+          ],
+          [
+            8.6005139,
+            47.1314617
+          ],
+          [
+            8.5997736,
+            47.1321843
+          ],
+          [
+            8.5990012,
+            47.1327536
+          ],
+          [
+            8.5984027,
+            47.1331474
+          ],
+          [
+            8.5965835,
+            47.1343416
+          ],
+          [
+            8.5942566,
+            47.1356712
+          ],
+          [
+            8.5900252,
+            47.1376124
+          ],
+          [
+            8.5896778,
+            47.1377859
+          ],
+          [
+            8.5893633,
+            47.1379883
+          ],
+          [
+            8.5896859,
+            47.1379173
+          ],
+          [
+            8.5900069,
+            47.1378245
+          ],
+          [
+            8.5970562,
+            47.1357501
+          ],
+          [
+            8.6028426,
+            47.1341906
+          ],
+          [
+            8.604328,
+            47.1338557
+          ],
+          [
+            8.6055415,
+            47.1336399
+          ],
+          [
+            8.606286,
+            47.1335783
+          ],
+          [
+            8.6071166,
+            47.133573
+          ],
+          [
+            8.6080767,
+            47.133589
+          ],
+          [
+            8.6079436,
+            47.133228
+          ],
+          [
+            8.6078739,
+            47.1328485
+          ],
+          [
+            8.6078417,
+            47.1325127
+          ],
+          [
+            8.6078708,
+            47.1321649
+          ],
+          [
+            8.6079812,
+            47.1316624
+          ],
+          [
+            8.6081723,
+            47.1311956
+          ],
+          [
+            8.6085176,
+            47.1307318
+          ],
+          [
+            8.608916,
+            47.1303438
+          ],
+          [
+            8.6094296,
+            47.1299946
+          ],
+          [
+            8.6100231,
+            47.1297
+          ],
+          [
+            8.6106312,
+            47.1294836
+          ],
+          [
+            8.6119229,
+            47.1292598
+          ],
+          [
+            8.6232677,
+            47.128824
+          ],
+          [
+            8.6253162,
+            47.1287611
+          ],
+          [
+            8.6261666,
+            47.1287902
+          ],
+          [
+            8.6275081,
+            47.1290039
+          ],
+          [
+            8.6298618,
+            47.1295387
+          ],
+          [
+            8.6292457,
+            47.1288486
+          ],
+          [
+            8.6287772,
+            47.1280933
+          ],
+          [
+            8.628366,
+            47.1271624
+          ],
+          [
+            8.6280142,
+            47.1261072
+          ],
+          [
+            8.6279797,
+            47.1246221
+          ],
+          [
+            8.6281345,
+            47.1231555
+          ],
+          [
+            8.6284625,
+            47.1220305
+          ],
+          [
+            8.6290615,
+            47.1209419
+          ],
+          [
+            8.629986,
+            47.119855
+          ],
+          [
+            8.6311861,
+            47.1188143
+          ],
+          [
+            8.6331403,
+            47.1176136
+          ],
+          [
+            8.6356013,
+            47.1166833
+          ],
+          [
+            8.63711,
+            47.1163944
+          ],
+          [
+            8.6386415,
+            47.116267
+          ],
+          [
+            8.6407703,
+            47.1161894
+          ],
+          [
+            8.6408493,
+            47.1161987
+          ],
+          [
+            8.6401462,
+            47.1158687
+          ],
+          [
+            8.6396459,
+            47.1154811
+          ],
+          [
+            8.6388492,
+            47.114504
+          ],
+          [
+            8.6381134,
+            47.1130794
+          ],
+          [
+            8.6377882,
+            47.1116426
+          ],
+          [
+            8.6376679,
+            47.110911
+          ],
+          [
+            8.6377383,
+            47.1101766
+          ],
+          [
+            8.6378717,
+            47.1097865
+          ],
+          [
+            8.6380434,
+            47.1094214
+          ],
+          [
+            8.6384549,
+            47.1087806
+          ],
+          [
+            8.6391699,
+            47.1080632
+          ],
+          [
+            8.6400362,
+            47.1073781
+          ],
+          [
+            8.6413483,
+            47.1063877
+          ],
+          [
+            8.6407409,
+            47.1063473
+          ],
+          [
+            8.6401085,
+            47.1061009
+          ],
+          [
+            8.6396237,
+            47.1057307
+          ],
+          [
+            8.6393365,
+            47.1052748
+          ],
+          [
+            8.6392766,
+            47.1047805
+          ],
+          [
+            8.6394502,
+            47.1042988
+          ],
+          [
+            8.6399548,
+            47.1038254
+          ],
+          [
+            8.6384531,
+            47.1039306
+          ],
+          [
+            8.6374211,
+            47.1040833
+          ],
+          [
+            8.6365242,
+            47.1042764
+          ],
+          [
+            8.6355543,
+            47.1045361
+          ],
+          [
+            8.6346383,
+            47.104856
+          ],
+          [
+            8.6338806,
+            47.1053174
+          ],
+          [
+            8.6333508,
+            47.1058788
+          ],
+          [
+            8.6274222,
+            47.1148923
+          ],
+          [
+            8.6269279,
+            47.1155201
+          ],
+          [
+            8.6261512,
+            47.1159975
+          ],
+          [
+            8.6251833,
+            47.1162684
+          ],
+          [
+            8.6241378,
+            47.116301
+          ],
+          [
+            8.6232976,
+            47.1161431
+          ],
+          [
+            8.6225572,
+            47.1158301
+          ],
+          [
+            8.6219768,
+            47.1153875
+          ],
+          [
+            8.6216038,
+            47.1148514
+          ],
+          [
+            8.6214673,
+            47.1144079
+          ]
+        ]
+      },
+      "id": "relation/18594576"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/1353744837",
+        "foot": "yes",
+        "motor_vehicle": "no",
+        "name": "Unterägeri - Naas",
+        "route": "ferry",
+        "@relations": [
+          {
+            "role": "",
+            "rel": 18594576,
+            "reltags": {
+              "bicycle": "yes",
+              "duration": "01:56",
+              "foot": "yes",
+              "from": "Unterägeri",
+              "motor_vehicle": "no",
+              "name": "3661: Grosse Rundfahrt",
+              "network": "tarifverbund zug",
+              "opening_hours": "Apr - Oct",
+              "operator": "Ägerisee Schiffahrt",
+              "public_transport:version": "2",
+              "ref": "3661",
+              "route": "ferry",
+              "to": "Unterägeri",
+              "type": "route",
+              "via": "Morgarten",
+              "website": "https://www.aegerisee-schifffahrt.ch/"
+            }
+          }
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            8.6214673,
+            47.1144079
+          ],
+          [
+            8.6208104,
+            47.1153732
+          ],
+          [
+            8.619976,
+            47.1163871
+          ],
+          [
+            8.619504,
+            47.1169127
+          ],
+          [
+            8.6191935,
+            47.1171623
+          ],
+          [
+            8.6185062,
+            47.117745
+          ],
+          [
+            8.6177552,
+            47.1182342
+          ],
+          [
+            8.6158463,
+            47.1193143
+          ],
+          [
+            8.6086893,
+            47.1229018
+          ],
+          [
+            8.6072624,
+            47.1237972
+          ],
+          [
+            8.6058032,
+            47.124936
+          ],
+          [
+            8.6047947,
+            47.1259433
+          ],
+          [
+            8.6036991,
+            47.1273015
+          ],
+          [
+            8.6010933,
+            47.1307217
+          ],
+          [
+            8.6005139,
+            47.1314617
+          ],
+          [
+            8.5997736,
+            47.1321843
+          ],
+          [
+            8.5990012,
+            47.1327536
+          ],
+          [
+            8.5984027,
+            47.1331474
+          ],
+          [
+            8.5965835,
+            47.1343416
+          ],
+          [
+            8.5942566,
+            47.1356712
+          ],
+          [
+            8.5900252,
+            47.1376124
+          ],
+          [
+            8.5896778,
+            47.1377859
+          ],
+          [
+            8.5893633,
+            47.1379883
+          ]
+        ]
+      },
+      "id": "way/1353744837"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/1353744835",
+        "foot": "yes",
+        "motor_vehicle": "no",
+        "name": "Oberägeri - Unterägeri",
+        "route": "ferry",
+        "@relations": [
+          {
+            "role": "",
+            "rel": 18594576,
+            "reltags": {
+              "bicycle": "yes",
+              "duration": "01:56",
+              "foot": "yes",
+              "from": "Unterägeri",
+              "motor_vehicle": "no",
+              "name": "3661: Grosse Rundfahrt",
+              "network": "tarifverbund zug",
+              "opening_hours": "Apr - Oct",
+              "operator": "Ägerisee Schiffahrt",
+              "public_transport:version": "2",
+              "ref": "3661",
+              "route": "ferry",
+              "to": "Unterägeri",
+              "type": "route",
+              "via": "Morgarten",
+              "website": "https://www.aegerisee-schifffahrt.ch/"
+            }
+          }
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            8.5893633,
+            47.1379883
+          ],
+          [
+            8.5896859,
+            47.1379173
+          ],
+          [
+            8.5900069,
+            47.1378245
+          ],
+          [
+            8.5970562,
+            47.1357501
+          ],
+          [
+            8.6028426,
+            47.1341906
+          ],
+          [
+            8.604328,
+            47.1338557
+          ],
+          [
+            8.6055415,
+            47.1336399
+          ],
+          [
+            8.606286,
+            47.1335783
+          ],
+          [
+            8.6071166,
+            47.133573
+          ],
+          [
+            8.6080767,
+            47.133589
+          ]
+        ]
+      },
+      "id": "way/1353744835"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/1353744838",
+        "foot": "yes",
+        "motor_vehicle": "no",
+        "name": "Ägerisee Schifffahrt",
+        "route": "ferry",
+        "@relations": [
+          {
+            "role": "",
+            "rel": 18594576,
+            "reltags": {
+              "bicycle": "yes",
+              "duration": "01:56",
+              "foot": "yes",
+              "from": "Unterägeri",
+              "motor_vehicle": "no",
+              "name": "3661: Grosse Rundfahrt",
+              "network": "tarifverbund zug",
+              "opening_hours": "Apr - Oct",
+              "operator": "Ägerisee Schiffahrt",
+              "public_transport:version": "2",
+              "ref": "3661",
+              "route": "ferry",
+              "to": "Unterägeri",
+              "type": "route",
+              "via": "Morgarten",
+              "website": "https://www.aegerisee-schifffahrt.ch/"
+            }
+          }
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            8.6399548,
+            47.1038254
+          ],
+          [
+            8.6384531,
+            47.1039306
+          ],
+          [
+            8.6374211,
+            47.1040833
+          ],
+          [
+            8.6365242,
+            47.1042764
+          ],
+          [
+            8.6355543,
+            47.1045361
+          ],
+          [
+            8.6346383,
+            47.104856
+          ],
+          [
+            8.6338806,
+            47.1053174
+          ],
+          [
+            8.6333508,
+            47.1058788
+          ],
+          [
+            8.6274222,
+            47.1148923
+          ],
+          [
+            8.6269279,
+            47.1155201
+          ],
+          [
+            8.6261512,
+            47.1159975
+          ],
+          [
+            8.6251833,
+            47.1162684
+          ],
+          [
+            8.6241378,
+            47.116301
+          ],
+          [
+            8.6232976,
+            47.1161431
+          ],
+          [
+            8.6225572,
+            47.1158301
+          ],
+          [
+            8.6219768,
+            47.1153875
+          ],
+          [
+            8.6216038,
+            47.1148514
+          ],
+          [
+            8.6214673,
+            47.1144079
+          ]
+        ]
+      },
+      "id": "way/1353744838"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/1353744841",
+        "foot": "yes",
+        "motor_vehicle": "no",
+        "name": "Ländli - Oberägeri",
+        "route": "ferry",
+        "@relations": [
+          {
+            "role": "",
+            "rel": 18594576,
+            "reltags": {
+              "bicycle": "yes",
+              "duration": "01:56",
+              "foot": "yes",
+              "from": "Unterägeri",
+              "motor_vehicle": "no",
+              "name": "3661: Grosse Rundfahrt",
+              "network": "tarifverbund zug",
+              "opening_hours": "Apr - Oct",
+              "operator": "Ägerisee Schiffahrt",
+              "public_transport:version": "2",
+              "ref": "3661",
+              "route": "ferry",
+              "to": "Unterägeri",
+              "type": "route",
+              "via": "Morgarten",
+              "website": "https://www.aegerisee-schifffahrt.ch/"
+            }
+          }
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            8.6080767,
+            47.133589
+          ],
+          [
+            8.6079436,
+            47.133228
+          ],
+          [
+            8.6078739,
+            47.1328485
+          ],
+          [
+            8.6078417,
+            47.1325127
+          ],
+          [
+            8.6078708,
+            47.1321649
+          ],
+          [
+            8.6079812,
+            47.1316624
+          ],
+          [
+            8.6081723,
+            47.1311956
+          ],
+          [
+            8.6085176,
+            47.1307318
+          ],
+          [
+            8.608916,
+            47.1303438
+          ],
+          [
+            8.6094296,
+            47.1299946
+          ],
+          [
+            8.6100231,
+            47.1297
+          ],
+          [
+            8.6106312,
+            47.1294836
+          ],
+          [
+            8.6119229,
+            47.1292598
+          ],
+          [
+            8.6232677,
+            47.128824
+          ],
+          [
+            8.6253162,
+            47.1287611
+          ],
+          [
+            8.6261666,
+            47.1287902
+          ],
+          [
+            8.6275081,
+            47.1290039
+          ],
+          [
+            8.6298618,
+            47.1295387
+          ]
+        ]
+      },
+      "id": "way/1353744841"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/1353744839",
+        "foot": "yes",
+        "motor_vehicle": "no",
+        "name": "MorgartenHotel - Morgarten Denkmal",
+        "route": "ferry",
+        "@relations": [
+          {
+            "role": "",
+            "rel": 18594576,
+            "reltags": {
+              "bicycle": "yes",
+              "duration": "01:56",
+              "foot": "yes",
+              "from": "Unterägeri",
+              "motor_vehicle": "no",
+              "name": "3661: Grosse Rundfahrt",
+              "network": "tarifverbund zug",
+              "opening_hours": "Apr - Oct",
+              "operator": "Ägerisee Schiffahrt",
+              "public_transport:version": "2",
+              "ref": "3661",
+              "route": "ferry",
+              "to": "Unterägeri",
+              "type": "route",
+              "via": "Morgarten",
+              "website": "https://www.aegerisee-schifffahrt.ch/"
+            }
+          }
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            8.6413483,
+            47.1063877
+          ],
+          [
+            8.6407409,
+            47.1063473
+          ],
+          [
+            8.6401085,
+            47.1061009
+          ],
+          [
+            8.6396237,
+            47.1057307
+          ],
+          [
+            8.6393365,
+            47.1052748
+          ],
+          [
+            8.6392766,
+            47.1047805
+          ],
+          [
+            8.6394502,
+            47.1042988
+          ],
+          [
+            8.6399548,
+            47.1038254
+          ]
+        ]
+      },
+      "id": "way/1353744839"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/1353744840",
+        "foot": "yes",
+        "motor_vehicle": "no",
+        "name": "Morgarten Denkmal - Eierhals",
+        "route": "ferry",
+        "@relations": [
+          {
+            "role": "",
+            "rel": 18594576,
+            "reltags": {
+              "bicycle": "yes",
+              "duration": "01:56",
+              "foot": "yes",
+              "from": "Unterägeri",
+              "motor_vehicle": "no",
+              "name": "3661: Grosse Rundfahrt",
+              "network": "tarifverbund zug",
+              "opening_hours": "Apr - Oct",
+              "operator": "Ägerisee Schiffahrt",
+              "public_transport:version": "2",
+              "ref": "3661",
+              "route": "ferry",
+              "to": "Unterägeri",
+              "type": "route",
+              "via": "Morgarten",
+              "website": "https://www.aegerisee-schifffahrt.ch/"
+            }
+          }
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            8.6408493,
+            47.1161987
+          ],
+          [
+            8.6401462,
+            47.1158687
+          ],
+          [
+            8.6396459,
+            47.1154811
+          ],
+          [
+            8.6388492,
+            47.114504
+          ],
+          [
+            8.6381134,
+            47.1130794
+          ],
+          [
+            8.6377882,
+            47.1116426
+          ],
+          [
+            8.6376679,
+            47.110911
+          ],
+          [
+            8.6377383,
+            47.1101766
+          ],
+          [
+            8.6378717,
+            47.1097865
+          ],
+          [
+            8.6380434,
+            47.1094214
+          ],
+          [
+            8.6384549,
+            47.1087806
+          ],
+          [
+            8.6391699,
+            47.1080632
+          ],
+          [
+            8.6400362,
+            47.1073781
+          ],
+          [
+            8.6413483,
+            47.1063877
+          ]
+        ]
+      },
+      "id": "way/1353744840"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/31968178",
+        "foot": "yes",
+        "motor_vehicle": "no",
+        "name": "Eierhals - Ländli",
+        "route": "ferry",
+        "@relations": [
+          {
+            "role": "",
+            "rel": 18594576,
+            "reltags": {
+              "bicycle": "yes",
+              "duration": "01:56",
+              "foot": "yes",
+              "from": "Unterägeri",
+              "motor_vehicle": "no",
+              "name": "3661: Grosse Rundfahrt",
+              "network": "tarifverbund zug",
+              "opening_hours": "Apr - Oct",
+              "operator": "Ägerisee Schiffahrt",
+              "public_transport:version": "2",
+              "ref": "3661",
+              "route": "ferry",
+              "to": "Unterägeri",
+              "type": "route",
+              "via": "Morgarten",
+              "website": "https://www.aegerisee-schifffahrt.ch/"
+            }
+          }
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            8.6298618,
+            47.1295387
+          ],
+          [
+            8.6292457,
+            47.1288486
+          ],
+          [
+            8.6287772,
+            47.1280933
+          ],
+          [
+            8.628366,
+            47.1271624
+          ],
+          [
+            8.6280142,
+            47.1261072
+          ],
+          [
+            8.6279797,
+            47.1246221
+          ],
+          [
+            8.6281345,
+            47.1231555
+          ],
+          [
+            8.6284625,
+            47.1220305
+          ],
+          [
+            8.6290615,
+            47.1209419
+          ],
+          [
+            8.629986,
+            47.119855
+          ],
+          [
+            8.6311861,
+            47.1188143
+          ],
+          [
+            8.6331403,
+            47.1176136
+          ],
+          [
+            8.6356013,
+            47.1166833
+          ],
+          [
+            8.63711,
+            47.1163944
+          ],
+          [
+            8.6386415,
+            47.116267
+          ],
+          [
+            8.6407703,
+            47.1161894
+          ],
+          [
+            8.6408493,
+            47.1161987
+          ]
+        ]
+      },
+      "id": "way/31968178"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/192431799",
+        "amenity": "ferry_terminal",
+        "ele": "737",
+        "ferry": "yes",
+        "name": "Oberägeri (See)",
+        "operator": "AeS",
+        "public_transport": "stop_position",
+        "uic_name": "Oberägeri (See)",
+        "uic_ref": "8530743",
+        "@relations": [
+          {
+            "role": "stop",
+            "rel": 18594576,
+            "reltags": {
+              "bicycle": "yes",
+              "duration": "01:56",
+              "foot": "yes",
+              "from": "Unterägeri",
+              "motor_vehicle": "no",
+              "name": "3661: Grosse Rundfahrt",
+              "network": "tarifverbund zug",
+              "opening_hours": "Apr - Oct",
+              "operator": "Ägerisee Schiffahrt",
+              "public_transport:version": "2",
+              "ref": "3661",
+              "route": "ferry",
+              "to": "Unterägeri",
+              "type": "route",
+              "via": "Morgarten",
+              "website": "https://www.aegerisee-schifffahrt.ch/"
+            }
+          }
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.6080767,
+          47.133589
+        ]
+      },
+      "id": "node/192431799"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/197298781",
+        "amenity": "ferry_terminal",
+        "ele": "729",
+        "ferry": "yes",
+        "name": "Unterägeri (See)",
+        "operator": "AeS",
+        "public_transport": "stop_position",
+        "uic_name": "Unterägeri (See)",
+        "uic_ref": "8530742",
+        "@relations": [
+          {
+            "role": "stop",
+            "rel": 18594576,
+            "reltags": {
+              "bicycle": "yes",
+              "duration": "01:56",
+              "foot": "yes",
+              "from": "Unterägeri",
+              "motor_vehicle": "no",
+              "name": "3661: Grosse Rundfahrt",
+              "network": "tarifverbund zug",
+              "opening_hours": "Apr - Oct",
+              "operator": "Ägerisee Schiffahrt",
+              "public_transport:version": "2",
+              "ref": "3661",
+              "route": "ferry",
+              "to": "Unterägeri",
+              "type": "route",
+              "via": "Morgarten",
+              "website": "https://www.aegerisee-schifffahrt.ch/"
+            }
+          },
+          {
+            "role": "stop",
+            "rel": 18594576,
+            "reltags": {
+              "bicycle": "yes",
+              "duration": "01:56",
+              "foot": "yes",
+              "from": "Unterägeri",
+              "motor_vehicle": "no",
+              "name": "3661: Grosse Rundfahrt",
+              "network": "tarifverbund zug",
+              "opening_hours": "Apr - Oct",
+              "operator": "Ägerisee Schiffahrt",
+              "public_transport:version": "2",
+              "ref": "3661",
+              "route": "ferry",
+              "to": "Unterägeri",
+              "type": "route",
+              "via": "Morgarten",
+              "website": "https://www.aegerisee-schifffahrt.ch/"
+            }
+          }
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.5893633,
+          47.1379883
+        ]
+      },
+      "id": "node/197298781"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/358149225",
+        "amenity": "ferry_terminal",
+        "ferry": "yes",
+        "name": "Oberägeri Ländli (See)",
+        "public_transport": "stop_position",
+        "uic_name": "Oberägeri Ländli (See)",
+        "uic_ref": "8530857",
+        "@relations": [
+          {
+            "role": "stop",
+            "rel": 18594576,
+            "reltags": {
+              "bicycle": "yes",
+              "duration": "01:56",
+              "foot": "yes",
+              "from": "Unterägeri",
+              "motor_vehicle": "no",
+              "name": "3661: Grosse Rundfahrt",
+              "network": "tarifverbund zug",
+              "opening_hours": "Apr - Oct",
+              "operator": "Ägerisee Schiffahrt",
+              "public_transport:version": "2",
+              "ref": "3661",
+              "route": "ferry",
+              "to": "Unterägeri",
+              "type": "route",
+              "via": "Morgarten",
+              "website": "https://www.aegerisee-schifffahrt.ch/"
+            }
+          }
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.6298618,
+          47.1295387
+        ]
+      },
+      "id": "node/358149225"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/358149269",
+        "amenity": "ferry_terminal",
+        "ele": "728",
+        "ferry": "yes",
+        "name": "Eierhals (See)",
+        "operator": "AeS",
+        "public_transport": "stop_position",
+        "uic_name": "Eierhals (See)",
+        "uic_ref": "8530633",
+        "@relations": [
+          {
+            "role": "stop",
+            "rel": 18594576,
+            "reltags": {
+              "bicycle": "yes",
+              "duration": "01:56",
+              "foot": "yes",
+              "from": "Unterägeri",
+              "motor_vehicle": "no",
+              "name": "3661: Grosse Rundfahrt",
+              "network": "tarifverbund zug",
+              "opening_hours": "Apr - Oct",
+              "operator": "Ägerisee Schiffahrt",
+              "public_transport:version": "2",
+              "ref": "3661",
+              "route": "ferry",
+              "to": "Unterägeri",
+              "type": "route",
+              "via": "Morgarten",
+              "website": "https://www.aegerisee-schifffahrt.ch/"
+            }
+          }
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.6408493,
+          47.1161987
+        ]
+      },
+      "id": "node/358149269"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/358149298",
+        "amenity": "ferry_terminal",
+        "ele": "729",
+        "ferry": "yes",
+        "name": "Morgarten Denkmal (See)",
+        "note": "Schiffhaltestelle",
+        "operator": "AeS",
+        "public_transport": "stop_position",
+        "uic_name": "Morgarten Denkmal (See)",
+        "uic_ref": "8530634",
+        "@relations": [
+          {
+            "role": "stop",
+            "rel": 18594576,
+            "reltags": {
+              "bicycle": "yes",
+              "duration": "01:56",
+              "foot": "yes",
+              "from": "Unterägeri",
+              "motor_vehicle": "no",
+              "name": "3661: Grosse Rundfahrt",
+              "network": "tarifverbund zug",
+              "opening_hours": "Apr - Oct",
+              "operator": "Ägerisee Schiffahrt",
+              "public_transport:version": "2",
+              "ref": "3661",
+              "route": "ferry",
+              "to": "Unterägeri",
+              "type": "route",
+              "via": "Morgarten",
+              "website": "https://www.aegerisee-schifffahrt.ch/"
+            }
+          }
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.6413483,
+          47.1063877
+        ]
+      },
+      "id": "node/358149298"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/358149328",
+        "amenity": "ferry_terminal",
+        "ele": "728",
+        "ferry": "yes",
+        "name": "Naas (See)",
+        "operator": "AeS",
+        "public_transport": "stop_position",
+        "uic_name": "Naas (See)",
+        "uic_ref": "8530636",
+        "wheelchair": "yes",
+        "@relations": [
+          {
+            "role": "stop",
+            "rel": 18594576,
+            "reltags": {
+              "bicycle": "yes",
+              "duration": "01:56",
+              "foot": "yes",
+              "from": "Unterägeri",
+              "motor_vehicle": "no",
+              "name": "3661: Grosse Rundfahrt",
+              "network": "tarifverbund zug",
+              "opening_hours": "Apr - Oct",
+              "operator": "Ägerisee Schiffahrt",
+              "public_transport:version": "2",
+              "ref": "3661",
+              "route": "ferry",
+              "to": "Unterägeri",
+              "type": "route",
+              "via": "Morgarten",
+              "website": "https://www.aegerisee-schifffahrt.ch/"
+            }
+          }
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.6214673,
+          47.1144079
+        ]
+      },
+      "id": "node/358149328"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/358149332",
+        "addr:floor": "0",
+        "amenity": "ferry_terminal",
+        "check_date": "2025-10-06",
+        "ele": "729",
+        "ferry": "yes",
+        "name": "Morgarten Hotel (See)",
+        "operator": "AeS",
+        "public_transport": "stop_position",
+        "uic_name": "Morgarten Hotel (See)",
+        "uic_ref": "8530635",
+        "@relations": [
+          {
+            "role": "stop",
+            "rel": 18594576,
+            "reltags": {
+              "bicycle": "yes",
+              "duration": "01:56",
+              "foot": "yes",
+              "from": "Unterägeri",
+              "motor_vehicle": "no",
+              "name": "3661: Grosse Rundfahrt",
+              "network": "tarifverbund zug",
+              "opening_hours": "Apr - Oct",
+              "operator": "Ägerisee Schiffahrt",
+              "public_transport:version": "2",
+              "ref": "3661",
+              "route": "ferry",
+              "to": "Unterägeri",
+              "type": "route",
+              "via": "Morgarten",
+              "website": "https://www.aegerisee-schifffahrt.ch/"
+            }
+          }
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.6399548,
+          47.1038254
+        ]
+      },
+      "id": "node/358149332"
+    }
+  ]
+}

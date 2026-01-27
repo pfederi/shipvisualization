@@ -14,12 +14,12 @@ import Documentation from '@/components/Documentation'
 import ReleaseNotes from '@/components/ReleaseNotes'
 
 // Components
-const ShipMap = dynamic(() => import('@/components/ShipMap'), { 
+const ShipMap = dynamic(() => import('@/components/ShipMap'), {
   ssr: false,
-  loading: () => <div className="flex-1 bg-slate-100 dark:bg-gray-800 animate-pulse" /> 
+  loading: () => <div className="flex-1 bg-slate-100 dark:bg-gray-800 animate-pulse" />
 })
-const SchedulePanel = dynamic(() => import('@/components/SchedulePanel'), { 
-  ssr: false 
+const SchedulePanel = dynamic(() => import('@/components/SchedulePanel'), {
+  ssr: false
 })
 
 // --- CONFIGURATION ---
@@ -31,9 +31,14 @@ const POST_ARRIVAL_GRACE_MS = 0 // Kein Puffer mehr nötig, da wir Segmente verk
 export default function Home() {
   const { t, language } = useI18n()
   const { theme } = useTheme()
-  
+
   // --- STATE ---
-  const [selectedLakeId, setSelectedLakeId] = useState<string>('zurichsee')
+  const [selectedLakeId, setSelectedLakeId] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('selectedLake') || 'zurichsee'
+    }
+    return 'zurichsee'
+  })
   const [lakeStations, setLakeStations] = useState<Station[]>([])
   const [lakeMapping, setLakeMapping] = useState<Record<string, string>>({})
   const [ships, setShips] = useState<ShipPosition[]>([])
@@ -64,6 +69,13 @@ export default function Home() {
   const baseSimTimeRef = useRef<number>(0)
   const lastLoadedKeyRef = useRef<string>("")
 
+  // Persist selected lake to localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('selectedLake', selectedLakeId)
+    }
+  }, [selectedLakeId])
+
   // Update bottom bar and header height dynamically
   useEffect(() => {
     const updateHeights = () => {
@@ -74,7 +86,7 @@ export default function Home() {
         setHeaderHeight(headerRef.current.offsetHeight)
       }
     }
-    
+
     updateHeights()
     setTimeout(updateHeights, 100)
     setTimeout(updateHeights, 500) // Extra delay for slower devices
@@ -119,6 +131,161 @@ export default function Home() {
   }
 
   // --- DATA LOADING ---
+  const debugLausanne = useCallback(async () => {
+    console.log('🔍 Debugge Lausanne-Ouchy Stationboard...')
+
+    const { getStationboard } = await import('@/lib/transport-api')
+
+    try {
+      const stationboard = await getStationboard('8501075', undefined, '00:00', true)
+      console.log('📡 Lausanne-Ouchy Stationboard:', stationboard)
+
+      if (stationboard.length === 0) {
+        console.log('❌ Keine Abfahrten gefunden für Lausanne-Ouchy (8501075)')
+      } else {
+        console.log(`✅ ${stationboard.length} Abfahrten gefunden`)
+        stationboard.slice(0, 5).forEach(entry => {
+          console.log(`   ${entry.name} → ${entry.to} um ${entry.stop.departure}`)
+        })
+      }
+    } catch (error) {
+      console.error('❌ Fehler bei Lausanne-Abfrage:', error)
+    }
+  }, [])
+
+  const debugGenferseeRoutes = useCallback(async () => {
+    console.log('🗺️ Debugge Genfersee GeoJSON Routen & Stationen...')
+
+    const { getCachedGeoJSONRoutes, getCachedFerryStations } = await import('@/lib/geojson-routes')
+
+    try {
+      // Routen laden
+      const routes = await getCachedGeoJSONRoutes('/data/genfersee.geojson')
+      console.log(`📊 ${routes.length} Routen gefunden`)
+
+      // Stationen aus GeoJSON laden
+      const geojsonStations = await getCachedFerryStations('/data/genfersee.geojson')
+      console.log(`📍 ${geojsonStations.length} Stationen aus GeoJSON gefunden`)
+
+      // Lausanne in GeoJSON-Stationen suchen
+      const lausanneStations = geojsonStations.filter(station =>
+        station.name.toLowerCase().includes('lausanne')
+      )
+      console.log(`🎯 ${lausanneStations.length} Lausanne-Stationen in GeoJSON:`)
+      lausanneStations.forEach(station => {
+        console.log(`   📍 ${station.name} (${station.latitude}, ${station.longitude})`)
+      })
+
+      // Alle Routen mit Lausanne-Koordinatenbereich durchsuchen
+      const lausanneRoutes = routes.filter(route => {
+        if (!route.geometry?.coordinates) return false
+
+        return route.geometry.coordinates.some(coord => {
+          if (!coord || coord.length < 2) return false
+          const [lng, lat] = coord
+          // Lausanne-Bereich: ~46.45-46.55°N, ~6.55-6.75°E
+          return lat >= 46.45 && lat <= 46.55 && lng >= 6.55 && lng <= 6.75
+        })
+      })
+
+      console.log(`🚢 ${lausanneRoutes.length} Routen durch Lausanne-Bereich:`)
+      lausanneRoutes.forEach((route, index) => {
+        console.log(`   ${index + 1}. ${route.properties?.name || 'Unbenannt'} (${route.properties?.ref || 'Keine Ref'})`)
+      })
+
+      // Prüfe auch, ob Routen von/nach französischer Seite kommen
+      const crossBorderRoutes = routes.filter(route => {
+        if (!route.geometry?.coordinates) return false
+
+        let hasSwiss = false
+        let hasFrench = false
+
+        route.geometry.coordinates.forEach(coord => {
+          if (!coord || coord.length < 2) return
+          const [lng, lat] = coord
+
+          // Schweizer Seite (rechts vom See)
+          if (lng > 6.3) hasSwiss = true
+          // Französische Seite (links vom See)
+          if (lng < 6.3) hasFrench = true
+        })
+
+        return hasSwiss && hasFrench
+      })
+
+      console.log(`🇫🇷🇨🇭 ${crossBorderRoutes.length} grenzüberschreitende Routen:`)
+      crossBorderRoutes.forEach((route, index) => {
+        console.log(`   ${index + 1}. ${route.properties?.name || 'Unbenannt'} (${route.properties?.ref || 'Keine Ref'})`)
+      })
+
+    } catch (error) {
+      console.error('❌ Fehler beim Laden der GeoJSON-Daten:', error)
+    }
+  }, [])
+
+
+  const debugGenferseeStations = useCallback(async () => {
+    console.log('🔍 Debugge alle Genfersee-Stationen (sequentiell)...')
+
+    const { getStationboard } = await import('@/lib/transport-api')
+    const { GENFERSEE_STATIONS } = await import('@/lib/stations/genfersee')
+
+    const results: Array<{ station: string, uic: string, hasDepartures: boolean, count: number, sample?: string }> = []
+
+    console.log(`📊 Teste ${GENFERSEE_STATIONS.length} Stationen sequentiell...`)
+
+    for (let i = 0; i < GENFERSEE_STATIONS.length; i++) {
+      const station = GENFERSEE_STATIONS[i]
+      console.log(`🔄 [${i + 1}/${GENFERSEE_STATIONS.length}] Teste ${station.name}...`)
+
+      try {
+        const stationboard = await getStationboard(station.uic_ref!, undefined, '00:00', true)
+        const hasDepartures = stationboard.length > 0
+        const sample = hasDepartures ? `${stationboard[0].name} → ${stationboard[0].to}` : undefined
+
+        results.push({
+          station: station.name,
+          uic: station.uic_ref!,
+          hasDepartures,
+          count: stationboard.length,
+          sample
+        })
+
+        console.log(`${hasDepartures ? '✅' : '❌'} ${station.name}: ${stationboard.length} Abfahrten`)
+
+      } catch (error) {
+        console.log(`❌ Fehler bei ${station.name}:`, error)
+        results.push({
+          station: station.name,
+          uic: station.uic_ref!,
+          hasDepartures: false,
+          count: 0
+        })
+      }
+
+      // Längere Pause um API-Rate-Limit zu respektieren
+      if (i < GENFERSEE_STATIONS.length - 1) {
+        console.log(`⏳ Warte 1000ms vor nächster Station...`)
+        await new Promise(resolve => setTimeout(resolve, 1000))
+      }
+    }
+
+    console.log('📋 Zusammenfassung Genfersee-Stationen:')
+    console.table(results)
+
+    const withDepartures = results.filter(r => r.hasDepartures)
+    console.log(`🎯 ${withDepartures.length}/${GENFERSEE_STATIONS.length} Stationen haben Abfahrten`)
+
+    // Zeige Stationen mit Abfahrten
+    if (withDepartures.length > 0) {
+      console.log('🚢 Stationen mit Abfahrten:')
+      withDepartures.forEach(r => {
+        console.log(`   ${r.station} (${r.uic}): ${r.count} Abfahrten - ${r.sample}`)
+      })
+    }
+
+  }, [])
+
   const loadDailySchedule = useCallback(async (targetDate: Date, force = false) => {
     const dateStr = targetDate.toISOString().split('T')[0]
     const modeKey = isLiveMode ? 'live' : 'sim'
@@ -901,17 +1068,18 @@ export default function Home() {
 
           {/* Desktop Schedule Panel */}
           <div className="hidden lg:block">
-            <SchedulePanel 
-            ships={ships} 
-            selectedShipId={selectedShipId} 
-            onShipClick={setSelectedShipId} 
-            isLoading={isLoading || (routeSegments.length > 0 && !isInitialCalcDone)} 
+            <SchedulePanel
+            ships={ships}
+            selectedShipId={selectedShipId}
+            onShipClick={setSelectedShipId}
+            isLoading={isLoading || (routeSegments.length > 0 && !isInitialCalcDone)}
             isLiveMode={isLiveMode}
             onToggleMode={toggleMode}
             nextDepartures={nextDepartures}
             onReleaseNotesClick={() => setIsReleaseNotesOpen(true)}
             simulationTime={simulationTime}
             selectedDate={selectedDate}
+            selectedLakeId={selectedLakeId}
           />
           </div>
 
@@ -936,14 +1104,14 @@ export default function Home() {
 
             {/* Panel Content */}
             <div className="h-[calc(100svh-64px)] overflow-hidden">
-              <SchedulePanel 
-                ships={ships} 
-                selectedShipId={selectedShipId} 
+              <SchedulePanel
+                ships={ships}
+                selectedShipId={selectedShipId}
                 onShipClick={(id) => {
                   setSelectedShipId(id)
                   setIsMobilePanelOpen(false)
-                }} 
-                isLoading={isLoading || (routeSegments.length > 0 && !isInitialCalcDone)} 
+                }}
+                isLoading={isLoading || (routeSegments.length > 0 && !isInitialCalcDone)}
                 isLiveMode={isLiveMode}
                 onToggleMode={toggleMode}
                 nextDepartures={nextDepartures}
@@ -951,6 +1119,7 @@ export default function Home() {
                 simulationTime={simulationTime}
                 selectedDate={selectedDate}
                 isMobile={true}
+                selectedLakeId={selectedLakeId}
               />
             </div>
           </div>

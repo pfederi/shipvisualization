@@ -28,9 +28,10 @@ interface SchedulePanelProps {
   simulationTime?: string
   selectedDate?: string
   isMobile?: boolean
+  selectedLakeId?: string
 }
 
-export default function SchedulePanel({ ships = [], selectedShipId, onShipClick, isLoading, isLiveMode = false, onToggleMode, nextDepartures = [], onReleaseNotesClick, simulationTime, selectedDate, isMobile = false }: SchedulePanelProps) {
+export default function SchedulePanel({ ships = [], selectedShipId, onShipClick, isLoading, isLiveMode = false, onToggleMode, nextDepartures = [], onReleaseNotesClick, simulationTime, selectedDate, isMobile = false, selectedLakeId }: SchedulePanelProps) {
   const { t, language } = useI18n()
   const { theme } = useTheme()
   
@@ -129,18 +130,18 @@ export default function SchedulePanel({ ships = [], selectedShipId, onShipClick,
     return (
       <div className={`p-4 space-y-4 flex-1 ${isMobile ? 'pb-24' : 'pb-20'}`}>
         {/* Warnung bei Datum in der Zukunft */}
-        {selectedDate && (() => {
+        {selectedDate && selectedLakeId === 'zurichsee' && (() => {
           const today = new Date()
           today.setHours(0, 0, 0, 0)
           const selected = new Date(selectedDate)
           selected.setHours(0, 0, 0, 0)
           const daysInFuture = Math.round((selected.getTime() - today.getTime()) / (24 * 60 * 60 * 1000))
-          
+
           if (daysInFuture > 5) {
             return (
               <div className={`p-3 rounded-lg border ${
-                theme === 'dark' 
-                  ? 'bg-orange-900/30 border-orange-500 text-orange-300' 
+                theme === 'dark'
+                  ? 'bg-orange-900/30 border-orange-500 text-orange-300'
                   : 'bg-orange-50 border-orange-500 text-orange-700'
               }`}>
                 <div className="flex items-start gap-2">
@@ -148,8 +149,8 @@ export default function SchedulePanel({ ships = [], selectedShipId, onShipClick,
                   <div className="flex-1">
                     <p className="text-xs font-bold mb-1">{t.shipNamesWarning}</p>
                     <p className="text-[11px] opacity-80">
-                      {language === 'de' 
-                        ? 'Die ZSG liefert in der Regel die Daten nur für die nächsten 5 Tage.' 
+                      {language === 'de'
+                        ? 'Die ZSG liefert in der Regel die Daten nur für die nächsten 5 Tage.'
                         : 'ZSG typically provides data only for the next 5 days.'}
                     </p>
                   </div>
@@ -207,9 +208,9 @@ export default function SchedulePanel({ ships = [], selectedShipId, onShipClick,
                     </span>
                   )}
                 </div>
-                <p className={`text-sm mt-1 flex items-center gap-1 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-600'}`}>
-                  <Navigation size={12} className={theme === 'dark' ? 'text-gray-400' : 'text-gray-400'} />
-                  {ship.fromStation} → {ship.toStation}
+                <p className={`text-sm mt-1 flex gap-1 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-600'}`}>
+                  <Navigation size={12} className={`flex-shrink-0 mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-400'}`} />
+                  <span>{ship.fromStation} → {ship.toStation}</span>
                 </p>
                 {minutesUntilDeparture !== null && (
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded inline-block mt-1 ${

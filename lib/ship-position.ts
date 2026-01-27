@@ -354,8 +354,14 @@ export async function calculateShipPosition(
       
       // Wenn keine Route im Segment gespeichert ist, versuche sie zu finden
       if (!routeCoordinates && geoJSONRoutes) {
+        // Versuche zuerst Route zwischen beiden Stationen zu finden
         routeCoordinates = findRouteBetweenStations(geoJSONRoutes, segment.from, segment.to, segment.courseNumber)
-        
+
+        // Wenn das nicht funktioniert, suche nach Routen, die mindestens eine der Stationen berühren
+        if (!routeCoordinates) {
+          routeCoordinates = findRouteNearStations(geoJSONRoutes, segment.from, segment.to, segment.courseNumber)
+        }
+
         // Wenn Route gefunden wurde, speichere sie im Segment für zukünftige Verwendung
         if (routeCoordinates && routeCoordinates.length > 1) {
           segment.routeCoordinates = routeCoordinates
@@ -446,6 +452,76 @@ export async function calculateShipPosition(
 
   // Schiff ist zwischen Routen oder noch nicht gestartet
   return null
+}
+
+function findRouteNearStations(
+  routes: ShipRouteData[],
+  from: { lat: number; lon: number; name: string },
+  to: { lat: number; lon: number; name: string },
+  courseNumber?: string
+): RouteCoordinate[] | null {
+  const STATION_DISTANCE = 2.0 // 2km Radius um Stationen
+
+  let bestMatch: RouteCoordinate[] | null = null
+  let bestScore = Infinity
+
+  for (const route of routes) {
+    if (!route.coordinates || route.coordinates.length < 2) continue
+
+    // Prüfe, ob die Route mindestens eine der Stationen berührt
+    let fromDistance = Infinity
+    let toDistance = Infinity
+
+    for (const coord of route.coordinates) {
+      const distFrom = getDistance(from.lat, from.lon, coord.lat, coord.lon)
+      const distTo = getDistance(to.lat, to.lon, coord.lat, coord.lon)
+
+      fromDistance = Math.min(fromDistance, distFrom)
+      toDistance = Math.min(toDistance, distTo)
+    }
+
+    // Wenn die Route mindestens eine Station berührt (innerhalb von STATION_DISTANCE)
+    const touchesFrom = fromDistance < STATION_DISTANCE
+    const touchesTo = toDistance < STATION_DISTANCE
+
+    if (touchesFrom || touchesTo) {
+      // Berechne Score basierend auf Entfernung
+      let score = Math.min(fromDistance, toDistance)
+
+      // Bonus für Routen, die beide Stationen berühren
+      if (touchesFrom && touchesTo) {
+        score -= 1000 // Großer Bonus
+      }
+
+      // Bonus für Namens-Übereinstimmung
+      if (route.name && (from.name || to.name)) {
+        const routeName = route.name.toLowerCase()
+        const fromName = from.name.toLowerCase()
+        const toName = to.name.toLowerCase()
+
+        if (courseNumber) {
+          const cnClean = courseNumber.replace(/^0+/, '')
+          if (routeName.includes(cnClean) || (route.ref && route.ref.includes(cnClean))) {
+            score -= 5000 // Bonus für Kursnummer
+          }
+        }
+
+        if (routeName.includes(fromName) || routeName.includes(toName)) {
+          score -= 1000 // Bonus für Stationsnamen
+        }
+      }
+
+      // Bevorzuge kürzere Routen
+      score += route.coordinates.length * 10
+
+      if (score < bestScore) {
+        bestScore = score
+        bestMatch = route.coordinates
+      }
+    }
+  }
+
+  return bestMatch
 }
 
 // Konvertiert Transport API Connections zu Route Segments

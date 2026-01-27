@@ -251,7 +251,7 @@ export async function clearStationboardCache(station?: string): Promise<void> {
 export async function getLocations(query: string): Promise<Location[]> {
   const params = new URLSearchParams({ query })
   const response = await fetch(`https://transport.opendata.ch/v1/locations?${params}`)
-  
+
   if (!response.ok) {
     throw new Error(`Transport API error: ${response.statusText}`)
   }

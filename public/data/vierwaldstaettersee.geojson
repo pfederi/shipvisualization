@@ -2,7 +2,7 @@
   "type": "FeatureCollection",
   "generator": "overpass-turbo",
   "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.",
-  "timestamp": "2026-01-23T13:32:39Z",
+  "timestamp": "2026-01-23T14:09:29Z",
   "features": [
     {
       "type": "Feature",
@@ -12756,6 +12756,1127 @@
     {
       "type": "Feature",
       "properties": {
+        "@id": "way/115606613",
+        "addr:city": "Luzern",
+        "addr:housenumber": "5",
+        "addr:postcode": "6003",
+        "addr:street": "Bahnhofplatz",
+        "amenity": "ferry_terminal",
+        "bench": "yes",
+        "bin": "yes",
+        "building": "roof",
+        "ferry": "yes",
+        "lit": "yes",
+        "local_ref": "1",
+        "man_made": "pier",
+        "name": "Landungssteg 1 (SGV) Bahnhofquai",
+        "network": "SGV",
+        "operator": "SGV",
+        "public_transport": "platform",
+        "ref": "1",
+        "shelter": "yes",
+        "surface": "concrete",
+        "tactile_paving": "no",
+        "uic_name": "Luzern Bahnhofquai",
+        "uic_ref": "8508492",
+        "wikidata": "Q130645167",
+        "wikimedia_commons": "Category:Landungsbrücke 1 (Meilihalle)",
+        "wikipedia:de": "Landungsbrücke 1 (Meilihalle)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8.310021,
+              47.0512028
+            ],
+            [
+              8.3101453,
+              47.0512118
+            ],
+            [
+              8.3102543,
+              47.0512197
+            ],
+            [
+              8.3102506,
+              47.051243
+            ],
+            [
+              8.3102426,
+              47.0512948
+            ],
+            [
+              8.3102292,
+              47.0513805
+            ],
+            [
+              8.3102208,
+              47.0514313
+            ],
+            [
+              8.3102565,
+              47.0514335
+            ],
+            [
+              8.3102454,
+              47.0515159
+            ],
+            [
+              8.3100963,
+              47.0515018
+            ],
+            [
+              8.3099412,
+              47.0514923
+            ],
+            [
+              8.309954,
+              47.0514104
+            ],
+            [
+              8.3099891,
+              47.0514131
+            ],
+            [
+              8.3100172,
+              47.0512274
+            ],
+            [
+              8.310021,
+              47.0512028
+            ]
+          ]
+        ]
+      },
+      "id": "way/115606613"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/122225739",
+        "addr:city": "Luzern",
+        "addr:postcode": "6004",
+        "addr:street": "Schweizerhofquai",
+        "amenity": "ferry_terminal",
+        "bench": "no",
+        "bin": "no",
+        "ferry": "yes",
+        "lit": "yes",
+        "man_made": "pier",
+        "mooring": "ferry",
+        "name": "Landungssteg 7 (SGV) Schweizerhofquai",
+        "network": "SGV",
+        "operator": "SGV",
+        "public_transport": "platform",
+        "ref": "7",
+        "shelter": "no",
+        "surface": "concrete",
+        "tactile_paving": "no",
+        "uic_ref": "8508505"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8.309992,
+              47.0536352
+            ],
+            [
+              8.309955,
+              47.0536229
+            ],
+            [
+              8.309918,
+              47.0536106
+            ],
+            [
+              8.3099691,
+              47.0535501
+            ],
+            [
+              8.3100081,
+              47.0535625
+            ],
+            [
+              8.3100388,
+              47.0535739
+            ],
+            [
+              8.309992,
+              47.0536352
+            ]
+          ]
+        ]
+      },
+      "id": "way/122225739"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/924163008",
+        "addr:city": "Kehrsiten",
+        "addr:country": "CH",
+        "addr:postcode": "6365",
+        "addr:street": "Spichermatt",
+        "amenity": "ferry_terminal",
+        "bench": "yes",
+        "bin": "yes",
+        "ele": "435",
+        "lit": "yes",
+        "man_made": "pier",
+        "name": "Landungssteg SGV Kehrsiten Dorf",
+        "network": "SGV",
+        "operator": "SGV",
+        "public_transport": "platform",
+        "shelter": "yes",
+        "surface": "concrete",
+        "tactile_paving": "no",
+        "uic_name": "Kehrsiten Dorf",
+        "uic_ref": "8508480",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8.3657597,
+              47.000356
+            ],
+            [
+              8.3656511,
+              47.0004531
+            ],
+            [
+              8.3656003,
+              47.0004844
+            ],
+            [
+              8.3655848,
+              47.0004639
+            ],
+            [
+              8.3655664,
+              47.0004418
+            ],
+            [
+              8.3657252,
+              47.0003297
+            ],
+            [
+              8.3657415,
+              47.0003421
+            ],
+            [
+              8.3657597,
+              47.000356
+            ]
+          ]
+        ]
+      },
+      "id": "way/924163008"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/924379730",
+        "addr:city": "Kehrsiten",
+        "addr:postcode": "6365",
+        "addr:street": "Hinterberg",
+        "amenity": "ferry_terminal",
+        "bench": "yes",
+        "bin": "no",
+        "ele": "435",
+        "lit": "yes",
+        "man_made": "pier",
+        "name": "Landungssteg SGV Kehrsiten-Bürgenstock",
+        "network": "SGV",
+        "operator": "SGV",
+        "public_transport": "platform",
+        "shelter": "no",
+        "source": "Bundesamt für Verkehr (BAV), DIDOK 2009",
+        "surface": "concrete",
+        "tactile_paving": "no",
+        "uic_name": "Kehrsiten-Bürgenstock",
+        "uic_ref": "8508489"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8.382369,
+              47.0030052
+            ],
+            [
+              8.3824107,
+              47.003007
+            ],
+            [
+              8.3824505,
+              47.0030087
+            ],
+            [
+              8.3824444,
+              47.0030763
+            ],
+            [
+              8.3824029,
+              47.0030759
+            ],
+            [
+              8.3823628,
+              47.0030728
+            ],
+            [
+              8.382369,
+              47.0030052
+            ]
+          ]
+        ]
+      },
+      "id": "way/924379730"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/999580743",
+        "addr:city": "Hergiswil NW",
+        "addr:postcode": "6052",
+        "addr:street": "Seestrasse",
+        "amenity": "ferry_terminal",
+        "ele": "435",
+        "man_made": "pier",
+        "name": "Landungssteg SGV Hergiswil",
+        "network": "SGV",
+        "operator": "SGV",
+        "public_transport": "platform",
+        "shelter": "no",
+        "surface": "concrete",
+        "uic_name": "Hergiswil (See)",
+        "uic_ref": "8508481"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8.3125016,
+              46.9844956
+            ],
+            [
+              8.3124943,
+              46.9844744
+            ],
+            [
+              8.312478,
+              46.9844479
+            ],
+            [
+              8.3125947,
+              46.9844561
+            ],
+            [
+              8.3125935,
+              46.9844781
+            ],
+            [
+              8.3125911,
+              46.9844986
+            ],
+            [
+              8.3125016,
+              46.9844956
+            ]
+          ]
+        ]
+      },
+      "id": "way/999580743"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/1076451774",
+        "addr:city": "Kastanienbaum",
+        "addr:postcode": "6047",
+        "addr:street": "Kastanienbaum Schiffstation",
+        "amenity": "ferry_terminal",
+        "ferry": "yes",
+        "man_made": "pier",
+        "name": "Landebrücke SGV",
+        "operator": "SGV",
+        "public_transport": "platform",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8.3410522,
+              47.008071
+            ],
+            [
+              8.3412418,
+              47.0080458
+            ],
+            [
+              8.3412372,
+              47.008071
+            ],
+            [
+              8.3412356,
+              47.0080996
+            ],
+            [
+              8.3410667,
+              47.0081162
+            ],
+            [
+              8.3410594,
+              47.0080935
+            ],
+            [
+              8.3410522,
+              47.008071
+            ]
+          ]
+        ]
+      },
+      "id": "way/1076451774"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/1076466904",
+        "addr:city": "Beckenried",
+        "addr:housenumber": "52",
+        "addr:postcode": "6375",
+        "addr:street": "Buochserstrasse",
+        "amenity": "ferry_terminal",
+        "ele": "435",
+        "ferry": "yes",
+        "man_made": "pier",
+        "name": "Landungssteg Beckenried Niederdorf (Fähre)",
+        "operator": "F&R Asset Management AG",
+        "public_transport": "platform",
+        "surface": "asphalt",
+        "uic_name": "Beckenried Niederdorf (Fähre)",
+        "uic_ref": "8530721"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8.4595884,
+              46.9719523
+            ],
+            [
+              8.4595605,
+              46.9718627
+            ],
+            [
+              8.4595987,
+              46.971856
+            ],
+            [
+              8.459635,
+              46.9718497
+            ],
+            [
+              8.4596529,
+              46.9719478
+            ],
+            [
+              8.459619,
+              46.9719497
+            ],
+            [
+              8.4595884,
+              46.9719523
+            ]
+          ]
+        ]
+      },
+      "id": "way/1076466904"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/1076715831",
+        "addr:city": "Beckenried",
+        "addr:housenumber": "1",
+        "addr:postcode": "6375",
+        "addr:street": "Seestrasse",
+        "amenity": "ferry_terminal",
+        "ele": "435",
+        "man_made": "pier",
+        "name": "Landungssteg SGV Beckenried",
+        "network": "SGV",
+        "operator": "SGV",
+        "public_transport": "platform",
+        "shelter": "yes",
+        "surface": "concrete",
+        "uic_name": "Beckenried (See)",
+        "uic_ref": "8508467"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8.4755822,
+              46.9670142
+            ],
+            [
+              8.4756081,
+              46.9669907
+            ],
+            [
+              8.4756396,
+              46.9669623
+            ],
+            [
+              8.4757135,
+              46.9669969
+            ],
+            [
+              8.4756844,
+              46.9670245
+            ],
+            [
+              8.4756567,
+              46.9670455
+            ],
+            [
+              8.4755822,
+              46.9670142
+            ]
+          ]
+        ]
+      },
+      "id": "way/1076715831"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/1076723340",
+        "addr:city": "Buochs",
+        "addr:postcode": "6374",
+        "addr:street": "Seeplatz",
+        "amenity": "ferry_terminal",
+        "man_made": "pier",
+        "name": "Landungssteg SGV Buochs",
+        "network": "SGV",
+        "operator": "SGV",
+        "public_transport": "platform",
+        "surface": "concrete",
+        "uic_name": "Buochs (See)",
+        "uic_ref": "8508466"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8.4263942,
+              46.9754374
+            ],
+            [
+              8.4263373,
+              46.9753618
+            ],
+            [
+              8.4263551,
+              46.9753547
+            ],
+            [
+              8.4263781,
+              46.9753457
+            ],
+            [
+              8.4264378,
+              46.9753238
+            ],
+            [
+              8.4264873,
+              46.9754028
+            ],
+            [
+              8.4264333,
+              46.9754232
+            ],
+            [
+              8.4263942,
+              46.9754374
+            ]
+          ]
+        ]
+      },
+      "id": "way/1076723340"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/1076980381",
+        "amenity": "ferry_terminal",
+        "ferry": "yes",
+        "man_made": "pier",
+        "name": "Landebrücke St.Niklausen",
+        "public_transport": "disused",
+        "surface": "concrete",
+        "uic_name": "St. Niklausen LU (See)",
+        "uic_ref": "8508477"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8.3410691,
+              47.019925
+            ],
+            [
+              8.3410733,
+              47.0199193
+            ],
+            [
+              8.3410859,
+              47.0199021
+            ],
+            [
+              8.3411759,
+              47.0199181
+            ],
+            [
+              8.3411497,
+              47.0199561
+            ],
+            [
+              8.3410691,
+              47.019925
+            ]
+          ]
+        ]
+      },
+      "id": "way/1076980381"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/1076999495",
+        "addr:city": "Luzern",
+        "addr:housenumber": "7",
+        "addr:postcode": "6003",
+        "addr:street": "Bahnhofplatz",
+        "amenity": "ferry_terminal",
+        "bench": "yes",
+        "bin": "yes",
+        "ferry": "yes",
+        "lit": "yes",
+        "local_ref": "2",
+        "man_made": "pier",
+        "name": "Landungssteg 2 (SGV) Bahnhofquai",
+        "network": "SGV",
+        "operator": "SGV",
+        "public_transport": "platform",
+        "ref": "2",
+        "shelter": "yes",
+        "surface": "concrete",
+        "tactile_paving": "no",
+        "uic_name": "Luzern Bahnhofquai",
+        "uic_ref": "8508492",
+        "wheelchair": "no"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8.3110076,
+              47.0513734
+            ],
+            [
+              8.3110145,
+              47.051336
+            ],
+            [
+              8.3110167,
+              47.0513228
+            ],
+            [
+              8.3111878,
+              47.0513352
+            ],
+            [
+              8.3113598,
+              47.0513477
+            ],
+            [
+              8.3113575,
+              47.0513606
+            ],
+            [
+              8.3113505,
+              47.0513958
+            ],
+            [
+              8.3111821,
+              47.0513837
+            ],
+            [
+              8.3110076,
+              47.0513734
+            ]
+          ]
+        ]
+      },
+      "id": "way/1076999495"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/1077239332",
+        "addr:city": "Luzern",
+        "addr:postcode": "6003",
+        "addr:street": "Europaplatz",
+        "amenity": "ferry_terminal",
+        "bench": "no",
+        "bin": "no",
+        "ferry": "yes",
+        "lit": "yes",
+        "local_ref": "4",
+        "man_made": "pier",
+        "mooring": "ferry",
+        "name": "Landungssteg 4 (SGV) Bahnhofquai",
+        "network": "SGV",
+        "operator": "SGV",
+        "public_transport": "platform",
+        "ref": "4",
+        "shelter": "no",
+        "surface": "concrete",
+        "tactile_paving": "no",
+        "uic_name": "Luzern Bahnhofquai",
+        "uic_ref": "8508492"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8.3123408,
+              47.0513953
+            ],
+            [
+              8.3123415,
+              47.0513841
+            ],
+            [
+              8.3123408,
+              47.0513704
+            ],
+            [
+              8.3127859,
+              47.0514409
+            ],
+            [
+              8.3127819,
+              47.0514543
+            ],
+            [
+              8.3127774,
+              47.0514677
+            ],
+            [
+              8.3123408,
+              47.0513953
+            ]
+          ]
+        ]
+      },
+      "id": "way/1077239332"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/1077245399",
+        "addr:city": "Luzern",
+        "addr:postcode": "6003",
+        "addr:street": "Europaplatz",
+        "amenity": "ferry_terminal",
+        "bench": "no",
+        "bin": "no",
+        "ferry": "yes",
+        "lit": "yes",
+        "local_ref": "5",
+        "man_made": "pier",
+        "name": "Landungssteg 5 (SGV) Bahnhofquai",
+        "network": "SGV",
+        "operator": "SGV",
+        "public_transport": "platform",
+        "ref": "5",
+        "shelter": "yes",
+        "surface": "concrete",
+        "tactile_paving": "no",
+        "uic_name": "Luzern Bahnhofquai",
+        "uic_ref": "8508492"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8.3125107,
+              47.0510797
+            ],
+            [
+              8.3125296,
+              47.051057
+            ],
+            [
+              8.312543,
+              47.0510359
+            ],
+            [
+              8.3132014,
+              47.0512348
+            ],
+            [
+              8.31318,
+              47.0512641
+            ],
+            [
+              8.3131655,
+              47.0512862
+            ],
+            [
+              8.3125107,
+              47.0510797
+            ]
+          ]
+        ]
+      },
+      "id": "way/1077245399"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/1077248773",
+        "addr:city": "Luzern",
+        "addr:postcode": "6003",
+        "addr:street": "Europaplatz",
+        "amenity": "ferry_terminal",
+        "bench": "no",
+        "bin": "no",
+        "ferry": "yes",
+        "lit": "yes",
+        "local_ref": "6",
+        "man_made": "pier",
+        "mooring": "ferry",
+        "name": "Landungssteg 6 (SGV) Bahnhofquai",
+        "network": "SGV",
+        "operator": "SGV",
+        "public_transport": "platform",
+        "ref": "6",
+        "shelter": "yes",
+        "surface": "concrete",
+        "tactile_paving": "no",
+        "uic_name": "Luzern Bahnhofquai",
+        "uic_ref": "8508492"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8.3128755,
+              47.0507993
+            ],
+            [
+              8.3128923,
+              47.0507751
+            ],
+            [
+              8.3129125,
+              47.0507448
+            ],
+            [
+              8.3135343,
+              47.0509089
+            ],
+            [
+              8.3135138,
+              47.0509392
+            ],
+            [
+              8.3134995,
+              47.050961
+            ],
+            [
+              8.3128755,
+              47.0507993
+            ]
+          ]
+        ]
+      },
+      "id": "way/1077248773"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/1077263160",
+        "addr:city": "Luzern",
+        "addr:postcode": "6004",
+        "addr:street": "Schwanenplatz",
+        "amenity": "ferry_terminal",
+        "bench": "no",
+        "bin": "no",
+        "ferry": "yes",
+        "lit": "no",
+        "man_made": "pier",
+        "mooring": "ferry",
+        "name": "Steg Schwanenplatz",
+        "network": "SGV",
+        "operator": "SGV",
+        "public_transport": "platform",
+        "shelter": "yes",
+        "tactile_paving": "no"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8.3094732,
+              47.0532953
+            ],
+            [
+              8.3094593,
+              47.0532693
+            ],
+            [
+              8.3094945,
+              47.0532623
+            ],
+            [
+              8.309527,
+              47.0532558
+            ],
+            [
+              8.3095372,
+              47.0532822
+            ],
+            [
+              8.3095059,
+              47.0532888
+            ],
+            [
+              8.3094732,
+              47.0532953
+            ]
+          ]
+        ]
+      },
+      "id": "way/1077263160"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/1077271920",
+        "addr:city": "Luzern",
+        "addr:postcode": "6005",
+        "addr:street": "Alpenquai",
+        "amenity": "ferry_terminal",
+        "disused:public_transport": "station",
+        "ferry": "yes",
+        "man_made": "pier",
+        "name": "Landungssteg",
+        "public_transport": "station"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8.3168201,
+              47.0475734
+            ],
+            [
+              8.3168277,
+              47.0475615
+            ],
+            [
+              8.3168353,
+              47.0475506
+            ],
+            [
+              8.3181433,
+              47.0479157
+            ],
+            [
+              8.3181326,
+              47.0479346
+            ],
+            [
+              8.3181209,
+              47.0479307
+            ],
+            [
+              8.3168201,
+              47.0475734
+            ]
+          ]
+        ]
+      },
+      "id": "way/1077271920"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/1077274885",
+        "access": "private",
+        "addr:city": "Luzern",
+        "addr:postcode": "6005",
+        "addr:street": "Alpenquai",
+        "amenity": "ferry_terminal",
+        "building": "yes",
+        "disused:public_transport": "station",
+        "ferry": "yes",
+        "man_made": "pier",
+        "name": "Landungssteg SGV Alpenquai",
+        "operator": "SGV",
+        "public_transport": "station"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8.3187408,
+              47.0484823
+            ],
+            [
+              8.3185029,
+              47.048319
+            ],
+            [
+              8.3185079,
+              47.0483156
+            ],
+            [
+              8.3184531,
+              47.048278
+            ],
+            [
+              8.318459,
+              47.0482741
+            ],
+            [
+              8.3184648,
+              47.0482701
+            ],
+            [
+              8.3185209,
+              47.0483086
+            ],
+            [
+              8.3185267,
+              47.0483047
+            ],
+            [
+              8.3187633,
+              47.0484671
+            ],
+            [
+              8.3187408,
+              47.0484823
+            ]
+          ]
+        ]
+      },
+      "id": "way/1077274885"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/1077511360",
+        "addr:city": "Weggis",
+        "addr:housenumber": "148",
+        "addr:postcode": "6353",
+        "addr:street": "Hertensteinstrasse",
+        "amenity": "ferry_terminal",
+        "ele": "435",
+        "ferry": "yes",
+        "man_made": "pier",
+        "name": "Landungssteg SGV Hertenstein",
+        "network": "SGV",
+        "operator": "SGV",
+        "public_transport": "platform",
+        "shelter": "yes",
+        "surface": "concrete",
+        "uic_name": "Hertenstein (See)",
+        "uic_ref": "8508462"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8.4034722,
+              47.0267563
+            ],
+            [
+              8.4035065,
+              47.0266831
+            ],
+            [
+              8.4035518,
+              47.0266955
+            ],
+            [
+              8.4036073,
+              47.02661
+            ],
+            [
+              8.4036366,
+              47.0266161
+            ],
+            [
+              8.4036648,
+              47.0266263
+            ],
+            [
+              8.4036048,
+              47.0267143
+            ],
+            [
+              8.4036476,
+              47.026727
+            ],
+            [
+              8.4036116,
+              47.0267934
+            ],
+            [
+              8.4035459,
+              47.0267752
+            ],
+            [
+              8.4034722,
+              47.0267563
+            ]
+          ]
+        ]
+      },
+      "id": "way/1077511360"
+    },
+    {
+      "type": "Feature",
+      "properties": {
         "@id": "way/48927450",
         "bicycle": "yes",
         "foot": "yes",
@@ -24414,6 +25535,17 @@
       "type": "Feature",
       "properties": {
         "@id": "node/25369680",
+        "amenity": "ferry_terminal",
+        "cargo": "passengers",
+        "ele": "435",
+        "ferry": "yes",
+        "name": "Rütli",
+        "network": "SGV",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "uic_name": "Rütli",
+        "uic_ref": "8508471",
+        "wheelchair": "limited",
         "@relations": [
           {
             "role": "stop",
@@ -24565,6 +25697,18 @@
       "type": "Feature",
       "properties": {
         "@id": "node/249226611",
+        "amenity": "ferry_terminal",
+        "bicycle": "yes",
+        "cargo": "passengers",
+        "ele": "435",
+        "ferry": "yes",
+        "foot": "yes",
+        "name": "Hertenstein (See)",
+        "network": "SGV",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "uic_name": "Hertenstein (See)",
+        "uic_ref": "8508462",
         "@relations": [
           {
             "role": "stop",
@@ -24634,6 +25778,16 @@
       "type": "Feature",
       "properties": {
         "@id": "node/269939361",
+        "amenity": "ferry_terminal",
+        "cargo": "passengers",
+        "ele": "435",
+        "ferry": "yes",
+        "name": "Brunnen (See)",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "uic_name": "Brunnen (See)",
+        "uic_ref": "8508470",
+        "wheelchair": "yes",
         "@relations": [
           {
             "role": "stop",
@@ -24901,6 +26055,15 @@
       "type": "Feature",
       "properties": {
         "@id": "node/296928257",
+        "amenity": "ferry_terminal",
+        "cargo": "vehicle;passengers",
+        "ferry": "yes",
+        "name": "Gersau Förstli (Fähre)",
+        "operator": "F & R Asset Management AG",
+        "public_transport": "stop_position",
+        "uic_name": "Gersau Förstli (Fähre)",
+        "uic_ref": "8530722",
+        "website": "https://www.autofaehre.ch/",
         "@relations": [
           {
             "role": "stop",
@@ -24960,6 +26123,19 @@
       "type": "Feature",
       "properties": {
         "@id": "node/296932032",
+        "addr:postcode": "6375",
+        "amenity": "ferry_terminal",
+        "cargo": "passengers",
+        "ele": "435",
+        "ferry": "yes",
+        "name": "Beckenried (See)",
+        "network": "SGV",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "toilets:wheelchair": "yes",
+        "uic_name": "Beckenried (See)",
+        "uic_ref": "8508467",
+        "wheelchair": "yes",
         "@relations": [
           {
             "role": "stop",
@@ -25054,6 +26230,16 @@
       "type": "Feature",
       "properties": {
         "@id": "node/304064845",
+        "amenity": "ferry_terminal",
+        "cargo": "passengers",
+        "ele": "435",
+        "ferry": "yes",
+        "name": "Gersau (See)",
+        "network": "SGV",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "uic_name": "Gersau (See)",
+        "uic_ref": "8508468",
         "@relations": [
           {
             "role": "stop",
@@ -25148,6 +26334,15 @@
       "type": "Feature",
       "properties": {
         "@id": "node/304064887",
+        "amenity": "ferry_terminal",
+        "ele": "435",
+        "ferry": "yes",
+        "name": "Vitznau",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "uic_name": "Vitznau",
+        "uic_ref": "8508464",
+        "wheelchair": "yes",
         "@relations": [
           {
             "role": "stop",
@@ -25354,6 +26549,17 @@
       "type": "Feature",
       "properties": {
         "@id": "node/371663849",
+        "amenity": "ferry_terminal",
+        "cargo": "passengers",
+        "ele": "446",
+        "ferry": "yes",
+        "name": "Sisikon (See)",
+        "network": "SGV",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "uic_name": "Sisikon (See)",
+        "uic_ref": "8508472",
+        "wheelchair": "limited",
         "@relations": [
           {
             "role": "stop",
@@ -25430,6 +26636,17 @@
       "type": "Feature",
       "properties": {
         "@id": "node/389050588",
+        "amenity": "ferry_terminal",
+        "cargo": "passengers",
+        "ele": "436",
+        "ferry": "yes",
+        "name": "Alpnachstad (See)",
+        "network": "SGV",
+        "old_name": "Alpnachstad SGV",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "uic_name": "Alpnachstad (See)",
+        "uic_ref": "8508503",
         "@relations": [
           {
             "role": "stop",
@@ -25715,6 +26932,17 @@
       "type": "Feature",
       "properties": {
         "@id": "node/389050794",
+        "alt_name": "Autofähre Beckenried",
+        "amenity": "ferry_terminal",
+        "cargo": "vehicle;passengers",
+        "ferry": "yes",
+        "name": "Beckenried Niederdorf (Fähre)",
+        "operator": "F & R Asset Management AG",
+        "public_transport": "stop_position",
+        "uic_name": "Beckenried Niederdorf (Fähre)",
+        "uic_ref": "8530721",
+        "website": "https://www.autofaehre.ch/",
+        "wheelchair": "limited",
         "@relations": [
           {
             "role": "stop",
@@ -25774,6 +27002,23 @@
       "type": "Feature",
       "properties": {
         "@id": "node/415411479",
+        "amenity": "ferry_terminal",
+        "bicycle": "yes",
+        "cargo": "passengers",
+        "ele": "435",
+        "ferry": "yes",
+        "foot": "yes",
+        "name": "Weggis",
+        "name:de": "Weggis",
+        "name:en": "Weggis",
+        "name:fr": "Weggis",
+        "network": "SGV",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "source": "Bundesamt für Verkehr (BAV), DIDOK 2009",
+        "uic_name": "Weggis",
+        "uic_ref": "8508463",
+        "wheelchair": "limited",
         "@relations": [
           {
             "role": "stop",
@@ -25843,6 +27088,20 @@
       "type": "Feature",
       "properties": {
         "@id": "node/415411498",
+        "amenity": "ferry_terminal",
+        "bicycle": "yes",
+        "cargo": "passengers",
+        "ele": "435",
+        "ferry": "yes",
+        "foot": "yes",
+        "motor_vehicle": "no",
+        "name": "Kehrsiten-Bürgenstock",
+        "network": "SGV",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "source": "Bundesamt für Verkehr (BAV), DIDOK 2009",
+        "uic_name": "Kehrsiten-Bürgenstock",
+        "uic_ref": "8508489",
         "@relations": [
           {
             "role": "stop",
@@ -25972,6 +27231,15 @@
       "type": "Feature",
       "properties": {
         "@id": "node/415411515",
+        "amenity": "ferry_terminal",
+        "cargo": "passengers",
+        "ele": "435",
+        "ferry": "yes",
+        "name": "Kastanienbaum (See)",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "uic_name": "Kastanienbaum (See)",
+        "uic_ref": "8508478",
         "@relations": [
           {
             "role": "stop",
@@ -26122,6 +27390,15 @@
       "type": "Feature",
       "properties": {
         "@id": "node/420386236",
+        "amenity": "ferry_terminal",
+        "cargo": "passengers",
+        "ele": "435",
+        "ferry": "yes",
+        "mooring": "ferry",
+        "name": "Landungssteg 4",
+        "public_transport": "stop_position",
+        "uic_name": "Luzern Bahnhofquai",
+        "wheelchair": "yes",
         "@relations": [
           {
             "role": "stop",
@@ -26265,6 +27542,16 @@
       "type": "Feature",
       "properties": {
         "@id": "node/439556029",
+        "amenity": "ferry_terminal",
+        "cargo": "passengers",
+        "ele": "435",
+        "ferry": "yes",
+        "name": "Bauen (See)",
+        "network": "SGV",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "uic_name": "Bauen (See)",
+        "uic_ref": "8508474",
         "@relations": [
           {
             "role": "stop",
@@ -26376,6 +27663,18 @@
       "type": "Feature",
       "properties": {
         "@id": "node/452373603",
+        "amenity": "ferry_terminal",
+        "cargo": "passengers",
+        "ele": "435",
+        "ferry": "yes",
+        "foot": "yes",
+        "name": "Kehrsiten Dorf",
+        "network": "SGV",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "uic_name": "Kehrsiten Dorf",
+        "uic_ref": "8508480",
+        "wheelchair": "yes",
         "@relations": [
           {
             "role": "stop",
@@ -26488,6 +27787,16 @@
       "type": "Feature",
       "properties": {
         "@id": "node/452373659",
+        "amenity": "ferry_terminal",
+        "cargo": "passengers",
+        "ele": "435",
+        "ferry": "yes",
+        "name": "Hergiswil (See)",
+        "network": "SGV",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "uic_name": "Hergiswil (See)",
+        "uic_ref": "8508481",
         "@relations": [
           {
             "role": "stop",
@@ -26638,6 +27947,16 @@
       "type": "Feature",
       "properties": {
         "@id": "node/469413685",
+        "amenity": "ferry_terminal",
+        "cargo": "passengers",
+        "ele": "435",
+        "ferry": "yes",
+        "name": "Tribschen",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "uic_name": "Tribschen",
+        "uic_ref": "8508479",
+        "wikidata": "Q665288",
         "@relations": [
           {
             "role": "stop",
@@ -26688,6 +28007,16 @@
       "type": "Feature",
       "properties": {
         "@id": "node/478073148",
+        "amenity": "ferry_terminal",
+        "cargo": "passengers",
+        "ele": "472",
+        "ferry": "yes",
+        "name": "Meggen (See)",
+        "old_name": "Meggen SGV",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "uic_name": "Meggen (See)",
+        "uic_ref": "8508484",
         "@relations": [
           {
             "role": "stop",
@@ -26742,6 +28071,17 @@
       "type": "Feature",
       "properties": {
         "@id": "node/496261221",
+        "amenity": "ferry_terminal",
+        "cargo": "passengers",
+        "ele": "435",
+        "ferry": "yes",
+        "name": "Treib (See)",
+        "network": "SGV",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "uic_name": "Treib",
+        "uic_ref": "8508469",
+        "wheelchair": "limited",
         "@relations": [
           {
             "role": "stop",
@@ -26873,7 +28213,42 @@
     {
       "type": "Feature",
       "properties": {
+        "@id": "node/620914567",
+        "amenity": "ferry_terminal",
+        "ele": "435",
+        "ferry": "yes",
+        "name": "Seedorf UR (See)",
+        "network": "SGV",
+        "note": "Dieser Laandungssteg wird von SGV nicht angefahren, ist aber 9im Didok drin",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "uic_name": "Seedorf UR (See)",
+        "uic_ref": "8530833",
+        "wheelchair": "limited"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.5987627,
+          46.890052
+        ]
+      },
+      "id": "node/620914567"
+    },
+    {
+      "type": "Feature",
+      "properties": {
         "@id": "node/622151244",
+        "amenity": "ferry_terminal",
+        "cargo": "passengers",
+        "ele": "435",
+        "ferry": "yes",
+        "name": "Isleten-Isenthal",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "uic_name": "Isleten-Isenthal",
+        "uic_ref": "8508475",
+        "wheelchair": "yes",
         "@relations": [
           {
             "role": "stop",
@@ -26965,6 +28340,16 @@
       "type": "Feature",
       "properties": {
         "@id": "node/631879878",
+        "amenity": "ferry_terminal",
+        "cargo": "passengers",
+        "ele": "435",
+        "ferry": "yes",
+        "name": "Tellsplatte",
+        "network": "SGV",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "uic_name": "Tellsplatte",
+        "uic_ref": "8508473",
         "@relations": [
           {
             "role": "stop",
@@ -27080,7 +28465,37 @@
     {
       "type": "Feature",
       "properties": {
+        "@id": "node/659996988",
+        "amenity": "ferry_terminal",
+        "ele": "435",
+        "ferry": "yes",
+        "fixme": "no ferry routes connected to this ferry_terminal",
+        "name": "Rotzloch",
+        "public_transport": "disused",
+        "uic_name": "Rotzloch",
+        "uic_ref": "8508482"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.3289333,
+          46.9656676
+        ]
+      },
+      "id": "node/659996988"
+    },
+    {
+      "type": "Feature",
+      "properties": {
         "@id": "node/670299349",
+        "amenity": "ferry_terminal",
+        "cargo": "passengers",
+        "ferry": "yes",
+        "name": "Verkehrshaus-Lido",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "uic_name": "Verkehrshaus-Lido",
+        "uic_ref": "8508459",
         "@relations": [
           {
             "role": "stop",
@@ -27431,6 +28846,15 @@
       "type": "Feature",
       "properties": {
         "@id": "node/827354005",
+        "amenity": "ferry_terminal",
+        "cargo": "passengers",
+        "ele": "435",
+        "ferry": "yes",
+        "mooring": "ferry",
+        "name": "Luzern Bahnhofquai 2",
+        "public_transport": "stop_position",
+        "uic_name": "Luzern Bahnhofquai",
+        "wheelchair": "yes",
         "@relations": [
           {
             "role": "stop",
@@ -27696,6 +29120,17 @@
       "type": "Feature",
       "properties": {
         "@id": "node/984014204",
+        "amenity": "ferry_terminal",
+        "cargo": "passengers",
+        "ele": "435",
+        "ferry": "yes",
+        "name": "Ennetbürgen (See)",
+        "network": "SGV",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "uic_name": "Ennetbürgen (See)",
+        "uic_ref": "8508465",
+        "wheelchair": "yes",
         "@relations": [
           {
             "role": "stop",
@@ -27752,6 +29187,17 @@
       "type": "Feature",
       "properties": {
         "@id": "node/984014243",
+        "amenity": "ferry_terminal",
+        "cargo": "passengers",
+        "ele": "435",
+        "ferry": "yes",
+        "name": "Buochs (See)",
+        "network": "SGV",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "uic_name": "Buochs (See)",
+        "uic_ref": "8508466",
+        "wheelchair": "limited",
         "@relations": [
           {
             "role": "stop",
@@ -27808,6 +29254,18 @@
       "type": "Feature",
       "properties": {
         "@id": "node/984024181",
+        "amenity": "ferry_terminal",
+        "cargo": "passengers",
+        "ele": "435",
+        "ferry": "yes",
+        "name": "Luzern Schweizerhofquai",
+        "network": "SGV",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "ref": "7",
+        "source": "Bundesamt für Verkehr (BAV), DIDOK 2009",
+        "uic_name": "Luzern Schweizerhofquai",
+        "uic_ref": "8508505",
         "@relations": [
           {
             "role": "stop",
@@ -27864,6 +29322,16 @@
       "type": "Feature",
       "properties": {
         "@id": "node/984738514",
+        "amenity": "ferry_terminal",
+        "cargo": "passengers",
+        "ele": "435",
+        "ferry": "yes",
+        "name": "Küssnacht am Rigi (See)",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "uic_name": "Küssnacht am Rigi (See)",
+        "uic_ref": "8508488",
+        "wikidata": "Q106766684",
         "@relations": [
           {
             "role": "stop",
@@ -27974,6 +29442,15 @@
       "type": "Feature",
       "properties": {
         "@id": "node/984738515",
+        "amenity": "ferry_terminal",
+        "cargo": "passengers",
+        "ele": "435",
+        "ferry": "yes",
+        "name": "Hermitage",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "uic_name": "Hermitage",
+        "uic_ref": "8508485",
         "@relations": [
           {
             "role": "stop",
@@ -28024,6 +29501,16 @@
       "type": "Feature",
       "properties": {
         "@id": "node/984738524",
+        "amenity": "ferry_terminal",
+        "cargo": "passengers",
+        "ele": "435",
+        "ferry": "yes",
+        "name": "Seeburg",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "uic_name": "Seeburg",
+        "uic_ref": "8508461",
+        "wikidata": "Q29785715",
         "@relations": [
           {
             "role": "stop",
@@ -28073,7 +29560,39 @@
     {
       "type": "Feature",
       "properties": {
+        "@id": "node/1014204845",
+        "addr:city": "Luzern",
+        "addr:postcode": "6004",
+        "addr:street": "Schweizerhofquai",
+        "amenity": "ferry_terminal",
+        "ferry": "yes",
+        "name": "Luzern Schweizerhofquai",
+        "public_transport": "stop_position",
+        "ref": "8",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.3110677,
+          47.0540087
+        ]
+      },
+      "id": "node/1014204845"
+    },
+    {
+      "type": "Feature",
+      "properties": {
         "@id": "node/1305652787",
+        "amenity": "ferry_terminal",
+        "cargo": "passengers",
+        "ele": "435",
+        "ferry": "yes",
+        "name": "Merlischachen (See)",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "uic_name": "Merlischachen (See)",
+        "uic_ref": "8508486",
         "@relations": [
           {
             "role": "stop",
@@ -28108,6 +29627,15 @@
       "type": "Feature",
       "properties": {
         "@id": "node/2294628099",
+        "amenity": "ferry_terminal",
+        "cargo": "passengers",
+        "ele": "435",
+        "ferry": "yes",
+        "name": "Meggenhorn",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "uic_name": "Meggenhorn",
+        "uic_ref": "8508504",
         "@relations": [
           {
             "role": "stop",
@@ -28158,6 +29686,15 @@
       "type": "Feature",
       "properties": {
         "@id": "node/2393265378",
+        "amenity": "ferry_terminal",
+        "cargo": "passengers",
+        "ele": "435",
+        "ferry": "yes",
+        "name": "Greppen",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "uic_name": "Greppen",
+        "uic_ref": "8508487",
         "@relations": [
           {
             "role": "stop",
@@ -28212,7 +29749,182 @@
     {
       "type": "Feature",
       "properties": {
+        "@id": "node/2719051533",
+        "access": "private",
+        "amenity": "ferry_terminal",
+        "cargo": "dry_bulk",
+        "ferry": "yes",
+        "operator": "SGV & Kiesag",
+        "public_transport": "station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.2900304,
+          46.9622369
+        ]
+      },
+      "id": "node/2719051533"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/5437986901",
+        "amenity": "ferry_terminal",
+        "cargo": "passengers",
+        "ele": "435",
+        "ferry": "yes",
+        "name": "Flüelen (See)",
+        "network": "SGV",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "uic_name": "Flüelen (See)",
+        "uic_ref": "8508476",
+        "wheelchair": "yes",
+        "@relations": [
+          {
+            "role": "stop",
+            "rel": 18615629,
+            "reltags": {
+              "bicycle": "yes",
+              "duration": "00:46",
+              "foot": "yes",
+              "from": "Brunnen",
+              "motor_vehicle": "no",
+              "name": "3600: Brunnen-Fluelen Kurs 405",
+              "operator": "SGV",
+              "public_transport:version": "2",
+              "ref": "3600",
+              "route": "ferry",
+              "to": "Flüelen",
+              "type": "route",
+              "via": "Tellspalatte",
+              "website": "https://www.lakelucerne.ch/de/"
+            }
+          },
+          {
+            "role": "stop",
+            "rel": 18615630,
+            "reltags": {
+              "bicycle": "yes",
+              "duration": "00:44",
+              "foot": "yes",
+              "from": "Brunnen",
+              "motor_vehicle": "no",
+              "name": "3600: Brunnen-Fluelen Kurs 13,23",
+              "operator": "SGV",
+              "public_transport:version": "2",
+              "ref": "3600",
+              "route": "ferry",
+              "to": "Flüelen",
+              "type": "route",
+              "via": "Sisikon",
+              "website": "https://www.lakelucerne.ch/de/"
+            }
+          },
+          {
+            "role": "stop",
+            "rel": 18615631,
+            "reltags": {
+              "bicycle": "yes",
+              "duration": "00:47",
+              "foot": "yes",
+              "from": "Flüelen",
+              "motor_vehicle": "no",
+              "name": "3600: Flüelen-Brunnen Kurs 18,26",
+              "operator": "SGV",
+              "public_transport:version": "2",
+              "ref": "3600",
+              "route": "ferry",
+              "to": "Brunnen",
+              "type": "route",
+              "via": "Sisikon",
+              "website": "https://www.lakelucerne.ch/de/"
+            }
+          },
+          {
+            "role": "stop",
+            "rel": 18615633,
+            "reltags": {
+              "bicycle": "yes",
+              "foot": "yes",
+              "from": "Flüelen",
+              "motor_vehicle": "no",
+              "name": "3600: Flüelen-Brunnen Kurs 14,20,24",
+              "public_transport:version": "2",
+              "ref": "3600",
+              "route": "ferry",
+              "type": "route",
+              "via": "Bauen"
+            }
+          },
+          {
+            "role": "stop",
+            "rel": 18615634,
+            "reltags": {
+              "bicycle": "yes",
+              "duration": "00:57",
+              "foot": "yes",
+              "from": "Brunnen",
+              "motor_vehicle": "no",
+              "name": "3600: Brunnen-Fluelen Kurs 25",
+              "operator": "SGV",
+              "public_transport:version": "2",
+              "ref": "3600",
+              "route": "ferry",
+              "to": "Flüelen",
+              "type": "route",
+              "via": "Sisikon, Bauen",
+              "website": "https://www.lakelucerne.ch/de/"
+            }
+          },
+          {
+            "role": "stop",
+            "rel": 18615635,
+            "reltags": {
+              "bicycle": "yes",
+              "duration": "00:59",
+              "foot": "yes",
+              "from": "Flüelen",
+              "motor_vehicle": "no",
+              "name": "3600: Flülen-Brunnen Kurs 12",
+              "operator": "SGV",
+              "public_transport:version": "2",
+              "ref": "3600",
+              "route": "ferry",
+              "to": "Brunnen",
+              "type": "route",
+              "via": "Isleten, Sisikon",
+              "website": "https://www.lakelucerne.ch/de/"
+            }
+          }
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.6237464,
+          46.9026972
+        ]
+      },
+      "id": "node/5437986901"
+    },
+    {
+      "type": "Feature",
+      "properties": {
         "@id": "node/5522455400",
+        "amenity": "ferry_terminal",
+        "cargo": "passengers",
+        "ele": "438",
+        "ferry": "yes",
+        "foot": "yes",
+        "name": "Stansstad (See)",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "uic_name": "Stansstad (See)",
+        "uic_ref": "8508483",
+        "website": "https://www.lakelucerne.ch/",
+        "wheelchair": "yes",
         "@relations": [
           {
             "role": "stop",
@@ -28422,6 +30134,14 @@
       "type": "Feature",
       "properties": {
         "@id": "node/6686811677",
+        "amenity": "ferry_terminal",
+        "cargo": "passengers",
+        "ele": "435",
+        "ferry": "yes",
+        "mooring": "ferry",
+        "name": "Luzern Bahnhofquai 3",
+        "public_transport": "stop_position",
+        "uic_name": "Luzern Bahnhofquai",
         "@relations": [
           {
             "role": "stop",
@@ -28589,134 +30309,142 @@
     {
       "type": "Feature",
       "properties": {
-        "@id": "node/5437986901",
-        "@relations": [
-          {
-            "role": "stop",
-            "rel": 18615629,
-            "reltags": {
-              "bicycle": "yes",
-              "duration": "00:46",
-              "foot": "yes",
-              "from": "Brunnen",
-              "motor_vehicle": "no",
-              "name": "3600: Brunnen-Fluelen Kurs 405",
-              "operator": "SGV",
-              "public_transport:version": "2",
-              "ref": "3600",
-              "route": "ferry",
-              "to": "Flüelen",
-              "type": "route",
-              "via": "Tellspalatte",
-              "website": "https://www.lakelucerne.ch/de/"
-            }
-          },
-          {
-            "role": "stop",
-            "rel": 18615630,
-            "reltags": {
-              "bicycle": "yes",
-              "duration": "00:44",
-              "foot": "yes",
-              "from": "Brunnen",
-              "motor_vehicle": "no",
-              "name": "3600: Brunnen-Fluelen Kurs 13,23",
-              "operator": "SGV",
-              "public_transport:version": "2",
-              "ref": "3600",
-              "route": "ferry",
-              "to": "Flüelen",
-              "type": "route",
-              "via": "Sisikon",
-              "website": "https://www.lakelucerne.ch/de/"
-            }
-          },
-          {
-            "role": "stop",
-            "rel": 18615631,
-            "reltags": {
-              "bicycle": "yes",
-              "duration": "00:47",
-              "foot": "yes",
-              "from": "Flüelen",
-              "motor_vehicle": "no",
-              "name": "3600: Flüelen-Brunnen Kurs 18,26",
-              "operator": "SGV",
-              "public_transport:version": "2",
-              "ref": "3600",
-              "route": "ferry",
-              "to": "Brunnen",
-              "type": "route",
-              "via": "Sisikon",
-              "website": "https://www.lakelucerne.ch/de/"
-            }
-          },
-          {
-            "role": "stop",
-            "rel": 18615633,
-            "reltags": {
-              "bicycle": "yes",
-              "foot": "yes",
-              "from": "Flüelen",
-              "motor_vehicle": "no",
-              "name": "3600: Flüelen-Brunnen Kurs 14,20,24",
-              "public_transport:version": "2",
-              "ref": "3600",
-              "route": "ferry",
-              "type": "route",
-              "via": "Bauen"
-            }
-          },
-          {
-            "role": "stop",
-            "rel": 18615634,
-            "reltags": {
-              "bicycle": "yes",
-              "duration": "00:57",
-              "foot": "yes",
-              "from": "Brunnen",
-              "motor_vehicle": "no",
-              "name": "3600: Brunnen-Fluelen Kurs 25",
-              "operator": "SGV",
-              "public_transport:version": "2",
-              "ref": "3600",
-              "route": "ferry",
-              "to": "Flüelen",
-              "type": "route",
-              "via": "Sisikon, Bauen",
-              "website": "https://www.lakelucerne.ch/de/"
-            }
-          },
-          {
-            "role": "stop",
-            "rel": 18615635,
-            "reltags": {
-              "bicycle": "yes",
-              "duration": "00:59",
-              "foot": "yes",
-              "from": "Flüelen",
-              "motor_vehicle": "no",
-              "name": "3600: Flülen-Brunnen Kurs 12",
-              "operator": "SGV",
-              "public_transport:version": "2",
-              "ref": "3600",
-              "route": "ferry",
-              "to": "Brunnen",
-              "type": "route",
-              "via": "Isleten, Sisikon",
-              "website": "https://www.lakelucerne.ch/de/"
-            }
-          }
-        ]
+        "@id": "node/7649044520",
+        "amenity": "ferry_terminal",
+        "ferry": "yes",
+        "public_transport": "stop_position"
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          8.6237464,
-          46.9026972
+          8.5931891,
+          46.9705957
         ]
       },
-      "id": "node/5437986901"
+      "id": "node/7649044520"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/7869214100",
+        "amenity": "ferry_terminal",
+        "ferry": "yes",
+        "name": "Flüelen",
+        "public_transport": "station",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.6238474,
+          46.9035271
+        ]
+      },
+      "id": "node/7869214100"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/9873433984",
+        "access": "private",
+        "amenity": "ferry_terminal",
+        "cargo": "dry_bulk",
+        "ferry": "yes",
+        "name": "Anlegestelle Gütertransport (Kiesag)",
+        "operator": "SGV & Kiesag"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.4930091,
+          46.9627145
+        ]
+      },
+      "id": "node/9873433984"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/9877550547",
+        "amenity": "ferry_terminal",
+        "disused:public_transport": "stop_position",
+        "ferry": "yes",
+        "name": "Eingang \"Schiffrestaurant Wilhelm Tell\"",
+        "network": "SGV",
+        "operator": "SGV",
+        "public_transport": "stop_position",
+        "ref": "9"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.3119424,
+          47.0542611
+        ]
+      },
+      "id": "node/9877550547"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/9878291647",
+        "access": "private",
+        "amenity": "ferry_terminal",
+        "cargo": "dry_bulk",
+        "ferry": "yes",
+        "operator": "SGV & Kiesag",
+        "public_transport": "station"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.2901645,
+          46.9624418
+        ]
+      },
+      "id": "node/9878291647"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/9879509219",
+        "access": "private",
+        "amenity": "ferry_terminal",
+        "cargo": "dry_bulk",
+        "ferry": "yes",
+        "name": "Anlegestelle Gütertransport (Kiesag)",
+        "operator": "SGV & Kiesag"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.4919252,
+          46.9628856
+        ]
+      },
+      "id": "node/9879509219"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/9879528105",
+        "amenity": "ferry_terminal",
+        "ele": "434",
+        "ferry": "no",
+        "name": "Rotschuo",
+        "operator": "SGV",
+        "public_transport": "no",
+        "uic_name": "Rotschuo",
+        "uic_ref": "8530773"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.4879173,
+          46.9929578
+        ]
+      },
+      "id": "node/9879528105"
     }
   ]
 }
