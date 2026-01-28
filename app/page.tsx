@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
+import { useEffect, useState, useCallback, useRef, useMemo, Suspense } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { RotateCcw, Ship } from 'lucide-react'
 
@@ -28,18 +29,39 @@ const UPDATE_INTERVAL_MS = 1000
 const PRE_DEPARTURE_DWELL_MS = 1 * 60 * 1000 // 1 Minute für Schiffe, die von der Werft kommen
 const POST_ARRIVAL_GRACE_MS = 0 // Kein Puffer mehr nötig, da wir Segmente verknüpfen
 
-export default function Home() {
+function HomeContent() {
   const { t, language } = useI18n()
   const { theme } = useTheme()
+  const searchParams = useSearchParams()
+  const router = useRouter()
 
   // --- STATE ---
+  // Initialisiere selectedLakeId aus localStorage (URL wird später geprüft)
   const [selectedLakeId, setSelectedLakeId] = useState<string>(() => {
     if (typeof window !== 'undefined') {
+      // Prüfe URL-Parameter zuerst
+      const params = new URLSearchParams(window.location.search)
+      const urlLakeId = params.get('id')
+      if (urlLakeId && LAKES[urlLakeId]) {
+        return urlLakeId
+      }
       return localStorage.getItem('selectedLake') || 'zurichsee'
     }
     return 'zurichsee'
   })
   const [enabledLakes, setEnabledLakes] = useState<string[]>([])
+
+  // Prüfe URL-Parameter beim ersten Laden und bei Änderungen
+  useEffect(() => {
+    const urlLakeId = searchParams.get('id')
+    if (urlLakeId && LAKES[urlLakeId]) {
+      // URL-Parameter hat Priorität
+      setSelectedLakeId(urlLakeId)
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('selectedLake', urlLakeId)
+      }
+    }
+  }, [searchParams]) // Prüfe bei Änderung der URL-Parameter
   const [lakeStations, setLakeStations] = useState<Station[]>([])
   const [lakeMapping, setLakeMapping] = useState<Record<string, string>>({})
   const [ships, setShips] = useState<ShipPosition[]>([])
@@ -74,6 +96,19 @@ export default function Home() {
         const enabled = data.enabledLakes || []
         setEnabledLakes(enabled)
         
+        // Prüfe URL-Parameter beim Laden der aktivierten Seen
+        const urlLakeId = searchParams.get('id')
+        if (urlLakeId && LAKES[urlLakeId]) {
+          // Wenn URL-Parameter vorhanden und See existiert, verwende diesen
+          if (enabled.length === 0 || enabled.includes(urlLakeId)) {
+            setSelectedLakeId(urlLakeId)
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('selectedLake', urlLakeId)
+            }
+            return
+          }
+        }
+        
         // Wenn der aktuell ausgewählte See nicht aktiviert ist, wähle den ersten aktivierten
         if (enabled.length > 0 && !enabled.includes(selectedLakeId)) {
           const newLakeId = enabled[0]
@@ -88,7 +123,7 @@ export default function Home() {
         // Fallback: Alle Seen aktiviert
         setEnabledLakes(Object.keys(LAKES))
       })
-  }, [])
+  }, [searchParams])
 
   const selectedLake = useMemo(() => LAKES[selectedLakeId], [selectedLakeId])
   
@@ -975,6 +1010,10 @@ export default function Home() {
               availableLakes={availableLakes}
               onLakeChange={(newLakeId) => {
                 setSelectedLakeId(newLakeId)
+                // Aktualisiere URL-Parameter
+                const params = new URLSearchParams(searchParams.toString())
+                params.set('id', newLakeId)
+                router.push(`?${params.toString()}`, { scroll: false })
                 setShips([])
                 setRouteSegments([])
                 setLakeStations([])
@@ -1178,5 +1217,13 @@ export default function Home() {
       <Documentation isOpen={isDocOpen} onClose={() => setIsDocOpen(false)} />
       <ReleaseNotes isOpen={isReleaseNotesOpen} onClose={() => setIsReleaseNotesOpen(false)} />
     </>
+  )
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="h-screen flex items-center justify-center">Lädt...</div>}>
+      <HomeContent />
+    </Suspense>
   )
 }
