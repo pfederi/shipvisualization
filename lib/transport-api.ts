@@ -270,3 +270,4 @@ export async function getLocations(query: string): Promise<Location[]> {
   const data = await response.json()
   return data.stations || []
 }
+

@@ -107,6 +107,14 @@ export const LAKES: Record<string, LakeConfig> = {
     zoom: 12,
     geojsonPath: '/data/zugersee.geojson',
     hasShipNames: false,
+  },
+  greifensee: {
+    id: 'greifensee',
+    name: 'Greifensee',
+    center: [47.35, 8.68],
+    zoom: 13,
+    geojsonPath: '/data/greifensee.geojson',
+    hasShipNames: false,
   }
 }
 
@@ -128,7 +136,8 @@ export async function loadLakeData(lakeId: string): Promise<{ stations: Station[
     case 'lagomaggiore':
     case 'luganersee':
     case 'walensee':
-    case 'zugersee': {
+    case 'zugersee':
+    case 'greifensee': {
       let manualStations: Station[]
       let manualMapping: Record<string, string>
       let geojsonPath: string
@@ -183,11 +192,16 @@ export async function loadLakeData(lakeId: string): Promise<{ stations: Station[
         manualStations = WALENSEE_STATIONS
         manualMapping = WALENSEE_NAME_MAPPING
         geojsonPath = '/data/walensee.geojson'
-      } else {
+      } else if (lakeId === 'zugersee') {
         const { ZUGERSEE_STATIONS, ZUGERSEE_NAME_MAPPING } = await import('./stations/zugersee')
         manualStations = ZUGERSEE_STATIONS
         manualMapping = ZUGERSEE_NAME_MAPPING
         geojsonPath = '/data/zugersee.geojson'
+      } else {
+        const { GREIFENSEE_STATIONS, GREIFENSEE_NAME_MAPPING } = await import('./stations/greifensee')
+        manualStations = GREIFENSEE_STATIONS
+        manualMapping = GREIFENSEE_NAME_MAPPING
+        geojsonPath = '/data/greifensee.geojson'
       }
 
       // Ergänze mit GeoJSON-Stationen für besseres Mapping
@@ -216,7 +230,8 @@ export async function loadLakeData(lakeId: string): Promise<{ stations: Station[
         'lagomaggiore': 'Lago Maggiore',
         'luganersee': 'Luganerseee',
         'walensee': 'Walensee',
-        'zugersee': 'Zugersee'
+        'zugersee': 'Zugersee',
+        'greifensee': 'Greifensee'
       }
       console.log(`🚢 ${lakeNames[lakeId] || lakeId}: ${manualStations.length} manuelle + ${geojsonStations.length - manualStations.length} GeoJSON = ${combinedStations.length} Stationen`)
 

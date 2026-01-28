@@ -92,13 +92,17 @@ export default function Home() {
 
   const selectedLake = useMemo(() => LAKES[selectedLakeId], [selectedLakeId])
   
-  // Verfügbare Seen (nur aktivierte)
+  // Verfügbare Seen (nur aktivierte, alphabetisch sortiert)
   const availableLakes = useMemo(() => {
+    let lakes
     if (enabledLakes.length === 0) {
       // Während des Ladens oder wenn keine aktiviert sind, zeige alle
-      return Object.values(LAKES)
+      lakes = Object.values(LAKES)
+    } else {
+      lakes = Object.values(LAKES).filter(lake => enabledLakes.includes(lake.id))
     }
-    return Object.values(LAKES).filter(lake => enabledLakes.includes(lake.id))
+    // Alphabetisch nach Namen sortieren
+    return lakes.sort((a, b) => a.name.localeCompare(b.name, 'de'))
   }, [enabledLakes])
 
   // --- REFS ---

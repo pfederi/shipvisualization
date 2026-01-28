@@ -30,6 +30,7 @@ export interface RouteSegment {
   internalCourseNumber?: string // Interne Kursnummer für Schiffsnamen (z.B. 64)
   routeCoordinates?: RouteCoordinate[] // Koordinaten entlang der Route
   resolvedShipName?: string // Bereits aufgelöster Schiffsname
+  lakeId?: string // See-ID für seespezifische Route-Findung
 }
 
 // Geschwindigkeiten in Knoten (ca.)
@@ -357,12 +358,33 @@ export async function calculateShipPosition(
       
       // Wenn keine Route im Segment gespeichert ist, versuche sie zu finden
       if (!routeCoordinates && geoJSONRoutes) {
-        // Versuche zuerst Route zwischen beiden Stationen zu finden
-        routeCoordinates = findRouteBetweenStations(geoJSONRoutes, segment.from, segment.to, segment.courseNumber)
-
-        // Wenn das nicht funktioniert, suche nach Routen, die mindestens eine der Stationen berühren
+        // Seespezifische Route-Findung (z.B. für Greifensee)
+        const lakeId = segment.lakeId
+        
+        if (lakeId === 'greifensee') {
+          const { findGreifenseeRoute } = require('./lakes/greifensee-routes')
+          routeCoordinates = findGreifenseeRoute(geoJSONRoutes, 
+            segment.from,
+            segment.to,
+            segment.courseNumber
+          )
+        } else if (lakeId === 'aegerisee') {
+          const { findAegeriseeRoute } = require('./lakes/aegerisee-routes')
+          routeCoordinates = findAegeriseeRoute(geoJSONRoutes, 
+            segment.from,
+            segment.to,
+            segment.courseNumber
+          )
+        }
+        
+        // Fallback: Allgemeine Route-Findung
         if (!routeCoordinates) {
-          routeCoordinates = findRouteNearStations(geoJSONRoutes, segment.from, segment.to, segment.courseNumber)
+          routeCoordinates = findRouteBetweenStations(geoJSONRoutes, segment.from, segment.to, segment.courseNumber, lakeId)
+
+          // Wenn das nicht funktioniert, suche nach Routen, die mindestens eine der Stationen berühren
+          if (!routeCoordinates) {
+            routeCoordinates = findRouteNearStations(geoJSONRoutes, segment.from, segment.to, segment.courseNumber)
+          }
         }
 
         // Wenn Route gefunden wurde, speichere sie im Segment für zukünftige Verwendung
@@ -647,6 +669,14 @@ export function createRouteSegmentFromStationboard(
       { lat: toCoords.lat, lon: toCoords.lon, name: toStation },
       courseNumber
     )
+  } else if (lakeId === 'greifensee') {
+    // Greifensee: Verwende spezielle Rundfahrten-Logik
+    const { findGreifenseeRoute } = require('./lakes/greifensee-routes')
+    routeCoordinates = findGreifenseeRoute(geoJSONRoutes, 
+      { lat: fromCoords.lat, lon: fromCoords.lon, name: fromStation },
+      { lat: toCoords.lat, lon: toCoords.lon, name: toStation },
+      courseNumber
+    )
   }
   
   // Fallback: Allgemeine Route-Findung
@@ -666,6 +696,15 @@ export function createRouteSegmentFromStationboard(
     if (lakeId === 'aegerisee') {
       const { shouldDebugAegeriseeRoute } = require('./lakes/aegerisee-routes')
       if (shouldDebugAegeriseeRoute(fromStation, toStation)) {
+        shouldDebug = true
+        console.warn(`⚠️ Keine GeoJSON-Route gefunden für ${fromStation} -> ${toStation} (Kurs ${courseNumber})`)
+        console.log(`   Von Station: ${fromStation} (${fromCoords.lat.toFixed(6)}, ${fromCoords.lon.toFixed(6)})`)
+        console.log(`   Zu Station: ${toStation} (${toCoords.lat.toFixed(6)}, ${toCoords.lon.toFixed(6)})`)
+        console.log(`   Verfügbare Routen: ${geoJSONRoutes.length}`)
+      }
+    } else if (lakeId === 'greifensee') {
+      const { shouldDebugGreifenseeRoute } = require('./lakes/greifensee-routes')
+      if (shouldDebugGreifenseeRoute(fromStation, toStation)) {
         shouldDebug = true
         console.warn(`⚠️ Keine GeoJSON-Route gefunden für ${fromStation} -> ${toStation} (Kurs ${courseNumber})`)
         console.log(`   Von Station: ${fromStation} (${fromCoords.lat.toFixed(6)}, ${fromCoords.lon.toFixed(6)})`)
@@ -777,5 +816,6 @@ export function createRouteSegmentFromStationboard(
     courseNumber,
     internalCourseNumber,
     routeCoordinates: routeCoordinates || undefined,
+    lakeId, // Speichere lakeId für spätere Verwendung in calculateShipPosition
   }
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo, useRef } from 'react'
-import { MapContainer, TileLayer, Marker, Tooltip, ZoomControl } from 'react-leaflet'
+import dynamic from 'next/dynamic'
 import { renderToString } from 'react-dom/server'
 import { Anchor, Ship as ShipIcon, Crown, ChevronDown, X } from 'lucide-react'
 import { ShipPosition } from '@/lib/ship-position'
@@ -9,6 +9,13 @@ import { LAKES, LakeConfig, Station } from '@/lib/lakes-config'
 import { getCachedGeoJSONRoutes } from '@/lib/geojson-routes'
 
 import 'leaflet/dist/leaflet.css'
+
+// Dynamisch importieren, um SSR-Probleme zu vermeiden
+const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
+const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
+const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false })
+const Tooltip = dynamic(() => import('react-leaflet').then(mod => mod.Tooltip), { ssr: false })
+const ZoomControl = dynamic(() => import('react-leaflet').then(mod => mod.ZoomControl), { ssr: false })
 
 interface ShipMapProps {
   ships?: ShipPosition[]
@@ -111,7 +118,15 @@ export default function ShipMap({ ships = [], onShipClick, onStationClick, selec
     return icons
   }, [ships, selectedShipId])
 
-  if (!isClient) return null
+  if (!isClient || typeof window === 'undefined') {
+    return (
+      <div className="flex-1 relative h-full w-full" id="ship-map-container">
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-gray-500">Karte wird geladen...</div>
+        </div>
+      </div>
+    )
+  }
 
   const handleLakeSelect = (lakeId: string) => {
     if (onLakeChange) {
@@ -222,7 +237,10 @@ export default function ShipMap({ ships = [], onShipClick, onStationClick, selec
         <ZoomControl position="topright" />
         
         {/* Stationen */}
-        {stationIcon && stations.map((station, index) => (
+        {stationIcon && stations
+          .filter(station => station.latitude != null && station.longitude != null && 
+                            !isNaN(station.latitude) && !isNaN(station.longitude))
+          .map((station, index) => (
           <Marker
             key={`${selectedLakeId}-station-${index}`}
             position={[station.latitude, station.longitude]}

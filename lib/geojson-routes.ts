@@ -142,12 +142,20 @@ export async function loadFerryStationsFromGeoJSON(geojsonPath: string): Promise
         const props = feature.properties
 
         // Prüfe auf verschiedene ferry/stop Indikatoren
-        const isFerryStop = props['@relations']?.some((rel: any) =>
+        const hasFerryRelation = props['@relations']?.some((rel: any) =>
           rel.role === 'stop' &&
           (rel.reltags?.route === 'ferry' ||
            rel.reltags?.operator === 'SGV' ||
-           rel.reltags?.operator === 'ZSG')
+           rel.reltags?.operator === 'ZSG' ||
+           rel.reltags?.operator === 'SGG')
         )
+        
+        // Prüfe auch direkt auf ferry_terminal (für Greifensee und andere)
+        const isFerryTerminal = props.amenity === 'ferry_terminal' || 
+                                props.ferry === 'yes' ||
+                                props['public_transport'] === 'station'
+        
+        const isFerryStop = hasFerryRelation || isFerryTerminal
 
         if (isFerryStop) {
           const coords = feature.geometry.coordinates
@@ -181,7 +189,7 @@ export async function loadFerryStationsFromGeoJSON(geojsonPath: string): Promise
             name: finalName,
             latitude: lat,
             longitude: lon,
-            uic_ref: undefined // OSM hat keine UIC-Refs
+            uic_ref: props.uic_ref || undefined // UIC-Ref aus GeoJSON falls vorhanden
           })
         }
       }

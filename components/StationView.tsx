@@ -1,6 +1,6 @@
 'use client'
 
-import { Station } from '@/lib/lakes-config'
+import { Station, loadLakeData, normalizeStationName } from '@/lib/lakes-config'
 import { useI18n } from '@/lib/i18n-context'
 import { useTheme } from '@/lib/theme'
 import { useEffect, useState } from 'react'
@@ -28,6 +28,22 @@ export default function StationView({
   const { t, language } = useI18n()
   const { theme } = useTheme()
   const [stationDepartures, setStationDepartures] = useState<(StationboardEntry & { shipName?: string })[]>([])
+  const [allStations, setAllStations] = useState<Station[]>([])
+  const [stationMapping, setStationMapping] = useState<Record<string, string>>({})
+
+  // Lade alle Stationen und Mapping für den See
+  useEffect(() => {
+    if (selectedLakeId) {
+      loadLakeData(selectedLakeId)
+        .then(({ stations, mapping }) => {
+          setAllStations(stations)
+          setStationMapping(mapping)
+        })
+        .catch(err => {
+          console.error('Fehler beim Laden der Stationen:', err)
+        })
+    }
+  }, [selectedLakeId])
 
   // Lade Abfahrten wenn Station ausgewählt
   useEffect(() => {
@@ -129,17 +145,32 @@ export default function StationView({
                     // Für Rundfahrten: Zeige die nächste Station aus der passList statt dem Endziel
                     let destination = departure.to
                     const currentStationName = selectedStation.name
-                    const isRoundTrip = departure.to === currentStationName || 
-                                       departure.to?.toLowerCase().includes(currentStationName.toLowerCase().split(' ')[0])
+                    const normalizedCurrentStation = normalizeStationName(currentStationName, stationMapping)
                     
                     // Wenn es eine Rundfahrt ist oder eine passList vorhanden ist, zeige die nächste Station
                     if (departure.passList && departure.passList.length > 0) {
-                      // Die passList enthält alle kommenden Stationen (ohne die aktuelle)
-                      // Nimm die erste Station als nächstes Ziel
                       const passList = departure.passList // Type narrowing für TypeScript
-                      const nextStop = passList[0]
-                      if (nextStop?.station?.name) {
-                        destination = nextStop.station.name
+                      
+                      // Filtere die aktuelle Station heraus und finde die nächste Station
+                      const nextStop = passList.find(stop => {
+                        const stopName = normalizeStationName(stop.station?.name || '', stationMapping)
+                        return stopName && stopName !== normalizedCurrentStation
+                      })
+                      
+                      if (nextStop) {
+                        // Versuche zuerst den normalisierten Namen zu verwenden
+                        const normalizedName = normalizeStationName(nextStop.station?.name || '', stationMapping)
+                        if (normalizedName) {
+                          destination = normalizedName
+                        } else if (nextStop.station?.name) {
+                          destination = nextStop.station.name
+                        } else if (nextStop.station?.id) {
+                          // Fallback: Suche Station anhand UIC-Ref
+                          const stationByUic = allStations.find(s => s.uic_ref === nextStop.station.id)
+                          if (stationByUic) {
+                            destination = stationByUic.name
+                          }
+                        }
                       }
                     }
                     
@@ -200,17 +231,32 @@ export default function StationView({
                     // Für Rundfahrten: Zeige die nächste Station aus der passList statt dem Endziel
                     let destination = departure.to
                     const currentStationName = selectedStation.name
-                    const isRoundTrip = departure.to === currentStationName || 
-                                       departure.to?.toLowerCase().includes(currentStationName.toLowerCase().split(' ')[0])
+                    const normalizedCurrentStation = normalizeStationName(currentStationName, stationMapping)
                     
                     // Wenn es eine Rundfahrt ist oder eine passList vorhanden ist, zeige die nächste Station
                     if (departure.passList && departure.passList.length > 0) {
-                      // Die passList enthält alle kommenden Stationen (ohne die aktuelle)
-                      // Nimm die erste Station als nächstes Ziel
                       const passList = departure.passList // Type narrowing für TypeScript
-                      const nextStop = passList[0]
-                      if (nextStop?.station?.name) {
-                        destination = nextStop.station.name
+                      
+                      // Filtere die aktuelle Station heraus und finde die nächste Station
+                      const nextStop = passList.find(stop => {
+                        const stopName = normalizeStationName(stop.station?.name || '', stationMapping)
+                        return stopName && stopName !== normalizedCurrentStation
+                      })
+                      
+                      if (nextStop) {
+                        // Versuche zuerst den normalisierten Namen zu verwenden
+                        const normalizedName = normalizeStationName(nextStop.station?.name || '', stationMapping)
+                        if (normalizedName) {
+                          destination = normalizedName
+                        } else if (nextStop.station?.name) {
+                          destination = nextStop.station.name
+                        } else if (nextStop.station?.id) {
+                          // Fallback: Suche Station anhand UIC-Ref
+                          const stationByUic = allStations.find(s => s.uic_ref === nextStop.station.id)
+                          if (stationByUic) {
+                            destination = stationByUic.name
+                          }
+                        }
                       }
                     }
                     
