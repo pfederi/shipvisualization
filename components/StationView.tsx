@@ -126,6 +126,23 @@ export default function StationView({
                     const depTime = new Date(departure.stop.departure || '')
                     const minutesUntil = Math.round((depTime.getTime() - now.getTime()) / 60000)
                     
+                    // Für Rundfahrten: Zeige die nächste Station aus der passList statt dem Endziel
+                    let destination = departure.to
+                    const currentStationName = selectedStation.name
+                    const isRoundTrip = departure.to === currentStationName || 
+                                       departure.to?.toLowerCase().includes(currentStationName.toLowerCase().split(' ')[0])
+                    
+                    // Wenn es eine Rundfahrt ist oder eine passList vorhanden ist, zeige die nächste Station
+                    if (departure.passList && departure.passList.length > 0) {
+                      // Die passList enthält alle kommenden Stationen (ohne die aktuelle)
+                      // Nimm die erste Station als nächstes Ziel
+                      const passList = departure.passList // Type narrowing für TypeScript
+                      const nextStop = passList[0]
+                      if (nextStop?.station?.name) {
+                        destination = nextStop.station.name
+                      }
+                    }
+                    
                     return (
                       <div
                         key={`future-${idx}`}
@@ -146,7 +163,7 @@ export default function StationView({
                               </div>
                             )}
                             <div className={`font-semibold text-sm ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                              {departure.to}
+                              {destination}
                             </div>
                           </div>
                           {departure.name && (
@@ -180,6 +197,23 @@ export default function StationView({
                   {pastDepartures.map((departure, idx) => {
                     const depTime = new Date(departure.stop.departure || '')
                     
+                    // Für Rundfahrten: Zeige die nächste Station aus der passList statt dem Endziel
+                    let destination = departure.to
+                    const currentStationName = selectedStation.name
+                    const isRoundTrip = departure.to === currentStationName || 
+                                       departure.to?.toLowerCase().includes(currentStationName.toLowerCase().split(' ')[0])
+                    
+                    // Wenn es eine Rundfahrt ist oder eine passList vorhanden ist, zeige die nächste Station
+                    if (departure.passList && departure.passList.length > 0) {
+                      // Die passList enthält alle kommenden Stationen (ohne die aktuelle)
+                      // Nimm die erste Station als nächstes Ziel
+                      const passList = departure.passList // Type narrowing für TypeScript
+                      const nextStop = passList[0]
+                      if (nextStop?.station?.name) {
+                        destination = nextStop.station.name
+                      }
+                    }
+                    
                     return (
                       <div
                         key={`past-${idx}`}
@@ -197,7 +231,7 @@ export default function StationView({
                               </div>
                             )}
                             <div className={`font-semibold text-sm ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                              {departure.to}
+                              {destination}
                             </div>
                           </div>
                           {departure.name && (

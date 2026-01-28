@@ -70,6 +70,4 @@ export const THUNERSEE_NAME_MAPPING: Record<string, string> = {
   'Leissigen See': 'Leissigen (See)',
   'Därligen See': 'Därligen (See)',
 
-  // Abkürzungen
-  'Thun': 'Thun (See)',
 }

@@ -24,7 +24,7 @@ export default function Footer({ onReleaseNotesClick }: FooterProps) {
           lakeshorestudios
         </a>
         <br />
-        {t.madeWithAI} • v1.2.0
+        {t.madeWithAI} • v1.3.0
         {onReleaseNotesClick && (
           <>
             {' • '}

@@ -29,17 +29,11 @@ export const BRIENZERSEE_NAME_MAPPING: Record<string, string> = {
   'Ringgenberg': 'Ringgenberg (See)',
   'Brienz Dorf': 'Brienz Dorf',
   'Brienz': 'Brienz Dorf',
-
-  // Zusätzliche Varianten
   'Interlaken Ost See': 'Interlaken Ost (See)',
   'Iseltwald See': 'Iseltwald (See)',
   'Oberried See': 'Oberried am Brienzersee (See)',
   'Niederried See': 'Niederried (See)',
   'Ringgenberg See': 'Ringgenberg (See)',
-  
-  // WICHTIG: Brienz (See) ist NICHT Brienz Dorf - das sind zwei verschiedene Stationen!
-  // Brienz (See) wird nicht gemappt, da es keine separate Station in unserer Liste ist
-  // Falls die API "Brienz (See)" liefert, sollte es zu "Brienz Dorf" gemappt werden
   'Brienz (See)': 'Brienz Dorf',
   'Brienz See': 'Brienz Dorf',
 }

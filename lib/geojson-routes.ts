@@ -150,7 +150,21 @@ export async function loadFerryStationsFromGeoJSON(geojsonPath: string): Promise
         )
 
         if (isFerryStop) {
-          const [lon, lat] = feature.geometry.coordinates
+          const coords = feature.geometry.coordinates
+          // GeoJSON Point coordinates sind immer [lon, lat]
+          let lon: number, lat: number
+          if (Array.isArray(coords[0]) && typeof coords[0][0] === 'number') {
+            // Verschachteltes Array: [[lon, lat]]
+            const firstCoord = coords[0] as number[]
+            lon = firstCoord[0]
+            lat = firstCoord[1]
+          } else {
+            // Flaches Array: [lon, lat]
+            const flatCoords = coords as unknown as number[]
+            lon = flatCoords[0]
+            lat = flatCoords[1]
+          }
+          
           const name = props.name || props['seamark:name'] || `Station ${stations.length + 1}`
 
           // Bereinige den Namen - behalte SGV-spezifische Namen

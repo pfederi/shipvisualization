@@ -37,3 +37,6 @@ next-env.d.ts
 
 # Sentry Config File
 .env.sentry-build-plugin
+
+# Admin Config wird jetzt in Git committet, damit es auf Vercel verwendet wird
+# data/admin-config.json

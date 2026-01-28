@@ -4,8 +4,8 @@ import { ThemeProvider } from '@/lib/theme'
 import { I18nProvider } from '@/lib/i18n-context'
 
 export const metadata: Metadata = {
-  title: 'Zürichsee Schifffahrt',
-  description: 'Live-Schiffspositionen auf dem Zürichsee mit Fahrplan',
+  title: 'CH Schifffahrt',
+  description: 'Live-Schiffspositionen auf Schweizer Seen mit Fahrplan',
   icons: {
     icon: '/favicon.svg',
     apple: '/favicon.svg',

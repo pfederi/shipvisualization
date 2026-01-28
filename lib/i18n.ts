@@ -2,7 +2,7 @@ export type Language = 'de' | 'en'
 
 export const translations = {
   de: {
-    title: 'Zürichsee ZSG Tracker',
+    title: 'Schifftracker CH',
     activeShips: 'Aktive Schiffe',
     loadingSchedule: 'Fahrplan-Daten werden geladen...',
     loadingSubtext: 'Dies kann einige Sekunden dauern',
@@ -48,7 +48,7 @@ export const translations = {
     docAccuracyText: 'Die Positionen sind Schätzungen basierend auf Fahrplandaten. Die tatsächlichen Positionen können leicht abweichen, da die Schiffe je nach Wetter, Verkehr und anderen Faktoren variieren können.',
   },
   en: {
-    title: 'Lake Zurich ZSG Tracker',
+    title: 'Shipping Tracker CH',
     activeShips: 'Active Ships',
     loadingSchedule: 'Loading schedule data...',
     loadingSubtext: 'This may take a few seconds',

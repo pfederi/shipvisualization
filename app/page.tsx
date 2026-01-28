@@ -39,6 +39,7 @@ export default function Home() {
     }
     return 'zurichsee'
   })
+  const [enabledLakes, setEnabledLakes] = useState<string[]>([])
   const [lakeStations, setLakeStations] = useState<Station[]>([])
   const [lakeMapping, setLakeMapping] = useState<Record<string, string>>({})
   const [ships, setShips] = useState<ShipPosition[]>([])
@@ -65,7 +66,40 @@ export default function Home() {
   const [timelineValue, setTimelineValue] = useState<number>(0) // Für Live-Updates beim Ziehen
   const [isTimelineDragging, setIsTimelineDragging] = useState<boolean>(false) // Track ob Slider gerade bewegt wird
 
+  // Lade aktivierte Seen beim Start
+  useEffect(() => {
+    fetch('/api/admin/enabled-lakes')
+      .then(res => res.json())
+      .then(data => {
+        const enabled = data.enabledLakes || []
+        setEnabledLakes(enabled)
+        
+        // Wenn der aktuell ausgewählte See nicht aktiviert ist, wähle den ersten aktivierten
+        if (enabled.length > 0 && !enabled.includes(selectedLakeId)) {
+          const newLakeId = enabled[0]
+          setSelectedLakeId(newLakeId)
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('selectedLake', newLakeId)
+          }
+        }
+      })
+      .catch(err => {
+        console.error('Error loading enabled lakes:', err)
+        // Fallback: Alle Seen aktiviert
+        setEnabledLakes(Object.keys(LAKES))
+      })
+  }, [])
+
   const selectedLake = useMemo(() => LAKES[selectedLakeId], [selectedLakeId])
+  
+  // Verfügbare Seen (nur aktivierte)
+  const availableLakes = useMemo(() => {
+    if (enabledLakes.length === 0) {
+      // Während des Ladens oder wenn keine aktiviert sind, zeige alle
+      return Object.values(LAKES)
+    }
+    return Object.values(LAKES).filter(lake => enabledLakes.includes(lake.id))
+  }, [enabledLakes])
 
   // --- REFS ---
   const baseRealTimeRef = useRef<number>(Date.now())
@@ -810,32 +844,6 @@ export default function Home() {
             <div className="flex justify-start items-center gap-8">
               <h1 className="text-xl font-black tracking-tight uppercase whitespace-nowrap">{t.title}</h1>
               
-              {/* Lake Selection */}
-              <div className="flex items-center bg-black/10 rounded-xl p-1 border border-white/10 h-[52px]">
-                <select 
-                  value={selectedLakeId} 
-                  onChange={(e) => {
-                    const newLakeId = e.target.value
-                    setSelectedLakeId(newLakeId)
-                    // Reset everything when lake changes
-                    setShips([])
-                    setRouteSegments([])
-                    setLakeStations([])
-                    setLakeMapping({})
-                    setIsInitialCalcDone(false)
-                    lastLoadedKeyRef.current = ""
-                    // loadDailySchedule wird durch useEffect getriggert
-                  }}
-                  className="bg-transparent text-white text-xs font-black px-4 h-full rounded-lg outline-none cursor-pointer hover:bg-white/5 transition-colors appearance-none"
-                >
-                  {Object.values(LAKES).map(lake => (
-                    <option key={lake.id} value={lake.id} className="bg-brandblue text-white">
-                      {lake.name.toUpperCase()}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
               <div className="flex items-center bg-black/10 rounded-xl p-1 gap-1 border border-white/10 h-[52px]">
                 <button onClick={toggleMode} className={`px-4 h-full rounded-lg text-xs font-black transition-all flex items-center gap-2 ${isLiveMode ? 'bg-green-500 text-white shadow-lg' : 'text-white/60 hover:text-white'}`}>
                   <div className={`w-1.5 h-1.5 rounded-full ${isLiveMode ? 'bg-white animate-pulse' : 'bg-white/20'}`} /> {t.liveMode}
@@ -911,29 +919,7 @@ export default function Home() {
         {/* Mobile Header */}
         <header ref={headerRef} className="lg:hidden bg-brandblue text-white px-3 py-2 shadow-lg z-10 border-b border-brandblue-dark" style={{ paddingTop: 'max(0.5rem, env(safe-area-inset-top))' }}>
           <div className="flex justify-between items-center">
-            <div className="flex flex-col">
-              <h1 className="text-xs font-black tracking-tight uppercase opacity-60 line-clamp-1">{t.title}</h1>
-              <select 
-                value={selectedLakeId} 
-                onChange={(e) => {
-                  const newLakeId = e.target.value
-                  setSelectedLakeId(newLakeId)
-                  setShips([])
-                  setRouteSegments([])
-                  setLakeStations([])
-                  setLakeMapping({})
-                  setIsInitialCalcDone(false)
-                  lastLoadedKeyRef.current = ""
-                }}
-                className="bg-transparent text-white text-base font-black outline-none cursor-pointer p-0 -ml-0.5"
-              >
-                {Object.values(LAKES).map(lake => (
-                  <option key={lake.id} value={lake.id} className="bg-brandblue text-white">
-                    {lake.name.toUpperCase()}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <h1 className="text-xs font-black tracking-tight uppercase opacity-60 line-clamp-1">{t.title}</h1>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsDocOpen(true)}
@@ -981,7 +967,20 @@ export default function Home() {
               }}
               selectedShipId={selectedShipId} 
               selectedLakeId={selectedLakeId} 
-              stations={lakeStations} 
+              stations={lakeStations}
+              availableLakes={availableLakes}
+              onLakeChange={(newLakeId) => {
+                setSelectedLakeId(newLakeId)
+                setShips([])
+                setRouteSegments([])
+                setLakeStations([])
+                setLakeMapping({})
+                setIsInitialCalcDone(false)
+                lastLoadedKeyRef.current = ""
+                if (typeof window !== 'undefined') {
+                  localStorage.setItem('selectedLake', newLakeId)
+                }
+              }}
             />
           </div>
 
