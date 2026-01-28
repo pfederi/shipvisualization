@@ -31,6 +31,13 @@ export const ZURICHSEE_STATIONS: Station[] = [
 ]
 
 export const ZURICHSEE_NAME_MAPPING: Record<string, string> = {
+  // Seennamen-Varianten (mit und ohne Umlaute)
+  'Zürichsee': 'Zürichsee',
+  'Zuerichsee': 'Zürichsee',
+  'Zürich See': 'Zürichsee',
+  'Zuerich See': 'Zürichsee',
+  
+  // Stationen
   'Zürich Bürkliplatz': 'Zürich Bürkliplatz (See)',
   'Zürich Wollishofen': 'Zürich Wollishofen (See)',
   'Zürich Tiefenbrunnen': 'Zürich Tiefenbrunnen (See)',

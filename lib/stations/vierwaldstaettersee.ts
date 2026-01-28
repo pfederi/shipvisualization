@@ -35,6 +35,12 @@ export const VIERWALDSTAETTERSEE_STATIONS: Station[] = [
 ]
 
 export const VIERWALDSTAETTERSEE_NAME_MAPPING: Record<string, string> = {
+  // Seennamen-Varianten (mit und ohne Umlaute)
+  'Vierwaldstättersee': 'Vierwaldstättersee',
+  'Vierwaldstaettersee': 'Vierwaldstättersee',
+  'Vierwaldstätter See': 'Vierwaldstättersee',
+  'Vierwaldstaetter See': 'Vierwaldstättersee',
+  
   // Direkte Namen aus der API
   'Luzern Schweizerhofquai': 'Luzern Schweizerhofquai',
   'Verkehrshaus-Lido': 'Verkehrshaus-Lido',

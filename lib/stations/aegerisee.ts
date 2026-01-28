@@ -12,6 +12,12 @@ export const AEGERISEE_STATIONS: Station[] = [
 ]
 
 export const AEGERISEE_NAME_MAPPING: Record<string, string> = {
+  // Seennamen-Varianten (mit und ohne Umlaute)
+  'Aegerisee': 'Aegerisee',
+  'Ägerisee': 'Aegerisee',
+  'Aegeri See': 'Aegerisee',
+  'Ägeri See': 'Aegerisee',
+  
   // Direkte Namen aus der API
   'Unterägeri (See)': 'Unterägeri (See)',
   'Oberägeri (See)': 'Oberägeri (See)',
