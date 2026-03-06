@@ -26,7 +26,7 @@ ENV NODE_ENV=production
 
 # Optional: Build auf wenige CPUs beschränken (z. B. --build-arg BUILD_CPUS=2)
 # 0 oder leer = alle CPUs
-ARG BUILD_CPUS=0
+ARG BUILD_CPUS=2
 RUN if [ "$BUILD_CPUS" -gt 0 ] 2>/dev/null; then \
       taskset -c $(seq -s, 0 $((BUILD_CPUS-1))) npm run build; \
     else npm run build; fi
