@@ -107,41 +107,75 @@ async function fetchStationboardFromAPI(
   const dateStr = date || new Date().toISOString().split('T')[0]
   
   const isServer = typeof window === 'undefined'
-  const baseUrl = isServer 
-    ? (process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000') 
-    : ''
   
-  const params = new URLSearchParams({
-    station,
-    show_passlist: '1',
-    time: time 
-  })
-  if (dateStr) params.append('date', dateStr)
-  if (force) params.append('force', 'true')
+  // Server-seitig: Rufe direkt die externe API auf (effizienter als über interne Route)
+  // Client-seitig: Nutze die interne Route als Proxy (umgeht CORS und nutzt Caching)
+  let url: string
+  if (isServer) {
+    // Server-seitig: Direkter Aufruf der externen API
+    const externalUrl = new URL('https://transport.opendata.ch/v1/stationboard')
+    externalUrl.searchParams.append('station', station)
+    externalUrl.searchParams.append('limit', '200')
+    if (dateStr) externalUrl.searchParams.append('date', dateStr)
+    if (time) externalUrl.searchParams.append('time', time)
+    externalUrl.searchParams.append('type', 'departure')
+    externalUrl.searchParams.append('show_passlist', '1')
+    externalUrl.searchParams.append('transportations[]', 'ship')
+    url = externalUrl.toString()
+  } else {
+    // Client-seitig: Nutze interne Route
+    const params = new URLSearchParams({
+      station,
+      show_passlist: '1',
+      time: time 
+    })
+    if (dateStr) params.append('date', dateStr)
+    if (force) params.append('force', 'true')
+    url = `/api/stationboard?${params.toString()}`
+  }
 
   try {
-    const response = await fetch(`${baseUrl}/api/stationboard?${params.toString()}`, {
+    const response = await fetch(url, {
       cache: force ? 'no-store' : 'default',
-      signal: AbortSignal.timeout(15000) 
+      signal: AbortSignal.timeout(15000),
+      ...(isServer && { next: { revalidate: force ? 0 : 43200 } }) // Server-seitig: Next.js Cache
     })
     
     if (!response.ok) {
       if (response.status === 429 && retryCount < 3) {
         await new Promise(resolve => setTimeout(resolve, 2000 * (retryCount + 1)))
-        return fetchStationboardFromAPI(station, dateStr, time, retryCount + 1)
+        return fetchStationboardFromAPI(station, dateStr, time, retryCount + 1, force)
       }
+      
+      // Versuche Fehlermeldung zu lesen
+      try {
+        const errorData = await response.json()
+        if (errorData.errors && errorData.errors.length > 0) {
+          console.warn(`⚠️ API-Fehler für Station "${station}": ${errorData.errors[0].message}`)
+        }
+      } catch (e) {
+        // Ignoriere JSON-Parse-Fehler
+      }
+      
       return []
     }
 
     const data = await response.json()
+    
+    // Prüfe ob die Antwort ein Fehler-Objekt ist
+    if (data.errors && data.errors.length > 0) {
+      console.warn(`⚠️ API-Fehler in Response für Station "${station}": ${data.errors[0].message}`)
+      return []
+    }
+    
     return data.stationboard || []
   } catch (error) {
     // Bei "Failed to fetch" (Netzwerkfehler) noch einmal versuchen
     if (retryCount < 2) {
       await new Promise(resolve => setTimeout(resolve, 500))
-      return fetchStationboardFromAPI(station, dateStr, time, retryCount + 1)
+      return fetchStationboardFromAPI(station, dateStr, time, retryCount + 1, force)
     }
-    console.warn(`Station ${station} konnte nach Retries nicht geladen werden:`, error)
+    console.warn(`⚠️ Station ${station} konnte nach Retries nicht geladen werden:`, error)
     return []
   }
 }

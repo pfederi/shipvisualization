@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic'
 import { renderToString } from 'react-dom/server'
 import { Anchor, Ship as ShipIcon, Crown, ChevronDown, X } from 'lucide-react'
 import { ShipPosition } from '@/lib/ship-position'
-import { LAKES, LakeConfig, Station } from '@/lib/lakes-config'
+import { LAKES, LakeConfig, Station, getConnectedLakes, getCombinedLakeBounds } from '@/lib/lakes-config'
 import { getCachedGeoJSONRoutes } from '@/lib/geojson-routes'
 
 import 'leaflet/dist/leaflet.css'
@@ -34,6 +34,10 @@ export default function ShipMap({ ships = [], onShipClick, onStationClick, selec
   const mapInitialized = useRef(false)
   const selectedLake = useMemo(() => LAKES[selectedLakeId], [selectedLakeId])
   
+  // Für die drei verbundenen Seen: Lade alle drei
+  const connectedLakeIds = useMemo(() => getConnectedLakes(selectedLakeId), [selectedLakeId])
+  const combinedBounds = useMemo(() => getCombinedLakeBounds(connectedLakeIds), [connectedLakeIds])
+  
   // Detect mobile
   const [isMobile, setIsMobile] = useState(false)
   useEffect(() => {
@@ -51,15 +55,22 @@ export default function ShipMap({ ships = [], onShipClick, onStationClick, selec
       mapInitialized.current = true
     }
     
-    // Lade GeoJSON-Routen und logge die Anzahl
-    getCachedGeoJSONRoutes(selectedLake.geojsonPath)
-      .then(routes => {
-        console.log(`🗺️ ShipMap: ${routes.length} GeoJSON-Routen geladen für ${selectedLake.name}`)
-      })
-      .catch(error => {
+    // Lade GeoJSON-Routen für alle verbundenen Seen
+    const loadAllRoutes = async () => {
+      try {
+        const routePromises = connectedLakeIds.map(lakeId => 
+          getCachedGeoJSONRoutes(LAKES[lakeId].geojsonPath)
+        )
+        const allRoutes = await Promise.all(routePromises)
+        const totalRoutes = allRoutes.reduce((sum, routes) => sum + routes.length, 0)
+        const lakeNames = connectedLakeIds.map(id => LAKES[id].name).join(', ')
+        console.log(`🗺️ ShipMap: ${totalRoutes} GeoJSON-Routen geladen für ${lakeNames}`)
+      } catch (error) {
         console.error(`❌ ShipMap: Fehler beim Laden der GeoJSON-Routen:`, error)
-      })
-  }, [selectedLake.geojsonPath, selectedLake.name])
+      }
+    }
+    loadAllRoutes()
+  }, [connectedLakeIds])
 
   // Station Icon (einmalig erstellt)
   const stationIcon = useMemo(() => {
@@ -222,8 +233,8 @@ export default function ShipMap({ ships = [], onShipClick, onStationClick, selec
 
       <MapContainer
         key={selectedLakeId} // Force remount when lake changes
-        center={selectedLake.center}
-        zoom={selectedLake.zoom}
+        center={combinedBounds.center}
+        zoom={combinedBounds.zoom}
         className="absolute inset-0"
         scrollWheelZoom={true}
         zoomControl={false} // Disable default zoom control

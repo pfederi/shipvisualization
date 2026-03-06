@@ -89,6 +89,27 @@ vercel
    - In Vercel Dashboard: Settings → Environment Variables
    - Optional: Add `NEXT_PUBLIC_ZSG_API_URL`
 
+### Docker / Coolify (Self-Hosting)
+
+Das Projekt kann mit Docker gebaut und z. B. über [Coolify](https://coolify.io) deployt werden.
+
+1. **Lokal bauen und starten:**
+```bash
+docker build -t shipvisualization .
+docker run -p 3000:3000 shipvisualization
+```
+
+2. **Coolify:**
+   - Neues Projekt → Docker Compose oder Dockerfile
+   - Repository verbinden; Coolify erkennt das `Dockerfile` im Root
+   - Optional: Build-Argument `NEXT_PUBLIC_ZSG_API_URL` setzen (z. B. für eigene ZSG-API-URL)
+   - Umgebungsvariablen (z. B. für Sentry) in Coolify unter „Environment“ setzen
+   - App läuft standardmäßig auf Port 3000; Coolify setzt `PORT` bei Bedarf
+
+3. **Umgebungsvariablen (optional):**
+   - `NEXT_PUBLIC_ZSG_API_URL` – ZSG Ships API URL (Build-Zeit, falls nötig)
+   - Weitere Env-Vars wie für Sentry können zur Laufzeit gesetzt werden
+
 ## 📁 Project Structure
 
 ```

@@ -56,8 +56,19 @@ export async function GET(request: Request) {
       })
 
       if (!response.ok) {
+        // Versuche die Fehlermeldung zu lesen
+        let errorMessage = `External API returned ${response.status}`
+        try {
+          const errorData = await response.json()
+          if (errorData.errors && errorData.errors.length > 0) {
+            errorMessage = errorData.errors[0].message || errorMessage
+          }
+        } catch (e) {
+          // Ignoriere JSON-Parse-Fehler
+        }
+
         if (response.status === 429) {
-          console.error(`Rate limit hit for station: ${station}`)
+          console.error(`⚠️ Rate limit hit for station: ${station}`)
           
           // Fallback auf alte gecachte Daten
           const cached = serverCache.get(cacheKey)
@@ -66,12 +77,23 @@ export async function GET(request: Request) {
             return cached.data
           }
           
-          throw new Error('External Rate Limit')
+          // Bei Rate Limit: Gebe leere Liste zurück statt Fehler zu werfen
+          console.warn(`⚠️ Rate limit für ${station}, keine gecachten Daten verfügbar`)
+          return { stationboard: [] }
         }
-        throw new Error(`External API returned ${response.status}`)
+
+        // Für andere Fehler: Logge und gebe leere Liste zurück
+        console.error(`❌ API-Fehler für Station "${station}": ${errorMessage}`)
+        return { stationboard: [] }
       }
 
       const data = await response.json()
+      
+      // Prüfe ob die Antwort ein Fehler-Objekt ist
+      if (data.errors && data.errors.length > 0) {
+        console.error(`❌ API-Fehler in Response für Station "${station}":`, data.errors[0].message)
+        return { stationboard: [] }
+      }
       
       // Im Server-Memory speichern (ABER NUR WENN DATEN GEFUNDEN WURDEN)
       // Wenn die Liste leer ist, cachen wir sie nicht, um bei Fehlern erneut zu versuchen
@@ -87,8 +109,13 @@ export async function GET(request: Request) {
 
       return data
     } catch (error) {
-      console.error('Stationboard Proxy Error:', error)
-      throw error
+      // Behandle alle Fehler und gebe leere Liste zurück statt zu crashen
+      console.error(`❌ Stationboard Proxy Error für Station "${station}":`, error)
+      if (error instanceof Error) {
+        console.error(`   Fehlermeldung: ${error.message}`)
+        console.error(`   Stack: ${error.stack}`)
+      }
+      return { stationboard: [] }
     }
   })()
 
@@ -97,9 +124,18 @@ export async function GET(request: Request) {
 
   try {
     const data = await requestPromise
-    return NextResponse.json(data)
+    // Stelle sicher, dass immer ein stationboard-Array zurückgegeben wird
+    return NextResponse.json({
+      stationboard: data?.stationboard || [],
+      ...(data?.errors && { errors: data.errors })
+    })
   } catch (error) {
-    return NextResponse.json({ error: 'Internal Server Error', stationboard: [] }, { status: 500 })
+    // Fallback: Sollte eigentlich nicht erreicht werden, da requestPromise immer ein Objekt zurückgibt
+    console.error(`❌ Unerwarteter Fehler in Stationboard-Route für "${station}":`, error)
+    return NextResponse.json({ 
+      stationboard: [],
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
   } finally {
     // Entferne Promise nach Abschluss
     pendingRequests.delete(pendingKey)

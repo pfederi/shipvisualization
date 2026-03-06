@@ -115,7 +115,92 @@ export const LAKES: Record<string, LakeConfig> = {
     zoom: 13,
     geojsonPath: '/data/greifensee.geojson',
     hasShipNames: false,
+  },
+  bielersee: {
+    id: 'bielersee',
+    name: 'Bielersee',
+    center: [47.068, 7.234],
+    zoom: 11,
+    geojsonPath: '/data/bielersee.geojson',
+    hasShipNames: false,
+  },
+  neuenburgersee: {
+    id: 'neuenburgersee',
+    name: 'Neuenburgersee',
+    center: [46.959, 6.938],
+    zoom: 11,
+    geojsonPath: '/data/neuenburgersee.geojson',
+    hasShipNames: false,
+  },
+  murtensee: {
+    id: 'murtensee',
+    name: 'Murtensee',
+    center: [47.021, 7.085],
+    zoom: 11,
+    geojsonPath: '/data/murtensee.geojson',
+    hasShipNames: false,
   }
+}
+
+/**
+ * Die drei Seen sind miteinander verbunden und sollten zusammen angezeigt werden
+ */
+export const CONNECTED_THREE_LAKES = ['bielersee', 'neuenburgersee', 'murtensee'] as const
+
+/**
+ * Gibt alle verbundenen Seen für einen gegebenen See zurück
+ * Für die drei Seen (Bielersee, Neuenburgersee, Murtensee) werden alle drei zurückgegeben
+ */
+export function getConnectedLakes(lakeId: string): string[] {
+  if (CONNECTED_THREE_LAKES.includes(lakeId as any)) {
+    return [...CONNECTED_THREE_LAKES]
+  }
+  return [lakeId]
+}
+
+/**
+ * Berechnet das gemeinsame Zentrum und Zoom-Level für mehrere Seen
+ */
+export function getCombinedLakeBounds(lakeIds: string[]): { center: [number, number], zoom: number } {
+  if (lakeIds.length === 1) {
+    const lake = LAKES[lakeIds[0]]
+    return { center: lake.center, zoom: lake.zoom }
+  }
+  
+  // Für mehrere Seen: Berechne Bounding Box
+  const lakes = lakeIds.map(id => LAKES[id]).filter(Boolean)
+  if (lakes.length === 0) {
+    return { center: [47.0, 7.0], zoom: 10 }
+  }
+  
+  // Finde Min/Max Koordinaten
+  let minLat = Infinity, maxLat = -Infinity
+  let minLon = Infinity, maxLon = -Infinity
+  
+  lakes.forEach(lake => {
+    const [lat, lon] = lake.center
+    minLat = Math.min(minLat, lat)
+    maxLat = Math.max(maxLat, lat)
+    minLon = Math.min(minLon, lon)
+    maxLon = Math.max(maxLon, lon)
+  })
+  
+  // Zentrum berechnen
+  const center: [number, number] = [(minLat + maxLat) / 2, (minLon + maxLon) / 2]
+  
+  // Zoom-Level basierend auf Ausdehnung schätzen
+  const latDiff = maxLat - minLat
+  const lonDiff = maxLon - minLon
+  const maxDiff = Math.max(latDiff, lonDiff)
+  
+  let zoom = 10
+  if (maxDiff < 0.1) zoom = 11
+  else if (maxDiff < 0.05) zoom = 12
+  else if (maxDiff < 0.02) zoom = 13
+  else if (maxDiff > 0.3) zoom = 9
+  else if (maxDiff > 0.5) zoom = 8
+  
+  return { center, zoom }
 }
 
 /**
@@ -137,7 +222,10 @@ export async function loadLakeData(lakeId: string): Promise<{ stations: Station[
     case 'luganersee':
     case 'walensee':
     case 'zugersee':
-    case 'greifensee': {
+    case 'greifensee':
+    case 'bielersee':
+    case 'neuenburgersee':
+    case 'murtensee': {
       let manualStations: Station[]
       let manualMapping: Record<string, string>
       let geojsonPath: string
@@ -197,11 +285,31 @@ export async function loadLakeData(lakeId: string): Promise<{ stations: Station[
         manualStations = ZUGERSEE_STATIONS
         manualMapping = ZUGERSEE_NAME_MAPPING
         geojsonPath = '/data/zugersee.geojson'
-      } else {
+      } else if (lakeId === 'greifensee') {
         const { GREIFENSEE_STATIONS, GREIFENSEE_NAME_MAPPING } = await import('./stations/greifensee')
         manualStations = GREIFENSEE_STATIONS
         manualMapping = GREIFENSEE_NAME_MAPPING
         geojsonPath = '/data/greifensee.geojson'
+      } else if (lakeId === 'bielersee') {
+        const { BIELERSEE_STATIONS, BIELERSEE_NAME_MAPPING } = await import('./stations/bielersee')
+        manualStations = BIELERSEE_STATIONS
+        manualMapping = BIELERSEE_NAME_MAPPING
+        geojsonPath = '/data/bielersee.geojson'
+      } else if (lakeId === 'neuenburgersee') {
+        const { NEUENBURGERSEE_STATIONS, NEUENBURGERSEE_NAME_MAPPING } = await import('./stations/neuenburgersee')
+        manualStations = NEUENBURGERSEE_STATIONS
+        manualMapping = NEUENBURGERSEE_NAME_MAPPING
+        geojsonPath = '/data/neuenburgersee.geojson'
+      } else if (lakeId === 'murtensee') {
+        const { MURTENSEE_STATIONS, MURTENSEE_NAME_MAPPING } = await import('./stations/murtensee')
+        manualStations = MURTENSEE_STATIONS
+        manualMapping = MURTENSEE_NAME_MAPPING
+        geojsonPath = '/data/murtensee.geojson'
+      } else {
+        // Fallback
+        manualStations = []
+        manualMapping = {}
+        geojsonPath = '/data/zurichsee.geojson'
       }
 
       // Ergänze mit GeoJSON-Stationen für besseres Mapping
@@ -231,7 +339,10 @@ export async function loadLakeData(lakeId: string): Promise<{ stations: Station[
         'luganersee': 'Luganerseee',
         'walensee': 'Walensee',
         'zugersee': 'Zugersee',
-        'greifensee': 'Greifensee'
+        'greifensee': 'Greifensee',
+        'bielersee': 'Bielersee',
+        'neuenburgersee': 'Neuenburgersee',
+        'murtensee': 'Murtensee'
       }
       console.log(`🚢 ${lakeNames[lakeId] || lakeId}: ${manualStations.length} manuelle + ${geojsonStations.length - manualStations.length} GeoJSON = ${combinedStations.length} Stationen`)
 
@@ -293,4 +404,25 @@ export function normalizeStationName(name: string, mapping: Record<string, strin
   }
 
   return name
+}
+
+/**
+ * Hilfsfunktion zur Umkehrung des Name-Mappings: Findet den API-Namen für einen GeoJSON-Namen
+ * Gibt den ersten gefundenen API-Namen zurück, der auf den GeoJSON-Namen gemappt wird
+ */
+export function getApiStationName(geojsonName: string, mapping: Record<string, string>): string {
+  if (!geojsonName || !mapping) return geojsonName
+  
+  // Suche nach einem Mapping-Eintrag, dessen Wert dem GeoJSON-Namen entspricht
+  for (const [apiName, mappedName] of Object.entries(mapping)) {
+    if (mappedName === geojsonName) {
+      // Wenn der API-Name ein vollständiger Name mit Zusätzen ist (z.B. "Twann (Schiff)"), verwende diesen
+      if (apiName.includes('(Schiff)') || apiName.includes('(bateau)') || apiName.includes('(Schiff/bateau)')) {
+        return apiName
+      }
+    }
+  }
+  
+  // Fallback: Verwende den GeoJSON-Namen direkt
+  return geojsonName
 }

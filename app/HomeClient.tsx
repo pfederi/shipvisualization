@@ -7,7 +7,7 @@ import { RotateCcw, Ship } from 'lucide-react'
 
 // Types & Libs
 import { ShipPosition, calculateShipPosition } from '@/lib/ship-position'
-import { getStationCoordinates, normalizeStationName, LAKES, loadLakeData, Station } from '@/lib/lakes-config'
+import { getStationCoordinates, normalizeStationName, LAKES, loadLakeData, Station, getConnectedLakes, getCombinedLakeBounds } from '@/lib/lakes-config'
 import { useI18n } from '@/lib/i18n-context'
 import { useTheme } from '@/lib/theme'
 import ThemeLanguageToggle from '@/components/ThemeLanguageToggle'
@@ -127,6 +127,10 @@ function HomeContent() {
 
   const selectedLake = useMemo(() => LAKES[selectedLakeId], [selectedLakeId])
   
+  // Für die drei verbundenen Seen: Lade alle drei
+  const connectedLakeIds = useMemo(() => getConnectedLakes(selectedLakeId), [selectedLakeId])
+  const combinedBounds = useMemo(() => getCombinedLakeBounds(connectedLakeIds), [connectedLakeIds])
+  
   // Verfügbare Seen (nur aktivierte, alphabetisch sortiert)
   const availableLakes = useMemo(() => {
     let lakes
@@ -217,10 +221,20 @@ function HomeContent() {
     try {
       setIsLoading(true)
       
-      // Lade Stationsdaten für diesen See
-      const { stations, mapping } = await loadLakeData(selectedLakeId)
-      setLakeStations(stations)
-      setLakeMapping(mapping)
+      // Lade Stationsdaten für alle verbundenen Seen
+      const allStationsPromises = connectedLakeIds.map(lakeId => loadLakeData(lakeId))
+      const allLakeData = await Promise.all(allStationsPromises)
+      
+      // Kombiniere alle Stationen und Mappings
+      const combinedStations: Station[] = []
+      const combinedMapping: Record<string, string> = {}
+      allLakeData.forEach(({ stations, mapping }) => {
+        combinedStations.push(...stations)
+        Object.assign(combinedMapping, mapping)
+      })
+      
+      setLakeStations(combinedStations)
+      setLakeMapping(combinedMapping)
 
       const [
         { getCachedGeoJSONRoutes },
@@ -237,8 +251,8 @@ function HomeContent() {
       if (selectedLake.hasShipNames) {
         await getCachedShipData().catch(() => {})
       }
-      const stationNames = stations.map(s => s.uic_ref || s.name)
-      const stationCoords = getStationCoordinates(stations)
+      const stationNames = combinedStations.map(s => s.uic_ref || s.name)
+      const stationCoords = getStationCoordinates(combinedStations)
       
       console.log(`🗺️ Station-Koordinaten erstellt: ${stationCoords.size} Einträge`)
       const coordEntries = Array.from(stationCoords.entries()).slice(0, 5)
@@ -247,13 +261,20 @@ function HomeContent() {
         console.log(`   ${key}: (${coords.lat}, ${coords.lon})`)
       })
       
-      const [stationboardMap, geoRoutes] = await Promise.all([
-        getAllStationsStationboard(stationNames, dateStr, "00:00", force),
-        getCachedGeoJSONRoutes(selectedLake.geojsonPath)
+      // Lade GeoJSON-Routen für alle verbundenen Seen
+      const geoRoutesPromises = connectedLakeIds.map(lakeId => 
+        getCachedGeoJSONRoutes(LAKES[lakeId].geojsonPath)
+      )
+      const allGeoRoutes = await Promise.all(geoRoutesPromises)
+      const geoRoutes = allGeoRoutes.flat() // Kombiniere alle Routen
+      
+      const [stationboardMap] = await Promise.all([
+        getAllStationsStationboard(stationNames, dateStr, "00:00", force)
       ])
       
       const totalEntries = Array.from(stationboardMap.values()).reduce((sum, arr) => sum + arr.length, 0)
-      console.log(`📡 Stationboard geladen für ${selectedLake.name}: ${stationboardMap.size} Stationen, ${totalEntries} Einträge`)
+      const lakeNames = connectedLakeIds.map(id => LAKES[id].name).join(', ')
+      console.log(`📡 Stationboard geladen für ${lakeNames}: ${stationboardMap.size} Stationen, ${totalEntries} Einträge`)
       
       // Speichere Stationboard-Daten für Station-Ansicht
       setStationboardData(stationboardMap)
@@ -307,10 +328,10 @@ function HomeContent() {
             const currentPass = entry.passList[i]
             
             // WICHTIG: Wenn station null ist, ist es die Startstation (die Station für die wir das Stationboard laden)
-            let fromName = normalizeStationName(currentPass.station?.name || "", mapping)
+            let fromName = normalizeStationName(currentPass.station?.name || "", combinedMapping)
             if (!fromName) {
               // Verwende die Hauptstation als Startpunkt
-              fromName = normalizeStationName(entry.stop.station.name, mapping)
+              fromName = normalizeStationName(entry.stop.station.name, combinedMapping)
             }
             if (!fromName) continue
             
@@ -319,7 +340,7 @@ function HomeContent() {
             let bestDeparture: string | null = currentPass.departure || currentPass.arrival || null
             
             while (lastSameStationIdx + 1 < entry.passList.length && 
-                   normalizeStationName(entry.passList[lastSameStationIdx + 1].station?.name || "", mapping) === fromName) {
+                   normalizeStationName(entry.passList[lastSameStationIdx + 1].station?.name || "", combinedMapping) === fromName) {
               lastSameStationIdx++
               if (!bestDeparture) {
                 bestDeparture = entry.passList[lastSameStationIdx].departure || entry.passList[lastSameStationIdx].arrival || null
@@ -328,7 +349,7 @@ function HomeContent() {
             
             // WICHTIG: Falls wir gerade an der Station sind, für die wir das Stationboard geladen haben,
             // und im passList keine Zeit steht, nimm die Zeit aus dem Haupt-Entry
-            const normalizedMainStation = normalizeStationName(entry.stop.station.name, mapping)
+            const normalizedMainStation = normalizeStationName(entry.stop.station.name, combinedMapping)
             if (!bestDeparture && fromName === normalizedMainStation) {
               bestDeparture = entry.stop.departure || entry.stop.arrival || null
             }
@@ -370,7 +391,7 @@ function HomeContent() {
               finalArrTime = new Date(depTime.getTime() + 5 * 60 * 1000)
             }
 
-            const toName = normalizeStationName(to.station.name, mapping)
+            const toName = normalizeStationName(to.station.name, combinedMapping)
             
             // DEBUG: Zeige warum keine Segmente erstellt werden
             if (debugStats.totalEntries <= 3) {
@@ -445,7 +466,7 @@ function HomeContent() {
               // Durchsuche vorherige PassList-Einträge nach einer Ankunft an dieser Station
               for (let j = 0; j < i; j++) {
                 const prevPass = entry.passList[j]
-                const prevStationName = normalizeStationName(prevPass.station?.name || "", mapping)
+                const prevStationName = normalizeStationName(prevPass.station?.name || "", combinedMapping)
                 if (prevStationName === fromName && prevPass.arrival) {
                   const prevArrival = new Date(prevPass.arrival)
                   // Nur verwenden, wenn die Ankunft VOR der Abfahrt liegt
@@ -577,7 +598,7 @@ function HomeContent() {
       console.error('Load failed:', error)
       setIsLoading(false)
     }
-  }, [isLiveMode, selectedLakeId, selectedLake.geojsonPath, selectedLake.name, selectedLake.hasShipNames])
+  }, [isLiveMode, selectedLakeId, selectedLake.geojsonPath, selectedLake.name, selectedLake.hasShipNames, connectedLakeIds])
 
   // --- INITIALIZATION ---
   useEffect(() => {
@@ -590,6 +611,15 @@ function HomeContent() {
     loadDailySchedule(now)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadDailySchedule])
+
+  // --- LAKE CHANGE: Force reload when lake changes ---
+  useEffect(() => {
+    if (selectedLakeId) {
+      const currentDate = isLiveMode ? new Date() : new Date(selectedDate)
+      loadDailySchedule(currentDate, true)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedLakeId])
 
   // --- ACTIONS ---
   const handleTimeChange = (newTimeStr: string) => {
@@ -1019,7 +1049,10 @@ function HomeContent() {
                 setLakeStations([])
                 setLakeMapping({})
                 setIsInitialCalcDone(false)
-                lastLoadedKeyRef.current = ""
+                lastLoadedKeyRef.current = "" // Force reload by clearing cache key
+                setViewMode('ships') // Zurück zu aktiven Schiffen
+                setSelectedStation(null)
+                setSelectedShipId(null)
                 if (typeof window !== 'undefined') {
                   localStorage.setItem('selectedLake', newLakeId)
                 }

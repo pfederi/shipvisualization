@@ -153,7 +153,26 @@ export async function loadFerryStationsFromGeoJSON(geojsonPath: string): Promise
         // Prüfe auch direkt auf ferry_terminal (für Greifensee und andere)
         const isFerryTerminal = props.amenity === 'ferry_terminal' || 
                                 props.ferry === 'yes' ||
-                                props['public_transport'] === 'station'
+                                props['public_transport'] === 'station' ||
+                                props['public_transport'] === 'stop_position'
+        
+        // Prüfe zuerst, ob die Station einen Namen hat
+        const name = props.name || props['seamark:name'] || props['@name'] || ''
+        
+        // Wenn die Station nur durch Relations erkannt wird, aber keinen Namen hat, überspringe sie
+        // Nur Stationen mit ferry_terminal/stop_position sollten auch ohne Namen geladen werden (falls sie später einen Namen bekommen)
+        if (!name || name.trim() === '') {
+          // Überspringe Stationen ohne Namen, die nur durch Relations erkannt werden
+          if (hasFerryRelation && !isFerryTerminal) {
+            return
+          }
+          // Für ferry_terminal/stop_position Stationen ohne Namen: überspringe ebenfalls
+          // (diese sollten im GeoJSON benannt sein)
+          if (isFerryTerminal) {
+            console.warn(`⚠️ Ferry-Terminal ohne Namen übersprungen: (${props.latitude || '?'}, ${props.longitude || '?'})`)
+            return
+          }
+        }
         
         const isFerryStop = hasFerryRelation || isFerryTerminal
 
@@ -172,8 +191,6 @@ export async function loadFerryStationsFromGeoJSON(geojsonPath: string): Promise
             lon = flatCoords[0]
             lat = flatCoords[1]
           }
-          
-          const name = props.name || props['seamark:name'] || `Station ${stations.length + 1}`
 
           // Bereinige den Namen - behalte SGV-spezifische Namen
           let cleanName = name

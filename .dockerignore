@@ -1,0 +1,47 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build
+.next
+out
+build
+
+# Git
+.git
+.gitignore
+
+# IDE / OS
+.DS_Store
+*.pem
+.idea
+.vscode
+*.swp
+*.swo
+
+# Env (Coolify setzt sie zur Laufzeit)
+.env
+.env*.local
+.env.development
+.env.test
+
+# Docs / Tests (nicht für Image nötig)
+README.md
+docs
+coverage
+*.md
+!public/**/*.md
+
+# Vercel
+.vercel
+
+# Sentry (Build-Plugin nutzt eigene Env)
+.env.sentry-build-plugin
+
+# TypeScript (nur Build-Zeit)
+*.tsbuildinfo
+next-env.d.ts

@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  output: 'standalone', // für Docker/Coolify: kleineres Image
   env: {
     NEXT_PUBLIC_ZSG_API_URL: process.env.NEXT_PUBLIC_ZSG_API_URL,
   },

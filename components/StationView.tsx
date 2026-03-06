@@ -1,6 +1,6 @@
 'use client'
 
-import { Station, loadLakeData, normalizeStationName } from '@/lib/lakes-config'
+import { Station, loadLakeData, normalizeStationName, getApiStationName } from '@/lib/lakes-config'
 import { useI18n } from '@/lib/i18n-context'
 import { useTheme } from '@/lib/theme'
 import { useEffect, useState } from 'react'
@@ -47,11 +47,20 @@ export default function StationView({
 
   // Lade Abfahrten wenn Station ausgewählt
   useEffect(() => {
-    const stationKey = selectedStation.uic_ref || selectedStation.name
+    // Versuche zuerst UIC-Ref, dann API-Name aus Mapping, dann GeoJSON-Name
+    let stationKey = selectedStation.uic_ref
+    if (!stationKey && stationMapping) {
+      // Wenn kein UIC-Ref vorhanden, versuche den API-Namen aus dem Mapping zu holen
+      stationKey = getApiStationName(selectedStation.name, stationMapping)
+    }
+    if (!stationKey) {
+      stationKey = selectedStation.name
+    }
+    
     const date = selectedDate || new Date().toISOString().split('T')[0]
     const time = '00:00' // Lade alle Abfahrten ab Mitternacht
     
-    console.log(`🔍 Lade Abfahrten für Station: "${selectedStation.name}" (${stationKey})`)
+    console.log(`🔍 Lade Abfahrten für Station: "${selectedStation.name}" (Key: ${stationKey}, UIC-Ref: ${selectedStation.uic_ref || 'keine'})`)
     
     // Lade direkt von API (wird automatisch gecacht bis Mitternacht)
     getStationboard(stationKey, date, time)
