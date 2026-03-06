@@ -8,10 +8,15 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 # Dependencies (inkl. devDependencies für Build: tailwind, postcss, typescript, etc.)
 FROM base AS deps
+RUN apk add --no-cache util-linux
 WORKDIR /app
 COPY package.json package-lock.json* ./
 ENV NODE_ENV=development
-RUN npm ci
+# CPU-Limit auch für npm ci (BUILD_CPUS wird im builder gesetzt, hier Default)
+ARG BUILD_CPUS=1
+RUN if [ "$BUILD_CPUS" -gt 0 ] 2>/dev/null; then \
+      nice -n 19 taskset -c $(seq -s, 0 $((BUILD_CPUS-1))) npm ci; \
+    else nice -n 19 npm ci; fi
 
 # Builder
 FROM base AS builder
@@ -23,13 +28,15 @@ COPY . .
 ARG NEXT_PUBLIC_ZSG_API_URL
 ENV NEXT_PUBLIC_ZSG_API_URL=${NEXT_PUBLIC_ZSG_API_URL}
 ENV NODE_ENV=production
+# Weniger parallele Jobs (weniger CPU-Spitzen)
+ENV CI=true
 
-# Optional: Build auf wenige CPUs beschränken (z. B. --build-arg BUILD_CPUS=2)
-# 0 oder leer = alle CPUs
+# CPU-Limit: BUILD_CPUS=1 (Default) = nur 1 CPU, weniger Load. 0 = alle CPUs.
+# nice -n 19 = niedrigste Priorität, stiehlt anderen Prozessen keine CPU.
 ARG BUILD_CPUS=1
 RUN if [ "$BUILD_CPUS" -gt 0 ] 2>/dev/null; then \
-      taskset -c $(seq -s, 0 $((BUILD_CPUS-1))) npm run build; \
-    else npm run build; fi
+      nice -n 19 taskset -c $(seq -s, 0 $((BUILD_CPUS-1))) npm run build; \
+    else nice -n 19 npm run build; fi
 
 # Runner
 FROM base AS runner

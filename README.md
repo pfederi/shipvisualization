@@ -96,15 +96,15 @@ Das Projekt kann mit Docker gebaut und z. B. über [Coolify](https://coolify.i
 1. **Lokal bauen und starten:**
 ```bash
 docker build -t shipvisualization .
-# Optional: Build auf 2 CPUs beschränken
-docker build --build-arg BUILD_CPUS=2 -t shipvisualization .
+# Standard: 1 CPU (weniger Load). Mehr CPUs: --build-arg BUILD_CPUS=2 oder =0 für alle
+docker build --build-arg BUILD_CPUS=1 -t shipvisualization .
 docker run -p 3000:3000 shipvisualization
 ```
 
 2. **Coolify:**
    - Neues Projekt → Docker Compose oder Dockerfile
    - Repository verbinden; Coolify erkennt das `Dockerfile` im Root
-   - **CPU beim Build begrenzen:** Build-Argument `BUILD_CPUS=2` (oder 1, 3, …) setzen, damit nicht alle Kerne genutzt werden. In Coolify: Build-Argumente / „Build Args“ → `BUILD_CPUS` = `2`
+   - **CPU-Last beim Build:** Standard ist `BUILD_CPUS=1` (nur 1 Kern, Last bleibt niedrig). Build läuft zudem mit niedrigster Priorität (`nice`). Bei zu hoher Load: in Coolify Build-Args prüfen und `BUILD_CPUS=1` lassen; für schnellere Builds `BUILD_CPUS=0` (alle CPUs) oder z. B. `2` setzen.
    - Optional: Build-Argument `NEXT_PUBLIC_ZSG_API_URL` setzen (z. B. für eigene ZSG-API-URL)
    - Umgebungsvariablen (z. B. für Sentry) in Coolify unter „Environment“ setzen
    - App läuft standardmäßig auf Port 3000; Coolify setzt `PORT` bei Bedarf
