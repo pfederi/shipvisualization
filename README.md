@@ -89,45 +89,37 @@ vercel
    - In Vercel Dashboard: Settings → Environment Variables
    - Optional: Add `NEXT_PUBLIC_ZSG_API_URL`
 
-### Docker / Coolify (Self-Hosting)
+### Coolify (Self-Hosting) mit Nix
 
-Das Projekt kann mit Docker gebaut und z. B. über [Coolify](https://coolify.io) deployt werden.
+**Empfohlen:** In [Coolify](https://coolify.io) als **Nix**-Projekt deployen (Build Pack „Nix“ wählen, nicht Dockerfile/Docker Compose). Das Projekt enthält eine `nixpacks.toml`; Coolify baut die App mit Nixpacks und startet sie ohne Docker-Image-Registry.
 
-#### Option A: Build in GitHub, kein Build auf dem Server (empfohlen für Hetzner/Coolify)
+**Prozessor-Last begrenzen:**
 
-**Keine CPU-Last auf dem Server** – das Image wird in GitHub gebaut und nach GHCR gepusht; Coolify zieht nur das fertige Image.
+- In Coolify unter **Einstellungen** (oder Server-/Projekt-Einstellungen): **„Number of concurrent builds“** auf **1** setzen, damit nicht mehrere Builds gleichzeitig laufen.
+- Der Build läuft bereits mit **weniger parallelen Jobs** (`CI=true` in `nixpacks.toml`, `experimental.cpus: 1` in `next.config.js`), damit der Server (z. B. Hetzner) nicht überlastet wird.
 
-**Setup:**
+**Schritte:**
 
-1. **GitHub:** Repo pushen (inkl. `.github/workflows/docker-build-push.yml`). Einmalig: **Settings → Actions → General** → „Workflow permissions“ auf **Read and write permissions** stellen, speichern.
-2. **Ersten Build auslösen:** Push auf `main` (oder unter Actions den Workflow „Build and Push Docker Image“ manuell starten). Danach liegt das Image unter `ghcr.io/<dein-github-user>/shipvisualization:latest`.
-3. **GHCR für Coolify:** Entweder das Package unter **GitHub → Your profile → Packages** öffnen → **Package settings** → **Change visibility** auf **Public** (dann kann Coolify ohne Login pullen). Oder in Coolify unter dem Server/Projekt eine **Registry** anlegen (GHCR, Token von GitHub → Settings → Developer settings → Personal access tokens, scope `read:packages`).
-4. **Coolify:** Neues Projekt → **Docker Image** / **Deploy from Registry** (nicht „Build from Dockerfile“). Image: `ghcr.io/<dein-github-user>/shipvisualization:latest`. Port 3000. Deploy – fertig, kein Build auf dem Server.
+1. In Coolify: **Neues Projekt** → Build Pack **Nix** wählen (nicht „Dockerfile“, nicht „Docker Compose“).
+2. Repository verbinden (Git-URL, Branch z. B. `main`).
+3. Port **3000** eintragen und Deploy starten. Coolify klont das Repo, führt den Nixpacks-Build aus und startet die App.
 
-**Umgebungsvariablen in Coolify (Option A)** – alle optional:
+**Umgebungsvariablen (optional):**
+
 | Variable | Beschreibung |
 |----------|---------------|
-| *(keine Pflicht)* | App läuft mit Defaults (ZSG-API, Seen aus `data/admin-config.json`). |
-| `ADMIN_ENABLED_LAKES` | Komma-getrennte See-IDs, falls du die Konfiguration per Env steuern willst, z. B. `zurichsee,greifensee,bielersee`. Sonst werden die Seen aus der Datei `data/admin-config.json` im Image gelesen. |
+| *(keine Pflicht)* | App läuft mit Defaults. |
+| `ADMIN_ENABLED_LAKES` | Komma-getrennte See-IDs, z. B. `zurichsee,greifensee,bielersee`. |
+| `NEXT_PUBLIC_ZSG_API_URL` | ZSG Ships API URL (Build-Zeit, falls du sie überschreiben willst). |
 
-Sentry (Fehlerberichte) ist im Code hinterlegt; für Coolify brauchst du dafür keine Env-Variablen. `NEXT_PUBLIC_*`-Variablen sind beim Image-Build in GitHub fest eingebaut – wenn du sie ändern willst, musst du sie im GitHub-Actions-Workflow als Build-Env setzen und neu bauen.
+Sentry ist im Code hinterlegt; dafür sind keine Env-Variablen nötig.
 
-#### Option B: Build auf dem Server (Coolify mit Dockerfile)
+---
 
-1. **Lokal bauen und starten:**
-```bash
-docker build -t shipvisualization .
-docker run -p 3000:3000 shipvisualization
-```
+**Optional: Docker (lokal oder Coolify mit Dockerfile)**
 
-2. **Coolify (Build auf Server):**
-   - Neues Projekt → Dockerfile; Repository verbinden
-   - Build-Argument `BUILD_CPUS=1` beibehalten; ggf. in Coolify Build-Args prüfen
-   - Optional: `NEXT_PUBLIC_ZSG_API_URL`; Umgebungsvariablen unter „Environment“
-
-3. **Umgebungsvariablen (optional):**
-   - `NEXT_PUBLIC_ZSG_API_URL` – ZSG Ships API URL (Build-Zeit, falls nötig)
-   - Weitere Env-Vars wie für Sentry können zur Laufzeit gesetzt werden
+- Lokal: `docker build -t shipvisualization .` und `docker run -p 3000:3000 shipvisualization`
+- In Coolify mit Dockerfile: Build Pack „Dockerfile“ wählen, Build-Argument `BUILD_CPUS=1` beibehalten. Siehe `Dockerfile` und `docker-compose.yaml` im Repo, falls du weiter mit Image-Deploy arbeiten möchtest.
 
 ## 📁 Project Structure
 

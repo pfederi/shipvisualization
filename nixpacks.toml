@@ -1,0 +1,13 @@
+# Nixpacks für Coolify „Nix“-Deploy (ohne Dockerfile).
+# Next.js wird gebaut und mit „standalone“ gestartet.
+
+[phases.build]
+# Weniger parallele Jobs = weniger CPU-Last auf dem Server (z. B. Hetzner)
+cmds = ['env CI=true npm run build']
+
+[start]
+cmd = 'npm start'
+
+[variables]
+NODE_ENV = 'production'
+NEXT_TELEMETRY_DISABLED = '1'
