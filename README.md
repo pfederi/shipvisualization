@@ -93,21 +93,37 @@ vercel
 
 Das Projekt kann mit Docker gebaut und z. B. über [Coolify](https://coolify.io) deployt werden.
 
+#### Option A: Build in GitHub, kein Build auf dem Server (empfohlen für Hetzner/Coolify)
+
+**Keine CPU-Last auf dem Server** – das Image wird in GitHub gebaut und nach GHCR gepusht; Coolify zieht nur das fertige Image.
+
+**Setup:**
+
+1. **GitHub:** Repo pushen (inkl. `.github/workflows/docker-build-push.yml`). Einmalig: **Settings → Actions → General** → „Workflow permissions“ auf **Read and write permissions** stellen, speichern.
+2. **Ersten Build auslösen:** Push auf `main` (oder unter Actions den Workflow „Build and Push Docker Image“ manuell starten). Danach liegt das Image unter `ghcr.io/<dein-github-user>/shipvisualization:latest`.
+3. **GHCR für Coolify:** Entweder das Package unter **GitHub → Your profile → Packages** öffnen → **Package settings** → **Change visibility** auf **Public** (dann kann Coolify ohne Login pullen). Oder in Coolify unter dem Server/Projekt eine **Registry** anlegen (GHCR, Token von GitHub → Settings → Developer settings → Personal access tokens, scope `read:packages`).
+4. **Coolify:** Neues Projekt → **Docker Image** / **Deploy from Registry** (nicht „Build from Dockerfile“). Image: `ghcr.io/<dein-github-user>/shipvisualization:latest`. Port 3000. Deploy – fertig, kein Build auf dem Server.
+
+**Umgebungsvariablen in Coolify (Option A)** – alle optional:
+| Variable | Beschreibung |
+|----------|---------------|
+| *(keine Pflicht)* | App läuft mit Defaults (ZSG-API, Seen aus `data/admin-config.json`). |
+| `ADMIN_ENABLED_LAKES` | Komma-getrennte See-IDs, falls du die Konfiguration per Env steuern willst, z. B. `zurichsee,greifensee,bielersee`. Sonst werden die Seen aus der Datei `data/admin-config.json` im Image gelesen. |
+
+Sentry (Fehlerberichte) ist im Code hinterlegt; für Coolify brauchst du dafür keine Env-Variablen. `NEXT_PUBLIC_*`-Variablen sind beim Image-Build in GitHub fest eingebaut – wenn du sie ändern willst, musst du sie im GitHub-Actions-Workflow als Build-Env setzen und neu bauen.
+
+#### Option B: Build auf dem Server (Coolify mit Dockerfile)
+
 1. **Lokal bauen und starten:**
 ```bash
 docker build -t shipvisualization .
-# Standard: 1 CPU (weniger Load). Mehr CPUs: --build-arg BUILD_CPUS=2 oder =0 für alle
-docker build --build-arg BUILD_CPUS=1 -t shipvisualization .
 docker run -p 3000:3000 shipvisualization
 ```
 
-2. **Coolify:**
-   - Neues Projekt → Docker Compose oder Dockerfile
-   - Repository verbinden; Coolify erkennt das `Dockerfile` im Root
-   - **CPU-Last beim Build:** Standard ist `BUILD_CPUS=1` (nur 1 Kern, Last bleibt niedrig). Build läuft zudem mit niedrigster Priorität (`nice`). Bei zu hoher Load: in Coolify Build-Args prüfen und `BUILD_CPUS=1` lassen; für schnellere Builds `BUILD_CPUS=0` (alle CPUs) oder z. B. `2` setzen.
-   - Optional: Build-Argument `NEXT_PUBLIC_ZSG_API_URL` setzen (z. B. für eigene ZSG-API-URL)
-   - Umgebungsvariablen (z. B. für Sentry) in Coolify unter „Environment“ setzen
-   - App läuft standardmäßig auf Port 3000; Coolify setzt `PORT` bei Bedarf
+2. **Coolify (Build auf Server):**
+   - Neues Projekt → Dockerfile; Repository verbinden
+   - Build-Argument `BUILD_CPUS=1` beibehalten; ggf. in Coolify Build-Args prüfen
+   - Optional: `NEXT_PUBLIC_ZSG_API_URL`; Umgebungsvariablen unter „Environment“
 
 3. **Umgebungsvariablen (optional):**
    - `NEXT_PUBLIC_ZSG_API_URL` – ZSG Ships API URL (Build-Zeit, falls nötig)

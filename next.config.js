@@ -7,6 +7,11 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_ZSG_API_URL: process.env.NEXT_PUBLIC_ZSG_API_URL,
   },
+  // Build lastet den Server weniger (Hetzner/Coolify): weniger parallele Jobs
+  experimental: {
+    cpus: 1,
+    workerThreads: false,
+  },
   webpack: (config, { isServer }) => {
     // @-Alias explizit setzen (wichtig für Docker-Build)
     config.resolve.alias = config.resolve.alias || {}
