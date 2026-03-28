@@ -95,7 +95,7 @@ vercel
 
 **Prozessor-Last begrenzen:**
 
-- In Coolify unter **Einstellungen** (oder Server-/Projekt-Einstellungen): **„Number of concurrent builds“** auf **1** setzen, damit nicht mehrere Builds gleichzeitig laufen.
+- In Coolify: **Servers** → deinen Server auswählen → auf der Server-Seite **„Number of concurrent builds“** (oder „Max concurrent builds“) auf **1** setzen (liegt oft unter Build/General).
 - Der Build läuft bereits mit **weniger parallelen Jobs** (`CI=true` in `nixpacks.toml`, `experimental.cpus: 1` in `next.config.js`), damit der Server (z. B. Hetzner) nicht überlastet wird.
 
 **Schritte:**

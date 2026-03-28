@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 
 export async function GET() {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_ZSG_API_URL || 'https://vesseldata-api.vercel.app/api/ships'
+    const apiUrl = process.env.NEXT_PUBLIC_ZSG_API_URL
     
     console.log(`[API Proxy] Lade Daten von: ${apiUrl}`)
     

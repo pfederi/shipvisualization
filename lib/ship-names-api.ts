@@ -35,7 +35,7 @@ async function fetchZSGShipData(apiUrl?: string): Promise<ZSGAPIResponse> {
   // Im Client verwenden wir die relative URL, im Server könnte man auch direkt die externe API aufrufen
   const isServer = typeof window === 'undefined'
   const url = apiUrl || (isServer 
-    ? (process.env.NEXT_PUBLIC_ZSG_API_URL || 'https://vesseldata-api.vercel.app/api/ships')
+    ? process.env.NEXT_PUBLIC_ZSG_API_URL
     : '/api/ships')
   
   try {
