@@ -31,13 +31,9 @@ import { unstable_cache } from 'next/cache'
  * Verwendet die lokale API-Route als Proxy, um CORS-Probleme zu vermeiden
  */
 async function fetchZSGShipData(apiUrl?: string): Promise<ZSGAPIResponse> {
-  // Verwende lokale API-Route als Proxy (umgeht CORS)
-  // Im Client verwenden wir die relative URL, im Server könnte man auch direkt die externe API aufrufen
-  const isServer = typeof window === 'undefined'
-  const url = apiUrl || (isServer 
-    ? process.env.NEXT_PUBLIC_ZSG_API_URL
-    : '/api/ships')
-  
+  const url = apiUrl || process.env.NEXT_PUBLIC_ZSG_API_URL
+  if (!url) throw new Error('NEXT_PUBLIC_ZSG_API_URL is not configured')
+
   try {
     const response = await fetch(url, {
       headers: {

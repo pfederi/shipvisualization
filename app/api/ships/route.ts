@@ -4,9 +4,16 @@ import { NextResponse } from 'next/server'
 export async function GET() {
   try {
     const apiUrl = process.env.NEXT_PUBLIC_ZSG_API_URL
-    
+
+    if (!apiUrl) {
+      return NextResponse.json(
+        { dailyDeployments: [], lastUpdated: new Date().toISOString(), message: 'NEXT_PUBLIC_ZSG_API_URL not configured' },
+        { status: 200, headers: { 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' } }
+      )
+    }
+
     console.log(`[API Proxy] Lade Daten von: ${apiUrl}`)
-    
+
     const response = await fetch(apiUrl, {
       headers: {
         'Accept': 'application/json',
