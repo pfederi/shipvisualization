@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Script from 'next/script'
 import './globals.css'
 import { ThemeProvider } from '@/lib/theme'
 import { I18nProvider } from '@/lib/i18n-context'
@@ -42,6 +43,7 @@ export default function RootLayout({
             {children}
           </I18nProvider>
         </ThemeProvider>
+        <Script src="https://api.vibehunt.me/functions/v1/annotation-widget?appId=d31f740f-deaf-453b-8f96-af1410367503" strategy="afterInteractive" />
       </body>
     </html>
   )
