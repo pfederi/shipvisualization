@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import { renderToString } from 'react-dom/server'
-import { Anchor, Ship as ShipIcon, Crown, ChevronDown, X } from 'lucide-react'
+import { Anchor, Ship as ShipIcon, Crown, ChevronDown, X, Layers } from 'lucide-react'
 import { ShipPosition } from '@/lib/ship-position'
 import { LAKES, LakeConfig, Station, getConnectedLakes, getCombinedLakeBounds } from '@/lib/lakes-config'
 import { getCachedGeoJSONRoutes } from '@/lib/geojson-routes'
@@ -47,6 +47,14 @@ export default function ShipMap({ ships = [], onShipClick, onStationClick, selec
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  const [mapStyle, setMapStyle] = useState<'osm' | 'swisstopo'>('osm')
+  useEffect(() => {
+    const stored = localStorage.getItem('mapStyle')
+    if (stored === 'osm' || stored === 'swisstopo') {
+      setMapStyle(stored)
+    }
   }, [])
 
   useEffect(() => {
@@ -146,6 +154,22 @@ export default function ShipMap({ ships = [], onShipClick, onStationClick, selec
     setIsMobileMenuOpen(false)
   }
 
+  const toggleMapStyle = () => {
+    const next = mapStyle === 'osm' ? 'swisstopo' : 'osm'
+    setMapStyle(next)
+    localStorage.setItem('mapStyle', next)
+  }
+
+  const tileConfig = mapStyle === 'swisstopo'
+    ? {
+        url: 'https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/current/3857/{z}/{x}/{y}.jpeg',
+        attribution: '&copy; <a href="https://www.swisstopo.admin.ch/">swisstopo</a>',
+      }
+    : {
+        url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      }
+
   return (
     <div className="flex-1 relative h-full w-full" id="ship-map-container">
       {/* Lake Selection - Top Left */}
@@ -231,6 +255,15 @@ export default function ShipMap({ ships = [], onShipClick, onStationClick, selec
         </>
       )}
 
+      {/* Map Style Toggle - Top Right, below the zoom control */}
+      <button
+        onClick={toggleMapStyle}
+        className="absolute top-20 right-3 z-[1000] p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+        title={mapStyle === 'osm' ? 'Zu Swisstopo wechseln' : 'Zu OpenStreetMap wechseln'}
+      >
+        <Layers size={18} className="text-gray-700 dark:text-gray-200" />
+      </button>
+
       <MapContainer
         key={selectedLakeId} // Force remount when lake changes
         center={combinedBounds.center}
@@ -240,8 +273,9 @@ export default function ShipMap({ ships = [], onShipClick, onStationClick, selec
         zoomControl={false} // Disable default zoom control
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          key={mapStyle}
+          attribution={tileConfig.attribution}
+          url={tileConfig.url}
         />
         
         {/* Zoom Control - Top Right */}
