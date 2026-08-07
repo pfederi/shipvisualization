@@ -1,39 +1,54 @@
 # Swisstopo Map Switch — Design
 
+> **Revision 2 (2026-08-07):** Supersedes the original raster-based approach. The user asked for the exact "light" basemap style used by coolzurich.ch (`ch.swisstopo.lightbasemap.vt`), which is a MapLibre GL vector tile style, not a raster WMTS layer — this changes the architecture section below. Also adds a new, related feature: rendering the existing per-lake GeoJSON ferry routes as an always-on overlay.
+
 ## Goal
 
-Let the user toggle the base map on the main ship map (`components/ShipMap.tsx`) between the current OpenStreetMap tiles and Swisstopo's official Swiss map, without leaving the page.
+Let the user toggle the base map on the main ship map (`components/ShipMap.tsx`) between OpenStreetMap and Swisstopo's official "light" basemap, without leaving the page. Additionally, show the ferry routes (already loaded per lake) as lines on the map.
 
 ## Scope
 
 - In scope: `components/ShipMap.tsx` only.
 - Out of scope: `app/route-editor/page.tsx` stays on OSM + OpenSeaMap overlay, unchanged.
-- Only one Swisstopo layer is offered: `ch.swisstopo.pixelkarte-farbe` (the standard color national map). No satellite/aerial layer for now.
+- Only one Swisstopo layer is offered: the vector "light basemap" style `ch.swisstopo.lightbasemap.vt`, served as a MapLibre GL style from `https://vectortiles.geo.admin.ch/styles/ch.swisstopo.lightbasemap.vt/style.json`. No satellite/aerial layer.
+- Route overlay: the GeoJSON ferry routes for all currently connected lakes (already fetched by the existing `getCachedGeoJSONRoutes` call), rendered as `Polyline`s, always visible (no separate toggle).
 
-## Architecture
+## Architecture — Base map switch
 
+- Leaflet's `TileLayer` only understands raster tile URL templates, so a MapLibre vector style needs a bridge: `@maplibre/maplibre-gl-leaflet` (`^0.1.3`), which wraps `maplibre-gl` as a Leaflet layer (`L.maplibreGL({ style })`) addable/removable from the existing `MapContainer` imperatively. Pin `maplibre-gl` to `^5.24.0` — `@maplibre/maplibre-gl-leaflet@0.1.3`'s peer range tops out at `^5.0.0` and does not yet cover `maplibre-gl` 6.x.
+- Both packages are added as new dependencies (`package.json` + install). No API key required — `vectortiles.geo.admin.ch` is public.
 - Add local state to `ShipMap.tsx`: `mapStyle: "osm" | "swisstopo"`.
-  - Initialized from `localStorage` key `mapStyle` on mount (hydration-safe mount guard, same pattern as `ThemeLanguageToggle.tsx`).
+  - Initialized from `localStorage` key `mapStyle` on mount.
   - Defaults to `"osm"` when no stored value exists.
   - Every change is written back to `localStorage`.
-- Replace the single `<TileLayer>` with a conditional pick between two configs, keyed by `mapStyle`:
-  - OSM (current): `url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"`, existing OSM attribution.
-  - Swisstopo: `url="https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/current/3857/{z}/{x}/{y}.jpeg"`, attribution `© swisstopo`. Public WMTS endpoint, EPSG:3857 (Web Mercator) — no API key, drops directly into Leaflet.
-  - The `<TileLayer>` element gets `key={mapStyle}` so switching forces a clean remount instead of mixing cached tiles from the previous style.
+- Rendering:
+  - `mapStyle === "osm"`: keep the existing `<TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png">`.
+  - `mapStyle === "swisstopo"`: instead of a `TileLayer`, use a small helper component that grabs the Leaflet map instance via `useMap()` (from `react-leaflet`) and, in a `useEffect`, creates `L.maplibreGL({ style: 'https://vectortiles.geo.admin.ch/styles/ch.swisstopo.lightbasemap.vt/style.json' })`, calls `.addTo(map)`, and removes it (`map.removeLayer(...)`) on cleanup/unmount. This component is only rendered while `mapStyle === "swisstopo"`, so switching back to `"osm"` unmounts it and the effect cleanup removes the MapLibre layer.
+  - No attribution string is manually set — `maplibre-gl-leaflet` pulls attribution from the style's own `sources` metadata (swisstopo's style already declares `© swisstopo`), matching how the rest of the map's attribution is sourced.
+
+## Architecture — Route overlay
+
+- `ShipMap.tsx` already loads GeoJSON routes per connected lake in its existing `loadAllRoutes` effect (currently only used for a console log). That effect is extended to keep the loaded `ShipRouteData[]` in state instead of discarding it.
+- For each route, `coordinates: {lat, lon}[]` (from `lib/geojson-routes.ts`) maps directly to a Leaflet `positions` array: `route.coordinates.map(c => [c.lat, c.lon])`.
+- Rendered as one `<Polyline>` per route, `pathOptions={{ color: '#0c274a', weight: 3, opacity: 0.5 }}` — reuses the existing brand-blue (`#0c274a`, already used for the ship icon background) at low-ish opacity so lines read as a background layer under the ship/station markers, not competing with them. This differs intentionally from the route *editor*'s in-progress-route styling (`#ec4899`, weight 4, opacity 0.8), which needs to stand out while actively drawing.
+- Routes re-render whenever `connectedLakeIds` changes (same dependency the existing load effect already uses), and are unaffected by `mapStyle` — they render as a Leaflet `Polyline` regardless of which base layer is active underneath.
 
 ## UI
 
 - New compact icon-button control, styled like `ThemeLanguageToggle.tsx` (`bg-white/10 hover:bg-white/20`, Lucide icon, `title` tooltip).
-- Positioned as a map overlay at `top-3 right-3 z-[1000]` — opposite corner from the existing lake selector (`top-3 left-3 z-[1000]`) so the two controls don't collide.
-- Single click toggles between the two styles. Icon: Lucide `Layers` (or `Mountain`). Tooltip text reflects the *target* style ("Zu Swisstopo wechseln" / "Zu OpenStreetMap wechseln").
+- Positioned as a map overlay at `top-20 right-3 z-[1000]` (below the Leaflet zoom control, which occupies `top-right`) — doesn't collide with the lake selector (`top-3 left-3 z-[1000]`).
+- Single click toggles between the two styles. Icon: Lucide `Layers`. Tooltip text reflects the *target* style ("Zu Swisstopo wechseln" / "Zu OpenStreetMap wechseln").
 - No dropdown — just a two-state toggle, since only one Swisstopo layer is offered.
+- Route overlay has no dedicated UI — it's always on, per the "immer sichtbar" decision.
 
 ## Persistence
 
-- Selected style persists across reloads and future visits via `localStorage`, same mechanism as the existing theme/language toggle.
+- Selected base map style persists across reloads and future visits via `localStorage`, same mechanism as the existing theme/language toggle.
+- Route overlay has no persisted state (always on).
 
 ## Non-goals
 
 - No satellite/aerial Swisstopo layer.
 - No changes to the route editor page.
-- No server-side/env-var configuration — both tile sources are public, keyless endpoints.
+- No route visibility toggle — routes are always rendered when loaded.
+- No server-side/env-var configuration — both the OSM tiles and the Swisstopo vector style are public, keyless endpoints.
