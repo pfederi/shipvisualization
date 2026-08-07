@@ -307,12 +307,12 @@ export default function ShipMap({ ships = [], onShipClick, onStationClick, selec
         {/* Zoom Control - Top Right */}
         <ZoomControl position="topright" />
 
-        {/* Schiffsrouten */}
-        {shipRoutes.map((route) => (
+        {/* Schiffsrouten - nur bei Swisstopo */}
+        {mapStyle === 'swisstopo' && shipRoutes.map((route) => (
           <Polyline
             key={route.id}
             positions={route.coordinates.map(c => [c.lat, c.lon] as [number, number])}
-            pathOptions={{ color: '#0c274a', weight: 3, opacity: 0.5 }}
+            pathOptions={{ color: '#60a5fa', weight: 1.5, opacity: 0.8, dashArray: '4 6' }}
           />
         ))}
 
