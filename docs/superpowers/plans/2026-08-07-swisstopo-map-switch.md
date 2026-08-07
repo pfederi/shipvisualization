@@ -3,6 +3,8 @@
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 > **Revision 2:** Task 1 below supersedes an earlier raster-tile-based implementation already committed to this branch (commit `22c452e`, "Add OSM/Swisstopo base map toggle to ShipMap"). That version used `ch.swisstopo.pixelkarte-farbe` raster tiles. This revision replaces the Swisstopo side with the vector "light basemap" style instead, per updated user request, and adds a new Task 2 (route overlay) that did not exist in the original plan. If you are executing this plan fresh (not continuing from that commit), Task 1's steps describe edits against the current file — read Step 1 of Task 1 carefully, it starts from the state left by commit `22c452e`, not from a bare `TileLayer`.
+>
+> **Revision 3:** Tasks 1 and 2 are complete and reviewed (commits `d7d1824`, `2d2c9d8`). Task 3 below is a new, additional task: replace the icon-button toggle built in Task 1 with a labeled `<select>`, and change the default `mapStyle` (when no `localStorage` value exists) from `"osm"` to `"swisstopo"`.
 
 **Goal:** Add a toggle on the main ship map that switches the base layer between OpenStreetMap and Swisstopo's vector "light basemap" style, persisted across reloads. Also render the existing per-lake ferry routes as an always-visible overlay.
 
@@ -13,7 +15,8 @@
 ## Global Constraints
 
 - Scope is `components/ShipMap.tsx` (and `package.json`/lockfile for the new dependencies) only. Do not touch `app/route-editor/page.tsx`.
-- Swisstopo layer is the vector style `ch.swisstopo.lightbasemap.vt`, served from `https://vectortiles.geo.admin.ch/styles/ch.swisstopo.lightbasemap.vt/style.json` — no satellite/aerial layer, no dropdown, a single two-state toggle button (already built by the earlier commit — do not change its position/styling, only what it switches to).
+- Swisstopo layer is the vector style `ch.swisstopo.lightbasemap.vt`, served from `https://vectortiles.geo.admin.ch/styles/ch.swisstopo.lightbasemap.vt/style.json` — no satellite/aerial layer. Task 1 built a two-state icon-button toggle; Task 3 replaces it with a labeled `<select>` (same position, `top-20 right-3 z-[1000]`).
+- Default `mapStyle` when no `localStorage` value exists: `"swisstopo"` as of Task 3 (Task 1 originally defaulted to `"osm"` — Task 3 changes this one line).
 - `maplibre-gl` **must** be pinned to `^5.24.0`, not the latest major (6.x) — `@maplibre/maplibre-gl-leaflet@0.1.3`'s peer dependency range tops out at `^5.0.0` and does not cover 6.x. Installing 6.x will produce an unmet-peer-dependency warning and is unsupported by the binding.
 - Persist the chosen base map style in `localStorage` under key `mapStyle` with values `'osm' | 'swisstopo'` — this is already implemented (commit `22c452e`) and must be preserved, not reworked.
 - Route overlay is always visible — no toggle, no persisted state. It renders for whichever lakes are currently connected/loaded (`connectedLakeIds`), independent of `mapStyle`.
@@ -270,8 +273,138 @@ EOF
 
 ---
 
+### Task 3: Replace the toggle button with a labeled select, default to Swisstopo
+
+**Files:**
+- Modify: `components/ShipMap.tsx`
+
+**Interfaces:**
+- Consumes: the existing `mapStyle` state (from Task 1) and the `Layers`-icon-button/`toggleMapStyle` it's replacing.
+- Produces: a new `handleMapStyleChange(style: 'osm' | 'swisstopo')` handler, replacing `toggleMapStyle` (no other file references `toggleMapStyle`, confirmed — it was only wired to the button this task removes).
+
+- [ ] **Step 1: Change the default `mapStyle`**
+
+Find the `mapStyle` state declaration:
+
+```tsx
+  const [mapStyle, setMapStyle] = useState<'osm' | 'swisstopo'>('osm')
+```
+
+Change the default to `'swisstopo'`:
+
+```tsx
+  const [mapStyle, setMapStyle] = useState<'osm' | 'swisstopo'>('swisstopo')
+```
+
+Leave the effect right below it (`localStorage.getItem('mapStyle')` → `setMapStyle(stored)`) exactly as-is — it already only overrides the default when a valid stored value exists, so no other change is needed here.
+
+- [ ] **Step 2: Replace `toggleMapStyle` with `handleMapStyleChange`**
+
+Find:
+
+```tsx
+  const toggleMapStyle = () => {
+    const next = mapStyle === 'osm' ? 'swisstopo' : 'osm'
+    setMapStyle(next)
+    localStorage.setItem('mapStyle', next)
+  }
+```
+
+Replace with:
+
+```tsx
+  const handleMapStyleChange = (style: 'osm' | 'swisstopo') => {
+    setMapStyle(style)
+    localStorage.setItem('mapStyle', style)
+  }
+```
+
+- [ ] **Step 3: Replace the icon button with a labeled select**
+
+Find the button block (rendered as a direct child of the outer `<div id="ship-map-container">`, as a sibling before `<MapContainer>`):
+
+```tsx
+      {/* Map Style Toggle - Top Right, below the zoom control */}
+      <button
+        onClick={toggleMapStyle}
+        className="absolute top-20 right-3 z-[1000] p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+        title={mapStyle === 'osm' ? 'Zu Swisstopo wechseln' : 'Zu OpenStreetMap wechseln'}
+      >
+        <Layers size={18} className="text-gray-700 dark:text-gray-200" />
+      </button>
+```
+
+Replace with:
+
+```tsx
+      {/* Map Style Selector - Top Right, below the zoom control */}
+      <div className="absolute top-20 right-3 z-[1000] bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+        <div className="relative">
+          <select
+            value={mapStyle}
+            onChange={(e) => handleMapStyleChange(e.target.value as 'osm' | 'swisstopo')}
+            className="bg-transparent text-gray-900 dark:text-white text-sm font-semibold pl-3 pr-9 py-2 rounded-lg outline-none cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors appearance-none"
+            title="Kartenansicht wählen"
+          >
+            <option value="osm" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">OpenStreetMap</option>
+            <option value="swisstopo" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">Swisstopo</option>
+          </select>
+          <ChevronDown
+            size={16}
+            className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 dark:text-gray-400"
+          />
+        </div>
+      </div>
+```
+
+This mirrors the existing lake-selector desktop dropdown (same white/dark-gray card, same `ChevronDown` overlay, same `appearance-none` native `<select>` pattern) — `ChevronDown` is already imported in this file (used by the lake selector), no new icon import needed for it.
+
+- [ ] **Step 4: Remove the now-unused `Layers` import**
+
+Find the `lucide-react` import:
+
+```tsx
+import { Anchor, Ship as ShipIcon, Crown, ChevronDown, X, Layers } from 'lucide-react'
+```
+
+`Layers` was only used by the button removed in Step 3. Confirm (e.g. `grep -n "Layers" components/ShipMap.tsx`) that it has no other reference in the file, then remove it:
+
+```tsx
+import { Anchor, Ship as ShipIcon, Crown, ChevronDown, X } from 'lucide-react'
+```
+
+- [ ] **Step 5: Start the dev server and verify manually**
+
+Run: `npm run dev`
+
+Open the app in a browser (with `localStorage` cleared for the site, e.g. via DevTools Application tab or a private/incognito window) and check:
+1. On first load (no stored preference), the map opens on the Swisstopo vector basemap, and the new select shows "Swisstopo" as the selected option.
+2. The select is visually a dropdown (not a plain icon button), positioned top-right below the zoom control, matching the lake selector's card style (light/dark mode both look right).
+3. Choosing "OpenStreetMap" from the select switches the base layer to OSM tiles; choosing "Swisstopo" switches back to the vector basemap — both directions work via the select, not just one click.
+4. After switching, reload the page — the select shows and the map renders whichever style was last chosen (localStorage persistence still works).
+5. No console errors, and no lingering reference to `toggleMapStyle` or the old button anywhere (`grep -n "toggleMapStyle\|Layers" components/ShipMap.tsx` should return nothing).
+6. `app/route-editor/page.tsx` is unaffected.
+
+Expected: all checks pass.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add components/ShipMap.tsx
+git commit -m "$(cat <<'EOF'
+Replace map style toggle button with a labeled select
+
+Makes it explicit which base map is active/selectable instead of
+inferring it from a single icon-button click, and makes Swisstopo
+the default map style on first visit instead of OpenStreetMap.
+EOF
+)"
+```
+
+---
+
 ## Self-Review Notes
 
-- **Spec coverage:** Vector light basemap via MapLibre bridge ✓ Task 1. Pinned `maplibre-gl` version to avoid peer-dep mismatch ✓ Task 1 Step 2 + Global Constraints. Toggle UI/position/persistence unchanged ✓ Task 1 Step 1 explicitly preserves it. Route overlay, always visible, reuses existing load effect ✓ Task 2. Route styling distinct from route-editor's in-progress-route styling ✓ Task 2 Step 4 (`#0c274a`/weight 3/opacity 0.5 vs `#ec4899`/weight 4/opacity 0.8). Route editor page untouched ✓ Global Constraints + Task 1 Step 6.7.
+- **Spec coverage:** Vector light basemap via MapLibre bridge ✓ Task 1. Pinned `maplibre-gl` version to avoid peer-dep mismatch ✓ Task 1 Step 2 + Global Constraints. Route overlay, always visible, reuses existing load effect ✓ Task 2. Route styling distinct from route-editor's in-progress-route styling ✓ Task 2 Step 4 (`#0c274a`/weight 3/opacity 0.5 vs `#ec4899`/weight 4/opacity 0.8). Route editor page untouched ✓ Global Constraints + Task 1 Step 6.7 + Task 3 Step 5.6. Toggle replaced by labeled select ✓ Task 3 Step 3. Swisstopo default on first visit ✓ Task 3 Step 1.
 - **Placeholder scan:** none — every step has literal code, literal commands, or literal manual-check instructions.
-- **Type consistency:** `mapStyle` stays `'osm' | 'swisstopo'` (untouched by this revision). `shipRoutes` typed `ShipRouteData[]`, matching `getCachedGeoJSONRoutes`'s return type and the `route.id` / `route.coordinates` fields used in Task 2 Step 4. `SwisstopoLayer` takes no props and is used as `<SwisstopoLayer key="swisstopo" />`, consistent with its Step 4 definition (no props declared).
+- **Type consistency:** `mapStyle` stays `'osm' | 'swisstopo'` throughout all three tasks. `handleMapStyleChange(style: 'osm' | 'swisstopo')` matches the cast used at its one call site (`e.target.value as 'osm' | 'swisstopo'`) in Task 3 Step 3. `shipRoutes` typed `ShipRouteData[]`, matching `getCachedGeoJSONRoutes`'s return type and the `route.id` / `route.coordinates` fields used in Task 2 Step 4. `SwisstopoLayer` takes no props and is used as `<SwisstopoLayer key="swisstopo" />`, consistent with its Task 1 Step 4 definition (no props declared) — Task 3 does not touch `SwisstopoLayer`.

@@ -1,6 +1,8 @@
 # Swisstopo Map Switch — Design
 
 > **Revision 2 (2026-08-07):** Supersedes the original raster-based approach. The user asked for the exact "light" basemap style used by coolzurich.ch (`ch.swisstopo.lightbasemap.vt`), which is a MapLibre GL vector tile style, not a raster WMTS layer — this changes the architecture section below. Also adds a new, related feature: rendering the existing per-lake GeoJSON ferry routes as an always-on overlay.
+>
+> **Revision 3 (2026-08-07):** The single toggle button is replaced with a labeled `<select>` (same visual pattern as the lake selector) so the user can see which map is active/selectable, not just click blindly. Also: Swisstopo becomes the default map style on first visit (no stored preference), not OpenStreetMap.
 
 ## Goal
 
@@ -19,7 +21,7 @@ Let the user toggle the base map on the main ship map (`components/ShipMap.tsx`)
 - Both packages are added as new dependencies (`package.json` + install). No API key required — `vectortiles.geo.admin.ch` is public.
 - Add local state to `ShipMap.tsx`: `mapStyle: "osm" | "swisstopo"`.
   - Initialized from `localStorage` key `mapStyle` on mount.
-  - Defaults to `"osm"` when no stored value exists.
+  - Defaults to `"swisstopo"` when no stored value exists (Revision 3: Swisstopo is the default on first visit).
   - Every change is written back to `localStorage`.
 - Rendering:
   - `mapStyle === "osm"`: keep the existing `<TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png">`.
@@ -35,10 +37,9 @@ Let the user toggle the base map on the main ship map (`components/ShipMap.tsx`)
 
 ## UI
 
-- New compact icon-button control, styled like `ThemeLanguageToggle.tsx` (`bg-white/10 hover:bg-white/20`, Lucide icon, `title` tooltip).
+- **Revision 3:** the icon-button toggle is replaced by a `<select>`, styled like the existing lake selector (`components/ShipMap.tsx`'s desktop dropdown: white/dark-gray rounded card, `ChevronDown` icon overlay, `appearance-none` native select) — so the two options are explicitly labeled ("OpenStreetMap" / "Swisstopo") rather than inferred from a single icon and click.
 - Positioned as a map overlay at `top-20 right-3 z-[1000]` (below the Leaflet zoom control, which occupies `top-right`) — doesn't collide with the lake selector (`top-3 left-3 z-[1000]`).
-- Single click toggles between the two styles. Icon: Lucide `Layers`. Tooltip text reflects the *target* style ("Zu Swisstopo wechseln" / "Zu OpenStreetMap wechseln").
-- No dropdown — just a two-state toggle, since only one Swisstopo layer is offered.
+- Selecting an option sets `mapStyle` directly (no more toggle-between-two logic) and persists it to `localStorage`.
 - Route overlay has no dedicated UI — it's always on, per the "immer sichtbar" decision.
 
 ## Persistence
