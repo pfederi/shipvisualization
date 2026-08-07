@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import { renderToString } from 'react-dom/server'
-import { Anchor, Ship as ShipIcon, Crown, ChevronDown, X, Layers } from 'lucide-react'
+import { Anchor, Ship as ShipIcon, Crown, ChevronDown, X } from 'lucide-react'
 import { ShipPosition } from '@/lib/ship-position'
 import { LAKES, LakeConfig, Station, getConnectedLakes, getCombinedLakeBounds } from '@/lib/lakes-config'
 import { getCachedGeoJSONRoutes, ShipRouteData } from '@/lib/geojson-routes'
@@ -71,7 +71,7 @@ export default function ShipMap({ ships = [], onShipClick, onStationClick, selec
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  const [mapStyle, setMapStyle] = useState<'osm' | 'swisstopo'>('osm')
+  const [mapStyle, setMapStyle] = useState<'osm' | 'swisstopo'>('swisstopo')
   useEffect(() => {
     const stored = localStorage.getItem('mapStyle')
     if (stored === 'osm' || stored === 'swisstopo') {
@@ -177,10 +177,9 @@ export default function ShipMap({ ships = [], onShipClick, onStationClick, selec
     setIsMobileMenuOpen(false)
   }
 
-  const toggleMapStyle = () => {
-    const next = mapStyle === 'osm' ? 'swisstopo' : 'osm'
-    setMapStyle(next)
-    localStorage.setItem('mapStyle', next)
+  const handleMapStyleChange = (style: 'osm' | 'swisstopo') => {
+    setMapStyle(style)
+    localStorage.setItem('mapStyle', style)
   }
 
   return (
@@ -268,14 +267,24 @@ export default function ShipMap({ ships = [], onShipClick, onStationClick, selec
         </>
       )}
 
-      {/* Map Style Toggle - Top Right, below the zoom control */}
-      <button
-        onClick={toggleMapStyle}
-        className="absolute top-20 right-3 z-[1000] p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-        title={mapStyle === 'osm' ? 'Zu Swisstopo wechseln' : 'Zu OpenStreetMap wechseln'}
-      >
-        <Layers size={18} className="text-gray-700 dark:text-gray-200" />
-      </button>
+      {/* Map Style Selector - Top Right, below the zoom control */}
+      <div className="absolute top-20 right-3 z-[1000] bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+        <div className="relative">
+          <select
+            value={mapStyle}
+            onChange={(e) => handleMapStyleChange(e.target.value as 'osm' | 'swisstopo')}
+            className="bg-transparent text-gray-900 dark:text-white text-sm font-semibold pl-3 pr-9 py-2 rounded-lg outline-none cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors appearance-none"
+            title="Kartenansicht wählen"
+          >
+            <option value="osm" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">OpenStreetMap</option>
+            <option value="swisstopo" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">Swisstopo</option>
+          </select>
+          <ChevronDown
+            size={16}
+            className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 dark:text-gray-400"
+          />
+        </div>
+      </div>
 
       <MapContainer
         key={selectedLakeId} // Force remount when lake changes
