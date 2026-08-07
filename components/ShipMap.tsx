@@ -19,21 +19,36 @@ const Tooltip = dynamic(() => import('react-leaflet').then(mod => mod.Tooltip), 
 const ZoomControl = dynamic(() => import('react-leaflet').then(mod => mod.ZoomControl), { ssr: false })
 const Polyline = dynamic(() => import('react-leaflet').then(mod => mod.Polyline), { ssr: false })
 
-function SwisstopoLayer() {
+function SwisstopoLayer({ onError }: { onError: () => void }) {
   const { useMap } = require('react-leaflet')
   const map = useMap()
 
   useEffect(() => {
     require('@maplibre/maplibre-gl-leaflet')
     const L = require('leaflet')
-    const gl = (L as any).maplibreGL({
-      style: 'https://vectortiles.geo.admin.ch/styles/ch.swisstopo.lightbasemap.vt/style.json',
-    }).addTo(map)
+    let gl: any
+    try {
+      gl = (L as any).maplibreGL({
+        style: 'https://vectortiles.geo.admin.ch/styles/ch.swisstopo.lightbasemap.vt/style.json',
+      }).addTo(map)
+    } catch (error) {
+      console.error('❌ Swisstopo-Layer konnte nicht geladen werden:', error)
+      onError()
+      return
+    }
+
+    const glMap = gl.getMaplibreMap?.()
+    const handleError = (e: any) => {
+      console.error('❌ Swisstopo-Layer Fehler:', e?.error || e)
+      onError()
+    }
+    glMap?.on('error', handleError)
 
     return () => {
+      glMap?.off('error', handleError)
       map.removeLayer(gl)
     }
-  }, [map])
+  }, [map, onError])
 
   return null
 }
@@ -93,27 +108,35 @@ export default function ShipMap({ ships = [], onShipClick, onStationClick, selec
   }, [])
 
   useEffect(() => {
+    let cancelled = false
     setIsClient(true)
     if (!mapInitialized.current) {
       mapInitialized.current = true
     }
-    
+
     // Lade GeoJSON-Routen für alle verbundenen Seen
     const loadAllRoutes = async () => {
       try {
-        const routePromises = connectedLakeIds.map(lakeId => 
+        const routePromises = connectedLakeIds.map(lakeId =>
           getCachedGeoJSONRoutes(LAKES[lakeId].geojsonPath)
         )
         const allRoutes = await Promise.all(routePromises)
+        if (cancelled) return
         const totalRoutes = allRoutes.reduce((sum, routes) => sum + routes.length, 0)
         const lakeNames = connectedLakeIds.map(id => LAKES[id].name).join(', ')
         console.log(`🗺️ ShipMap: ${totalRoutes} GeoJSON-Routen geladen für ${lakeNames}`)
         setShipRoutes(allRoutes.flat())
       } catch (error) {
-        console.error(`❌ ShipMap: Fehler beim Laden der GeoJSON-Routen:`, error)
+        if (!cancelled) {
+          console.error(`❌ ShipMap: Fehler beim Laden der GeoJSON-Routen:`, error)
+        }
       }
     }
     loadAllRoutes()
+
+    return () => {
+      cancelled = true
+    }
   }, [connectedLakeIds])
 
   // Station Icon (einmalig erstellt)
@@ -327,16 +350,16 @@ export default function ShipMap({ ships = [], onShipClick, onStationClick, selec
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
         ) : (
-          <SwisstopoLayer key="swisstopo" />
+          <SwisstopoLayer key="swisstopo" onError={() => handleMapStyleChange('osm')} />
         )}
 
         {/* Zoom Control - Top Right */}
         <ZoomControl position="topright" />
 
         {/* Schiffsrouten - nur bei Swisstopo */}
-        {mapStyle === 'swisstopo' && shipRoutes.map((route) => (
+        {mapStyle === 'swisstopo' && shipRoutes.map((route, index) => (
           <Polyline
-            key={route.id}
+            key={`${route.id}-${index}`}
             positions={route.coordinates.map(c => [c.lat, c.lon] as [number, number])}
             pathOptions={{ color: '#60a5fa', weight: 1.5, opacity: 0.8, dashArray: '4 6' }}
           />
