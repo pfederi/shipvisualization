@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import { renderToString } from 'react-dom/server'
-import { Anchor, Ship as ShipIcon, Crown, ChevronDown, X } from 'lucide-react'
+import { Anchor, Ship as ShipIcon, Crown, ChevronDown, X, Layers } from 'lucide-react'
 import { ShipPosition } from '@/lib/ship-position'
 import { LAKES, LakeConfig, Station, getConnectedLakes, getCombinedLakeBounds } from '@/lib/lakes-config'
 import { getCachedGeoJSONRoutes, ShipRouteData } from '@/lib/geojson-routes'
@@ -54,6 +54,8 @@ export default function ShipMap({ ships = [], onShipClick, onStationClick, selec
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [shipRoutes, setShipRoutes] = useState<ShipRouteData[]>([])
   const mapInitialized = useRef(false)
+  const [isMapStyleMenuOpen, setIsMapStyleMenuOpen] = useState(false)
+  const mapStyleMenuRef = useRef<HTMLDivElement>(null)
   const selectedLake = useMemo(() => LAKES[selectedLakeId], [selectedLakeId])
   
   // Für die drei verbundenen Seen: Lade alle drei
@@ -70,6 +72,17 @@ export default function ShipMap({ ships = [], onShipClick, onStationClick, selec
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
+
+  useEffect(() => {
+    if (!isMapStyleMenuOpen) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (mapStyleMenuRef.current && !mapStyleMenuRef.current.contains(e.target as Node)) {
+        setIsMapStyleMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isMapStyleMenuOpen])
 
   const [mapStyle, setMapStyle] = useState<'osm' | 'swisstopo'>('swisstopo')
   useEffect(() => {
@@ -267,23 +280,36 @@ export default function ShipMap({ ships = [], onShipClick, onStationClick, selec
         </>
       )}
 
-      {/* Map Style Selector - Top Right, below the zoom control */}
-      <div className="absolute top-20 right-3 z-[1000] bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
-        <div className="relative">
-          <select
-            value={mapStyle}
-            onChange={(e) => handleMapStyleChange(e.target.value as 'osm' | 'swisstopo')}
-            className="bg-transparent text-gray-900 dark:text-white text-sm font-semibold pl-3 pr-9 py-2 rounded-lg outline-none cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors appearance-none"
-            title="Kartenansicht wählen"
-          >
-            <option value="osm" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">OpenStreetMap</option>
-            <option value="swisstopo" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">Swisstopo</option>
-          </select>
-          <ChevronDown
-            size={16}
-            className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 dark:text-gray-400"
-          />
-        </div>
+      {/* Map Style Switcher - Top Right, below the zoom control */}
+      <div ref={mapStyleMenuRef} className="absolute top-20 right-3 z-[1000]">
+        <button
+          onClick={() => setIsMapStyleMenuOpen((open) => !open)}
+          className="p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          title="Kartenansicht wählen"
+        >
+          <Layers size={18} className="text-gray-700 dark:text-gray-200" />
+        </button>
+
+        {isMapStyleMenuOpen && (
+          <div className="absolute top-full right-0 mt-2 w-44 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+            {(['osm', 'swisstopo'] as const).map((style) => (
+              <button
+                key={style}
+                onClick={() => {
+                  handleMapStyleChange(style)
+                  setIsMapStyleMenuOpen(false)
+                }}
+                className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
+                  mapStyle === style
+                    ? 'bg-brandblue/10 dark:bg-brandblue/20 text-brandblue dark:text-brandblue-light font-semibold'
+                    : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white'
+                }`}
+              >
+                {style === 'osm' ? 'OpenStreetMap' : 'Swisstopo'}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <MapContainer
