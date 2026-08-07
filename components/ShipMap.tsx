@@ -317,7 +317,7 @@ export default function ShipMap({ ships = [], onShipClick, onStationClick, selec
 
         {isMapStyleMenuOpen && (
           <div className="absolute top-full right-0 mt-2 w-44 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-            {(['osm', 'swisstopo'] as const).map((style) => (
+            {(['swisstopo', 'osm'] as const).map((style) => (
               <button
                 key={style}
                 onClick={() => {
