@@ -1,4 +1,14 @@
 
+## Version 1.4.0 (August 2026)
+
+### 🗺️ Swisstopo Map Style
+- **Map Style Switcher**: New button next to the zoom controls lets you switch the map between OpenStreetMap and the official Swisstopo map
+- **Swisstopo as Default**: The Swisstopo map is now shown by default for new visitors
+- **Ferry Routes on Swisstopo**: When Swisstopo is active, the ferry routes are shown as a subtle dashed overlay on the map
+- **Automatic Fallback**: If the Swisstopo map can't be loaded, the app automatically falls back to OpenStreetMap
+
+---
+
 ## Version 1.3.0 (January 2026)
 
 ### 🗺️ Multi-Lake Support
