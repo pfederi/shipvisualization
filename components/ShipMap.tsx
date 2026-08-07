@@ -22,6 +22,8 @@ const Polyline = dynamic(() => import('react-leaflet').then(mod => mod.Polyline)
 function SwisstopoLayer({ onError }: { onError: () => void }) {
   const { useMap } = require('react-leaflet')
   const map = useMap()
+  const onErrorRef = useRef(onError)
+  onErrorRef.current = onError
 
   useEffect(() => {
     require('@maplibre/maplibre-gl-leaflet')
@@ -33,14 +35,14 @@ function SwisstopoLayer({ onError }: { onError: () => void }) {
       }).addTo(map)
     } catch (error) {
       console.error('❌ Swisstopo-Layer konnte nicht geladen werden:', error)
-      onError()
+      onErrorRef.current()
       return
     }
 
     const glMap = gl.getMaplibreMap?.()
     const handleError = (e: any) => {
       console.error('❌ Swisstopo-Layer Fehler:', e?.error || e)
-      onError()
+      onErrorRef.current()
     }
     glMap?.on('error', handleError)
 
@@ -48,7 +50,7 @@ function SwisstopoLayer({ onError }: { onError: () => void }) {
       glMap?.off('error', handleError)
       map.removeLayer(gl)
     }
-  }, [map, onError])
+  }, [map])
 
   return null
 }
