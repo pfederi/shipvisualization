@@ -3,6 +3,8 @@
 > **Revision 2 (2026-08-07):** Supersedes the original raster-based approach. The user asked for the exact "light" basemap style used by coolzurich.ch (`ch.swisstopo.lightbasemap.vt`), which is a MapLibre GL vector tile style, not a raster WMTS layer — this changes the architecture section below. Also adds a new, related feature: rendering the existing per-lake GeoJSON ferry routes as an always-on overlay.
 >
 > **Revision 3 (2026-08-07):** The single toggle button is replaced with a labeled `<select>` (same visual pattern as the lake selector) so the user can see which map is active/selectable, not just click blindly. Also: Swisstopo becomes the default map style on first visit (no stored preference), not OpenStreetMap.
+>
+> **Revision 4 (2026-08-07):** The route overlay changes from "always visible" to "visible only when `mapStyle === 'swisstopo'`" — on OSM it's hidden entirely. Its styling also changes: thinner line, a lighter blue, and dashed instead of solid.
 
 ## Goal
 
@@ -32,15 +34,15 @@ Let the user toggle the base map on the main ship map (`components/ShipMap.tsx`)
 
 - `ShipMap.tsx` already loads GeoJSON routes per connected lake in its existing `loadAllRoutes` effect (currently only used for a console log). That effect is extended to keep the loaded `ShipRouteData[]` in state instead of discarding it.
 - For each route, `coordinates: {lat, lon}[]` (from `lib/geojson-routes.ts`) maps directly to a Leaflet `positions` array: `route.coordinates.map(c => [c.lat, c.lon])`.
-- Rendered as one `<Polyline>` per route, `pathOptions={{ color: '#0c274a', weight: 3, opacity: 0.5 }}` — reuses the existing brand-blue (`#0c274a`, already used for the ship icon background) at low-ish opacity so lines read as a background layer under the ship/station markers, not competing with them. This differs intentionally from the route *editor*'s in-progress-route styling (`#ec4899`, weight 4, opacity 0.8), which needs to stand out while actively drawing.
-- Routes re-render whenever `connectedLakeIds` changes (same dependency the existing load effect already uses), and are unaffected by `mapStyle` — they render as a Leaflet `Polyline` regardless of which base layer is active underneath.
+- **Revision 4:** rendered only while `mapStyle === 'swisstopo'` — hidden entirely on OSM. Styling is `pathOptions={{ color: '#60a5fa', weight: 1.5, opacity: 0.8, dashArray: '4 6' }}` — a lighter blue (Tailwind `blue-400`, vs. the original brand-dark-blue `#0c274a`), thinner (`1.5` vs. the original `3`), and dashed. Chosen specifically to read well against the light Swisstopo vector basemap it's now paired with; on OSM's more saturated tiles it would have clashed, hence hiding it there instead of re-tuning a second palette. This still differs intentionally from the route *editor*'s in-progress-route styling (`#ec4899`, weight 4, opacity 0.8, solid), which needs to stand out while actively drawing.
+- Routes re-render whenever `connectedLakeIds` changes (same dependency the existing load effect already uses). Visibility now also depends on `mapStyle` (via a render-time conditional, not by skipping the fetch — the routes are still loaded and kept in state regardless of the active base map, only their rendering is gated).
 
 ## UI
 
 - **Revision 3:** the icon-button toggle is replaced by a `<select>`, styled like the existing lake selector (`components/ShipMap.tsx`'s desktop dropdown: white/dark-gray rounded card, `ChevronDown` icon overlay, `appearance-none` native select) — so the two options are explicitly labeled ("OpenStreetMap" / "Swisstopo") rather than inferred from a single icon and click.
 - Positioned as a map overlay at `top-20 right-3 z-[1000]` (below the Leaflet zoom control, which occupies `top-right`) — doesn't collide with the lake selector (`top-3 left-3 z-[1000]`).
 - Selecting an option sets `mapStyle` directly (no more toggle-between-two logic) and persists it to `localStorage`.
-- Route overlay has no dedicated UI — it's always on, per the "immer sichtbar" decision.
+- Route overlay has no dedicated UI — it's automatically shown/hidden based on `mapStyle` (Revision 4), no separate toggle.
 
 ## Persistence
 

@@ -40,3 +40,6 @@ next-env.d.ts
 
 # Admin Config wird jetzt in Git committet, damit es auf Vercel verwendet wird
 # data/admin-config.json
+
+# Subagent-driven-development scratch workspace (briefs, reports, review diffs, screenshots)
+/.superpowers/
