@@ -9,6 +9,7 @@ import { LAKES, LakeConfig, Station, getConnectedLakes, getCombinedLakeBounds } 
 import { getCachedGeoJSONRoutes } from '@/lib/geojson-routes'
 
 import 'leaflet/dist/leaflet.css'
+import 'maplibre-gl/dist/maplibre-gl.css'
 
 // Dynamisch importieren, um SSR-Probleme zu vermeiden
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
@@ -16,6 +17,25 @@ const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLaye
 const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false })
 const Tooltip = dynamic(() => import('react-leaflet').then(mod => mod.Tooltip), { ssr: false })
 const ZoomControl = dynamic(() => import('react-leaflet').then(mod => mod.ZoomControl), { ssr: false })
+
+function SwisstopoLayer() {
+  const { useMap } = require('react-leaflet')
+  const map = useMap()
+
+  useEffect(() => {
+    require('@maplibre/maplibre-gl-leaflet')
+    const L = require('leaflet')
+    const gl = (L as any).maplibreGL({
+      style: 'https://vectortiles.geo.admin.ch/styles/ch.swisstopo.lightbasemap.vt/style.json',
+    }).addTo(map)
+
+    return () => {
+      map.removeLayer(gl)
+    }
+  }, [map])
+
+  return null
+}
 
 interface ShipMapProps {
   ships?: ShipPosition[]
@@ -160,16 +180,6 @@ export default function ShipMap({ ships = [], onShipClick, onStationClick, selec
     localStorage.setItem('mapStyle', next)
   }
 
-  const tileConfig = mapStyle === 'swisstopo'
-    ? {
-        url: 'https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/current/3857/{z}/{x}/{y}.jpeg',
-        attribution: '&copy; <a href="https://www.swisstopo.admin.ch/">swisstopo</a>',
-      }
-    : {
-        url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      }
-
   return (
     <div className="flex-1 relative h-full w-full" id="ship-map-container">
       {/* Lake Selection - Top Left */}
@@ -272,12 +282,16 @@ export default function ShipMap({ ships = [], onShipClick, onStationClick, selec
         scrollWheelZoom={true}
         zoomControl={false} // Disable default zoom control
       >
-        <TileLayer
-          key={mapStyle}
-          attribution={tileConfig.attribution}
-          url={tileConfig.url}
-        />
-        
+        {mapStyle === 'osm' ? (
+          <TileLayer
+            key="osm"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+        ) : (
+          <SwisstopoLayer key="swisstopo" />
+        )}
+
         {/* Zoom Control - Top Right */}
         <ZoomControl position="topright" />
         
