@@ -6,7 +6,7 @@ import { renderToString } from 'react-dom/server'
 import { Anchor, Ship as ShipIcon, Crown, ChevronDown, X, Layers } from 'lucide-react'
 import { ShipPosition } from '@/lib/ship-position'
 import { LAKES, LakeConfig, Station, getConnectedLakes, getCombinedLakeBounds } from '@/lib/lakes-config'
-import { getCachedGeoJSONRoutes } from '@/lib/geojson-routes'
+import { getCachedGeoJSONRoutes, ShipRouteData } from '@/lib/geojson-routes'
 
 import 'leaflet/dist/leaflet.css'
 import 'maplibre-gl/dist/maplibre-gl.css'
@@ -17,6 +17,7 @@ const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLaye
 const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false })
 const Tooltip = dynamic(() => import('react-leaflet').then(mod => mod.Tooltip), { ssr: false })
 const ZoomControl = dynamic(() => import('react-leaflet').then(mod => mod.ZoomControl), { ssr: false })
+const Polyline = dynamic(() => import('react-leaflet').then(mod => mod.Polyline), { ssr: false })
 
 function SwisstopoLayer() {
   const { useMap } = require('react-leaflet')
@@ -51,6 +52,7 @@ interface ShipMapProps {
 export default function ShipMap({ ships = [], onShipClick, onStationClick, selectedShipId, selectedLakeId = 'zurichsee', stations = [], availableLakes = [], onLakeChange }: ShipMapProps) {
   const [isClient, setIsClient] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [shipRoutes, setShipRoutes] = useState<ShipRouteData[]>([])
   const mapInitialized = useRef(false)
   const selectedLake = useMemo(() => LAKES[selectedLakeId], [selectedLakeId])
   
@@ -93,6 +95,7 @@ export default function ShipMap({ ships = [], onShipClick, onStationClick, selec
         const totalRoutes = allRoutes.reduce((sum, routes) => sum + routes.length, 0)
         const lakeNames = connectedLakeIds.map(id => LAKES[id].name).join(', ')
         console.log(`🗺️ ShipMap: ${totalRoutes} GeoJSON-Routen geladen für ${lakeNames}`)
+        setShipRoutes(allRoutes.flat())
       } catch (error) {
         console.error(`❌ ShipMap: Fehler beim Laden der GeoJSON-Routen:`, error)
       }
@@ -294,7 +297,16 @@ export default function ShipMap({ ships = [], onShipClick, onStationClick, selec
 
         {/* Zoom Control - Top Right */}
         <ZoomControl position="topright" />
-        
+
+        {/* Schiffsrouten */}
+        {shipRoutes.map((route) => (
+          <Polyline
+            key={route.id}
+            positions={route.coordinates.map(c => [c.lat, c.lon] as [number, number])}
+            pathOptions={{ color: '#0c274a', weight: 3, opacity: 0.5 }}
+          />
+        ))}
+
         {/* Stationen */}
         {stationIcon && stations
           .filter(station => station.latitude != null && station.longitude != null && 
