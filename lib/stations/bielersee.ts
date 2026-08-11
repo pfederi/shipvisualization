@@ -13,13 +13,14 @@ export const BIELERSEE_STATIONS: Station[] = [
   { name: 'Le Landeron', latitude: 47.051143, longitude: 7.076290, uic_ref: '8504565' },
   { name: 'Lüscherz', latitude: 47.049111, longitude: 7.150599, uic_ref: '' }, // Kein UIC-Ref in GeoJSON
   { name: 'Twann', latitude: 47.093407, longitude: 7.156989, uic_ref: '8504374' },
-  { name: 'Nidau', latitude: 47.123852, longitude: 7.242199, uic_ref: '8504461' },
-  { name: 'Brügg', latitude: 47.123638, longitude: 7.27823, uic_ref: '8504416' },
+  { name: 'Nidau', latitude: 47.121705, longitude: 7.243338, uic_ref: '8504369' },
+  { name: 'Port', latitude: 47.118326, longitude: 7.256596, uic_ref: '8504364' },
+  { name: 'Brügg', latitude: 47.122137, longitude: 7.281541, uic_ref: '8504368' },
   { name: 'Thielle', latitude: 47.127133, longitude: 7.251782, uic_ref: '8593386' }, // Biel/Bienne, Zihlplatz/Thielle
-  { name: 'Büren', latitude: 47.095946, longitude: 7.518813, uic_ref: '' }, // Büren zum Hof
-  { name: 'Grenchen', latitude: 47.188776, longitude: 7.398183, uic_ref: '' }, // Grenchen Süd
-  { name: 'Altreu', latitude: 47.197669, longitude: 7.447835, uic_ref: '8589074' }, // Altreu, Nord
-  { name: 'Solothurn', latitude: 47.204189, longitude: 7.542692, uic_ref: '' },
+  { name: 'Büren', latitude: 47.140339, longitude: 7.374014, uic_ref: '8504366' }, // Büren an der Aare
+  { name: 'Grenchen', latitude: 47.172819, longitude: 7.422572, uic_ref: '8504363' }, // Grenchen, Anlegestelle an der Aare
+  { name: 'Altreu', latitude: 47.190006, longitude: 7.448293, uic_ref: '8504365' }, // BSG-Schiffstation Altreu
+  { name: 'Solothurn', latitude: 47.203539, longitude: 7.534032, uic_ref: '8504379' },
   { name: 'Camping 3 Lacs', latitude: 46.975684, longitude: 7.093223, uic_ref: '8504499' },
 ]
 
@@ -37,6 +38,7 @@ export const BIELERSEE_NAME_MAPPING: Record<string, string> = {
   'Lüscherz': 'Lüscherz',
   'Twann': 'Twann',
   'Nidau': 'Nidau',
+  'Port': 'Port',
   'Brügg': 'Brügg',
   'Thielle': 'Thielle',
   'Büren': 'Büren',
@@ -56,6 +58,11 @@ export const BIELERSEE_NAME_MAPPING: Record<string, string> = {
   'Le Landeron débarcadère': 'Le Landeron',
   'Twann (Schiff)': 'Twann',
   'Brügg BE': 'Brügg',
+  'Nidau (Schiff)': 'Nidau',
+  'Brügg (Schiff)': 'Brügg',
+  'Büren (Schiff)': 'Büren',
+  'Grenchen (Schiff)': 'Grenchen',
+  'Solothurn (Schiff)': 'Solothurn',
   'Biel/Bienne, Zihlplatz/Thielle': 'Thielle',
   'Zihlplatz/Thielle': 'Thielle',
   'Zihlplatz': 'Thielle',
