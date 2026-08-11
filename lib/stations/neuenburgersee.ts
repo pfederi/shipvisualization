@@ -18,7 +18,7 @@ export const NEUENBURGERSEE_STATIONS: Station[] = [
   { name: 'Hauterive', latitude: 47.005412, longitude: 6.970661, uic_ref: '8504808' },
   { name: 'Vaumarcus', latitude: 46.877459, longitude: 6.761132, uic_ref: '8504243' },
   { name: 'La Sauge', latitude: 46.975749, longitude: 7.054032, uic_ref: '8504571' },
-  { name: 'Port', latitude: 46.98089, longitude: 6.904842, uic_ref: '8504509' },
+  { name: 'Port-de-Serrières', latitude: 46.98089, longitude: 6.904842, uic_ref: '8504509' },
   { name: 'La Tène', latitude: 47.006298, longitude: 7.018506, uic_ref: '' }, // Kein UIC-Ref gefunden
 ]
 
@@ -40,7 +40,7 @@ export const NEUENBURGERSEE_NAME_MAPPING: Record<string, string> = {
   'Hauterive': 'Hauterive',
   'Vaumarcus': 'Vaumarcus',
   'La Sauge': 'La Sauge',
-  'Port': 'Port',
+  'Port-de-Serrières': 'Port-de-Serrières',
   'La Tène': 'La Tène',
 
   // API-Varianten mit Zusätzen
@@ -57,8 +57,7 @@ export const NEUENBURGERSEE_NAME_MAPPING: Record<string, string> = {
   'Hauterive NE débarcadère': 'Hauterive',
   'Gorgier-Chez-le-Bart': 'Gorgier - Chez-le-Bart',
   'La Sauge (bateau)': 'La Sauge',
-  'Neuchâtel Port-de-Serrières': 'Port',
-  'Port-de-Serrières': 'Port',
+  'Neuchâtel Port-de-Serrières': 'Port-de-Serrières',
   'Marin-Epagnier, La Tène': 'La Tène',
 
   // Basisnamen (Fallback)
