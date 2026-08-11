@@ -26,29 +26,39 @@ function SwisstopoLayer({ onError }: { onError: () => void }) {
   onErrorRef.current = onError
 
   useEffect(() => {
-    require('@maplibre/maplibre-gl-leaflet')
-    const L = require('leaflet')
+    let cancelled = false
     let gl: any
-    try {
-      gl = (L as any).maplibreGL({
-        style: 'https://vectortiles.geo.admin.ch/styles/ch.swisstopo.lightbasemap.vt/style.json',
-      }).addTo(map)
-    } catch (error) {
-      console.error('❌ Swisstopo-Layer konnte nicht geladen werden:', error)
-      onErrorRef.current()
-      return
-    }
+    let glMap: any
+    let handleError: ((e: any) => void) | undefined
 
-    const glMap = gl.getMaplibreMap?.()
-    const handleError = (e: any) => {
-      console.error('❌ Swisstopo-Layer Fehler:', e?.error || e)
-      onErrorRef.current()
-    }
-    glMap?.on('error', handleError)
+    // Dynamischer Import statt require(), damit maplibre-gl (~280 KB gzip)
+    // in einen eigenen Chunk landet und nur geladen wird, wenn Swisstopo
+    // tatsächlich aktiv ist, statt fest im ShipMap-Bundle zu stecken.
+    import('@maplibre/maplibre-gl-leaflet').then(() => {
+      if (cancelled) return
+      const L = require('leaflet')
+      try {
+        gl = L.maplibreGL({
+          style: 'https://vectortiles.geo.admin.ch/styles/ch.swisstopo.lightbasemap.vt/style.json',
+        }).addTo(map)
+      } catch (error) {
+        console.error('❌ Swisstopo-Layer konnte nicht geladen werden:', error)
+        onErrorRef.current()
+        return
+      }
+
+      glMap = gl.getMaplibreMap?.()
+      handleError = (e: any) => {
+        console.error('❌ Swisstopo-Layer Fehler:', e?.error || e)
+        onErrorRef.current()
+      }
+      glMap?.on('error', handleError)
+    })
 
     return () => {
-      glMap?.off('error', handleError)
-      map.removeLayer(gl)
+      cancelled = true
+      if (handleError) glMap?.off('error', handleError)
+      if (gl) map.removeLayer(gl)
     }
   }, [map])
 

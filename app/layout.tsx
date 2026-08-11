@@ -21,6 +21,12 @@ export default function RootLayout({
     <html lang="de" suppressHydrationWarning>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+        <link rel="preconnect" href="https://vectortiles.geo.admin.ch" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://vectortiles0.geo.admin.ch" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://vectortiles1.geo.admin.ch" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://vectortiles2.geo.admin.ch" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://vectortiles3.geo.admin.ch" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://vectortiles4.geo.admin.ch" crossOrigin="anonymous" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
