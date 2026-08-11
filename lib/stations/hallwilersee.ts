@@ -12,19 +12,19 @@ export const HALLWILERSEE_STATIONS: Station[] = [
 ]
 
 export const HALLWILERSEE_NAME_MAPPING: Record<string, string> = {
-  'Meisterschwanden Delphin': 'meisterschwanden-delphin',
-  'Meisterschwanden Seerose': 'meisterschwanden-seerose',
-  'Seengen (See)': 'seengen',
-  'Seengen': 'seengen',
-  'Birrwil (See)': 'birrwil',
-  'Birrwil': 'birrwil',
-  'Beinwil am See (See)': 'beinwil-am-see',
-  'Beinwil am See': 'beinwil-am-see',
-  'Aesch LU (See)': 'aesch',
-  'Aesch LU': 'aesch',
-  'Aesch': 'aesch',
-  'Mosen (See)': 'mosen',
-  'Mosen': 'mosen',
-  'Boniswil (See)': 'boniswil',
-  'Boniswil': 'boniswil'
+  'Meisterschwanden Delphin': 'Meisterschwanden Delphin',
+  'Meisterschwanden Seerose': 'Meisterschwanden Seerose',
+  'Seengen (See)': 'Seengen (See)',
+  'Seengen': 'Seengen (See)',
+  'Birrwil (See)': 'Birrwil (See)',
+  'Birrwil': 'Birrwil (See)',
+  'Beinwil am See (See)': 'Beinwil am See (See)',
+  'Beinwil am See': 'Beinwil am See (See)',
+  'Aesch LU (See)': 'Aesch LU (See)',
+  'Aesch LU': 'Aesch LU (See)',
+  'Aesch': 'Aesch LU (See)',
+  'Mosen (See)': 'Mosen (See)',
+  'Mosen': 'Mosen (See)',
+  'Boniswil (See)': 'Boniswil (See)',
+  'Boniswil': 'Boniswil (See)'
 }

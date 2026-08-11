@@ -46,7 +46,7 @@ export const LAKES: Record<string, LakeConfig> = {
   },
   genfersee: {
     id: 'genfersee',
-    name: 'Genfersee',
+    name: 'Lac Léman',
     center: [46.45, 6.55],
     zoom: 10,
     geojsonPath: '/data/genfersee.geojson',
@@ -54,7 +54,7 @@ export const LAKES: Record<string, LakeConfig> = {
   },
   aegerisee: {
     id: 'aegerisee',
-    name: 'Aegerisee',
+    name: 'Ägerisee',
     center: [47.13, 8.61],
     zoom: 13,
     geojsonPath: '/data/aegerisee.geojson',
@@ -63,8 +63,8 @@ export const LAKES: Record<string, LakeConfig> = {
   bodensee: {
     id: 'bodensee',
     name: 'Bodensee',
-    center: [47.65, 9.18],
-    zoom: 9,
+    center: [47.58, 9.3],
+    zoom: 11,
     geojsonPath: '/data/bodensee.geojson',
     hasShipNames: false,
   },
@@ -79,16 +79,16 @@ export const LAKES: Record<string, LakeConfig> = {
   lagomaggiore: {
     id: 'lagomaggiore',
     name: 'Lago Maggiore',
-    center: [46.16, 8.79],
-    zoom: 10,
+    center: [46.146, 8.783],
+    zoom: 12,
     geojsonPath: '/data/lagomaggiore.geojson',
     hasShipNames: false,
   },
   luganersee: {
     id: 'luganersee',
-    name: 'Luganerseee',
-    center: [46.00, 8.95],
-    zoom: 11,
+    name: 'Lago di Lugano',
+    center: [45.955, 8.94],
+    zoom: 12,
     geojsonPath: '/data/luganersee.geojson',
     hasShipNames: false,
   },
@@ -138,6 +138,22 @@ export const LAKES: Record<string, LakeConfig> = {
     center: [47.021, 7.085],
     zoom: 11,
     geojsonPath: '/data/murtensee.geojson',
+    hasShipNames: false,
+  },
+  rheinschaffhausen: {
+    id: 'rheinschaffhausen',
+    name: 'Rhein (Schaffhausen)',
+    center: [47.678, 8.75],
+    zoom: 12,
+    geojsonPath: '/data/rheinschaffhausen.geojson',
+    hasShipNames: false,
+  },
+  aaresolothurn: {
+    id: 'aaresolothurn',
+    name: 'Aare (Solothurn)',
+    center: [47.16, 7.39],
+    zoom: 11,
+    geojsonPath: '/data/aaresolothurn.geojson',
     hasShipNames: false,
   }
 }
@@ -225,7 +241,9 @@ export async function loadLakeData(lakeId: string): Promise<{ stations: Station[
     case 'greifensee':
     case 'bielersee':
     case 'neuenburgersee':
-    case 'murtensee': {
+    case 'murtensee':
+    case 'rheinschaffhausen':
+    case 'aaresolothurn': {
       let manualStations: Station[]
       let manualMapping: Record<string, string>
       let geojsonPath: string
@@ -305,6 +323,16 @@ export async function loadLakeData(lakeId: string): Promise<{ stations: Station[
         manualStations = MURTENSEE_STATIONS
         manualMapping = MURTENSEE_NAME_MAPPING
         geojsonPath = '/data/murtensee.geojson'
+      } else if (lakeId === 'rheinschaffhausen') {
+        const { RHEINSCHAFFHAUSEN_STATIONS, RHEINSCHAFFHAUSEN_NAME_MAPPING } = await import('./stations/rheinschaffhausen')
+        manualStations = RHEINSCHAFFHAUSEN_STATIONS
+        manualMapping = RHEINSCHAFFHAUSEN_NAME_MAPPING
+        geojsonPath = '/data/rheinschaffhausen.geojson'
+      } else if (lakeId === 'aaresolothurn') {
+        const { AARESOLOTHURN_STATIONS, AARESOLOTHURN_NAME_MAPPING } = await import('./stations/aaresolothurn')
+        manualStations = AARESOLOTHURN_STATIONS
+        manualMapping = AARESOLOTHURN_NAME_MAPPING
+        geojsonPath = '/data/aaresolothurn.geojson'
       } else {
         // Fallback
         manualStations = []
@@ -331,18 +359,20 @@ export async function loadLakeData(lakeId: string): Promise<{ stations: Station[
         'vierwaldstaettersee': 'Vierwaldstättersee',
         'thunersee': 'Thunersee',
         'brienzersee': 'Brienzersee',
-        'genfersee': 'Genfersee',
-        'aegerisee': 'Aegerisee',
+        'genfersee': 'Lac Léman',
+        'aegerisee': 'Ägerisee',
         'bodensee': 'Bodensee',
         'hallwilersee': 'Hallwilersee',
         'lagomaggiore': 'Lago Maggiore',
-        'luganersee': 'Luganerseee',
+        'luganersee': 'Lago di Lugano',
         'walensee': 'Walensee',
         'zugersee': 'Zugersee',
         'greifensee': 'Greifensee',
         'bielersee': 'Bielersee',
         'neuenburgersee': 'Neuenburgersee',
-        'murtensee': 'Murtensee'
+        'murtensee': 'Murtensee',
+        'rheinschaffhausen': 'Rhein (Schaffhausen)',
+        'aaresolothurn': 'Aare (Solothurn)'
       }
       console.log(`🚢 ${lakeNames[lakeId] || lakeId}: ${manualStations.length} manuelle + ${geojsonStations.length - manualStations.length} GeoJSON = ${combinedStations.length} Stationen`)
 

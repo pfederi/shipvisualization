@@ -1,4 +1,24 @@
 
+## Version 1.5.0 (August 2026)
+
+### 🌊 New Lakes & Routes
+- **Bodensee**: Full station network added, including the SBS main line (Kreuzlingen–Rorschach–Bregenz–Lindau) and the URh line along the Untersee and Rhine (Kreuzlingen–Konstanz–Stein am Rhein–Schaffhausen)
+- **Lac Léman**: Full station network added, covering both the Swiss and French shores (renamed from "Genfersee")
+- **Lago Maggiore**: Swiss-shore station network added (Locarno, Ascona, Brissago, Gambarogno)
+- **Lago di Lugano**: Full station network added, including the Italian harbors Ponte Tresa (Italia) and Porto Ceresio (renamed from "Luganersee")
+- **Zugersee, Hallwilersee, Ägerisee**: Now available in the lake selector
+- **Rhein Schaffhausen** and **Aare Solothurn**: New focused map views for the Rhine stretch near Schaffhausen and the Aare stretch between Biel/Bienne and Solothurn
+
+### 🐛 Bug Fixes
+- **Fixed Bielersee Aare Stations**: Corrected badly misplaced station coordinates (Büren was off by ~12 km) and restored missing ships on the Biel–Solothurn course caused by unmapped station name variants and a missing stop (Port)
+- **Fixed Hallwilersee Ships**: Corrected a station name mapping bug that would have prevented any ship from being tracked
+- **Fixed "Luganerseee" Typo**: Corrected the lake name display
+
+### ⚡ Performance
+- **Faster Swisstopo Loading**: Added connection preconnect hints and split the MapLibre GL library into its own chunk so it only loads when the Swisstopo map style is actually used
+
+---
+
 ## Version 1.4.0 (August 2026)
 
 ### 🗺️ Swisstopo Map Style
