@@ -19,7 +19,7 @@ export const NEUENBURGERSEE_STATIONS: Station[] = [
   { name: 'Vaumarcus', latitude: 46.877459, longitude: 6.761132, uic_ref: '8504243' },
   { name: 'La Sauge', latitude: 46.975749, longitude: 7.054032, uic_ref: '8504571' },
   { name: 'Port-de-Serrières', latitude: 46.98089, longitude: 6.904842, uic_ref: '8504509' },
-  { name: 'La Tène', latitude: 47.006298, longitude: 7.018506, uic_ref: '' }, // Kein UIC-Ref gefunden
+  { name: 'La Tène', latitude: 47.004866, longitude: 7.022936, uic_ref: '8504566' }, // Schiffsstation La Tène (nicht Bahnhof Marin-Epagnier, La Tène)
 ]
 
 export const NEUENBURGERSEE_NAME_MAPPING: Record<string, string> = {
@@ -59,6 +59,8 @@ export const NEUENBURGERSEE_NAME_MAPPING: Record<string, string> = {
   'La Sauge (bateau)': 'La Sauge',
   'Neuchâtel Port-de-Serrières': 'Port-de-Serrières',
   'Marin-Epagnier, La Tène': 'La Tène',
+  'La Tène (bateau)': 'La Tène',
+  'La Tène (Schiff/bateau)': 'La Tène',
 
   // Basisnamen (Fallback)
   'Neuenburg': 'Neuchâtel',

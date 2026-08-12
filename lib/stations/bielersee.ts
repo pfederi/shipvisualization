@@ -16,7 +16,7 @@ export const BIELERSEE_STATIONS: Station[] = [
   { name: 'Nidau', latitude: 47.121705, longitude: 7.243338, uic_ref: '8504369' },
   { name: 'Port', latitude: 47.118326, longitude: 7.256596, uic_ref: '8504364' },
   { name: 'Brügg', latitude: 47.122137, longitude: 7.281541, uic_ref: '8504368' },
-  { name: 'Thielle', latitude: 47.127133, longitude: 7.251782, uic_ref: '8593386' }, // Biel/Bienne, Zihlplatz/Thielle
+  { name: 'Thielle', latitude: 47.019672, longitude: 7.033067, uic_ref: '8504567' }, // Thielle-Wavre (Schiffsstation am Kanal Neuenburgersee/Bielersee)
   { name: 'Büren', latitude: 47.140339, longitude: 7.374014, uic_ref: '8504366' }, // Büren an der Aare
   { name: 'Grenchen', latitude: 47.172819, longitude: 7.422572, uic_ref: '8504363' }, // Grenchen, Anlegestelle an der Aare
   { name: 'Altreu', latitude: 47.190006, longitude: 7.448293, uic_ref: '8504365' }, // BSG-Schiffstation Altreu
@@ -66,6 +66,10 @@ export const BIELERSEE_NAME_MAPPING: Record<string, string> = {
   'Biel/Bienne, Zihlplatz/Thielle': 'Thielle',
   'Zihlplatz/Thielle': 'Thielle',
   'Zihlplatz': 'Thielle',
+  'Thielle-Wavre': 'Thielle',
+  'Thielle-Wavre (Schiff)': 'Thielle',
+  'Thielle-Wavre (bateau)': 'Thielle',
+  'Thielle-Wavre (Schiff/bateau)': 'Thielle',
   'Büren zum Hof': 'Büren',
   'Grenchen Süd': 'Grenchen',
   'Altreu, Nord': 'Altreu',

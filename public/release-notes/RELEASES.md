@@ -1,4 +1,12 @@
 
+## Version 1.5.1 (August 2026)
+
+### 🐛 Bug Fixes
+- **Fixed Thielle & La Tène Placement**: "Thielle" was plotted at an unrelated bus stop in Biel (~15 km away) and "La Tène" at its train station instead of its lake pier; both now use their real ferry-stop coordinates on the canal between Bielersee and Neuenburgersee
+- **Fixed Ghost Ships in the Canal**: A missing station name mapping ("Thielle-Wavre") caused ships on the Neuchâtel–Biel/Bienne course to fall back to a straight-line position instead of following the real canal route
+
+---
+
 ## Version 1.5.0 (August 2026)
 
 ### 🌊 New Lakes & Routes
