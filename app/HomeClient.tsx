@@ -7,7 +7,7 @@ import { RotateCcw, Ship } from 'lucide-react'
 
 // Types & Libs
 import { ShipPosition } from '@/lib/ship-position'
-import { buildDailySegments, computePositions, zurichDate } from '@/lib/positions'
+import { buildDailySegments, computePositions, nameLookupDay, zurichDate } from '@/lib/positions'
 import { getStationCoordinates, LAKES, loadLakeData, Station, getConnectedLakes, getCombinedLakeBounds } from '@/lib/lakes-config'
 import { useI18n } from '@/lib/i18n-context'
 import { useTheme } from '@/lib/theme'
@@ -282,7 +282,7 @@ function HomeContent() {
         stationCoords,
         geoRoutes,
         lakeId: selectedLakeId,
-        shipNameFor: (course) => (selectedLake.hasShipNames ? getShipNameByCourseNumber(course, targetDate) : Promise.resolve(null)),
+        shipNameFor: (course) => (selectedLake.hasShipNames ? getShipNameByCourseNumber(course, nameLookupDay(dateStr)) : Promise.resolve(null)),
       })
       
       setRouteSegments(finalSegments)

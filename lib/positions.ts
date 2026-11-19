@@ -15,6 +15,11 @@ export function zurichDate(d: Date): string {
   return ZURICH_DATE.format(d)
 }
 
+/** Noon UTC of a timetable day: the ship-name lookup takes the day with toISOString(), which this keeps right. */
+export function nameLookupDay(date: string): Date {
+  return new Date(`${date}T12:00:00Z`)
+}
+
 export type ScheduleSegment = RouteSegment & {
   arrivalAtFromStation: Date
   resolvedShipName: string

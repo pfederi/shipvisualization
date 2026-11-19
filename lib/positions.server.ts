@@ -1,6 +1,6 @@
 import { loadRoutesFromFile } from './geojson-routes.server'
 import { getConnectedLakes, getStationCoordinates, LAKES, loadLakeData } from './lakes-config'
-import { buildDailySegments, computePositions, type ScheduleSegment, zurichDate } from './positions'
+import { buildDailySegments, computePositions, nameLookupDay, type ScheduleSegment, zurichDate } from './positions'
 import { getShipNameByCourseNumber } from './ship-names-api'
 import type { ShipPosition } from './ship-position'
 import { getAllStationsStationboard } from './transport-api'
@@ -47,13 +47,19 @@ export function toApiShips(positions: ShipPosition[]): ApiShip[] {
     }))
 }
 
-export function nextDeparture(segments: { segment: ScheduleSegment }[], now: Date): { time: string; station: string } | null {
-  let best: ScheduleSegment | null = null
+/** The next departure of every station after `now`, earliest first. */
+export function upcomingDepartures(segments: { segment: ScheduleSegment }[], now: Date): Departure[] {
+  const first = new Map<string, Date>()
   for (const { segment } of segments) {
-    if (segment.departureTime.getTime() > now.getTime() && (!best || segment.departureTime < best.departureTime)) best = segment
+    const t = segment.departureTime
+    if (t.getTime() <= now.getTime()) continue
+    const known = first.get(segment.from.name)
+    if (!known || t < known) first.set(segment.from.name, t)
   }
-  return best ? { time: best.departureTime.toISOString(), station: best.from.name } : null
+  return Array.from(first, ([station, t]) => ({ time: t.toISOString(), station })).sort((x, y) => x.time.localeCompare(y.time))
 }
+
+type Departure = { time: string; station: string }
 
 interface Schedule {
   segments: { segment: ScheduleSegment }[]
@@ -76,8 +82,7 @@ async function loadSchedule(lakeId: string, date: string): Promise<Schedule> {
   let stationboards = await getAllStationsStationboard(ids, date, '00:00')
   if (entryCount(stationboards) === 0) stationboards = await getAllStationsStationboard(ids, date, '00:00', true)
   if (entryCount(stationboards) === 0) throw new Error(`Fahrplan leer für ${lakeId} am ${date}`)
-  // Noon UTC of the Zurich date, so the name lookup (toISOString) asks for the right day.
-  const day = new Date(`${date}T12:00:00Z`)
+  const day = nameLookupDay(date)
   const segments = await buildDailySegments({
     stationboards,
     mapping,
@@ -87,6 +92,16 @@ async function loadSchedule(lakeId: string, date: string): Promise<Schedule> {
     shipNameFor: (course) => (LAKES[lakeId]!.hasShipNames ? getShipNameByCourseNumber(course, day) : Promise.resolve(null)),
   })
   return { segments, geoRoutes }
+}
+
+/** For tests: the days whose timetable a lake keeps. */
+export function scheduledDates(lakeId: string): string[] {
+  return Array.from(schedules.keys()).filter((k) => k.startsWith(`${lakeId}|`)).map((k) => k.slice(lakeId.length + 1)).sort()
+}
+
+/** Forgets the timetables of days before `today` (the server runs for weeks). */
+function forgetPast(lakeId: string, today: string): void {
+  for (const date of scheduledDates(lakeId)) if (date < today) schedules.delete(`${lakeId}|${date}`)
 }
 
 function schedule(lakeId: string, date: string): Promise<Schedule> {
@@ -99,15 +114,32 @@ function schedule(lakeId: string, date: string): Promise<Schedule> {
   return loading
 }
 
+/** After the day's last departure: tomorrow's first ones (a failed load leaves them out). */
+async function departuresFrom(lakeId: string, segments: { segment: ScheduleSegment }[], now: Date): Promise<Departure[]> {
+  const today = upcomingDepartures(segments, now)
+  if (today.length > 0) return today
+  const tomorrow = zurichDate(new Date(now.getTime() + 24 * 60 * 60_000))
+  return schedule(lakeId, tomorrow).then(({ segments: next }) => upcomingDepartures(next, now), () => [])
+}
+
 /** Ships sailing now on a lake, cached 30 s; the day's timetable is built once per 6 h. */
-export function getLakePositions(lakeId: string, now = new Date()): Promise<{ updatedAt: string; ships: ApiShip[]; nextDeparture: { time: string; station: string } | null }> {
+export function getLakePositions(
+  lakeId: string,
+  now = new Date(),
+): Promise<{ updatedAt: string; ships: ApiShip[]; nextDeparture: Departure | null; departures: Departure[] }> {
   const hit = positions.get(lakeId)
   if (hit && now.getTime() - hit.at < POSITIONS_TTL_MS) return hit.result
-  const result = schedule(lakeId, zurichDate(now)).then(async ({ segments, geoRoutes }) => ({
-    updatedAt: now.toISOString(),
-    ships: toApiShips(await computePositions(segments, geoRoutes, now)),
-    nextDeparture: nextDeparture(segments, now),
-  }))
+  const today = zurichDate(now)
+  forgetPast(lakeId, today)
+  const result = schedule(lakeId, today).then(async ({ segments, geoRoutes }) => {
+    const departures = await departuresFrom(lakeId, segments, now)
+    return {
+      updatedAt: now.toISOString(),
+      ships: toApiShips(await computePositions(segments, geoRoutes, now)),
+      nextDeparture: departures[0] ?? null,
+      departures,
+    }
+  })
   positions.set(lakeId, { at: now.getTime(), result })
   result.catch(() => positions.delete(lakeId))
   return result

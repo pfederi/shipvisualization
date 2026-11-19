@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { getStationCoordinates } from './lakes-config'
 import { ZURICHSEE_STATIONS } from './stations/zurichsee'
-import { buildDailySegments, computePositions, zurichDate } from './positions'
+import { buildDailySegments, computePositions, nameLookupDay, zurichDate } from './positions'
 import type { StationboardEntry } from './transport-api'
 
 const [a, b, c] = ZURICHSEE_STATIONS
@@ -32,6 +32,10 @@ describe('positions', () => {
   it('takes the date in Zurich, not in UTC', () => {
     expect(zurichDate(new Date('2026-11-19T23:30:00Z'))).toBe('2026-11-20')
     expect(zurichDate(new Date('2026-07-01T22:30:00Z'))).toBe('2026-07-02')
+  })
+
+  it('asks the ship names for noon UTC of the timetable day, so toISOString gives that day', () => {
+    expect(nameLookupDay('2026-11-20').toISOString()).toBe('2026-11-20T12:00:00.000Z')
   })
 
   it('builds one segment per leg, with ship name and destination, once even when two boards list the journey', async () => {
