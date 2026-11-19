@@ -63,13 +63,19 @@ interface Schedule {
 const schedules = new Map<string, { at: number; schedule: Promise<Schedule> }>()
 const positions = new Map<string, { at: number; result: ReturnType<typeof getLakePositions> }>()
 
+const entryCount = (boards: Map<string, unknown[]>) => Array.from(boards.values()).reduce((n, e) => n + e.length, 0)
+
 async function loadSchedule(lakeId: string, date: string): Promise<Schedule> {
   const lakeIds = getConnectedLakes(lakeId)
   const lakeData = await Promise.all(lakeIds.map((id) => loadLakeData(id)))
   const stations = lakeData.flatMap((d) => d.stations)
   const mapping = Object.assign({}, ...lakeData.map((d) => d.mapping)) as Record<string, string>
   const geoRoutes = (await Promise.all(lakeIds.map((id) => loadRoutesFromFile(LAKES[id]!.geojsonPath)))).flat()
-  const stationboards = await getAllStationsStationboard(stations.map((s) => s.uic_ref || s.name), date, '00:00')
+  const ids = stations.map((s) => s.uic_ref || s.name)
+  // transport.opendata.ch errors come back as empty boards (and stay cached): ask once past the cache, then fail.
+  let stationboards = await getAllStationsStationboard(ids, date, '00:00')
+  if (entryCount(stationboards) === 0) stationboards = await getAllStationsStationboard(ids, date, '00:00', true)
+  if (entryCount(stationboards) === 0) throw new Error(`Fahrplan leer für ${lakeId} am ${date}`)
   // Noon UTC of the Zurich date, so the name lookup (toISOString) asks for the right day.
   const day = new Date(`${date}T12:00:00Z`)
   const segments = await buildDailySegments({
