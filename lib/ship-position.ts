@@ -23,6 +23,8 @@ export interface ShipPosition {
   status?: 'driving' | 'at_station'
   /** Final destination of the journey (stationboard «to»). */
   destination?: string
+  /** Arrival at the final destination. */
+  destinationArrival?: Date | null
 }
 
 export interface RouteSegment {

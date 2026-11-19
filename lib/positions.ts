@@ -21,6 +21,8 @@ export type ScheduleSegment = RouteSegment & {
   internalCourseNumber: string
   officialCourseNumber: string
   destination: string
+  /** Arrival at the final destination (last stop of the journey). */
+  destinationArrival: Date | null
 }
 
 export interface DailySegmentsInput {
@@ -46,6 +48,9 @@ export async function buildDailySegments(input: DailySegmentsInput): Promise<{ s
       const officialNumShort = officialNumRaw.replace(/^0+/, '') || internalNumShort
       const displayName = (await input.shipNameFor(internalNumShort)) || 'Schiff'
       const mainStation = normalizeStationName(entry.stop.station.name, mapping)
+      const lastArrival = entry.passList[entry.passList.length - 1]!.arrival
+      const destTime = lastArrival ? new Date(lastArrival) : null
+      const destinationArrival = destTime && !isNaN(destTime.getTime()) ? destTime : null
       for (let i = 0; i < entry.passList.length - 1; i++) {
         const currentPass = entry.passList[i]!
         const fromName = normalizeStationName(currentPass.station?.name || '', mapping) || mainStation
@@ -97,6 +102,7 @@ export async function buildDailySegments(input: DailySegmentsInput): Promise<{ s
               internalCourseNumber: entry.name,
               officialCourseNumber: entry.number,
               destination: normalizeStationName(entry.to, mapping) || entry.to,
+              destinationArrival,
             },
           })
         }
@@ -134,12 +140,12 @@ export async function computePositions(routeSegments: { segment: ScheduleSegment
   const nowTime = now.getTime()
   const results = await Promise.all(
     routeSegments.map(async ({ segment }): Promise<ShipPosition | null> => {
-      const { from, to, departureTime, arrivalTime, arrivalAtFromStation, resolvedShipName, internalCourseNumber, officialCourseNumber, destination } = segment
+      const { from, to, departureTime, arrivalTime, arrivalAtFromStation, resolvedShipName, internalCourseNumber, officialCourseNumber, destination, destinationArrival } = segment
       const id = `ship-${internalCourseNumber}-${departureTime.getTime()}`
       const depTime = departureTime.getTime()
       const arrTime = arrivalTime.getTime()
       const startDwell = arrivalAtFromStation ? arrivalAtFromStation.getTime() : depTime - PRE_DEPARTURE_DWELL_MS
-      const common = { id, name: resolvedShipName, departureTime, arrivalTime, fromStation: from.name, toStation: to.name, internalCourseNumber, officialCourseNumber, destination }
+      const common = { id, name: resolvedShipName, departureTime, arrivalTime, fromStation: from.name, toStation: to.name, internalCourseNumber, officialCourseNumber, destination, destinationArrival }
       if (nowTime >= startDwell && nowTime < depTime) {
         return { ...common, latitude: from.lat, longitude: from.lon, course: 0, speed: 0, nextStop: to.name, status: 'at_station' } as ShipPosition
       }

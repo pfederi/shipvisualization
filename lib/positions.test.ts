@@ -38,6 +38,7 @@ describe('positions', () => {
     const segs = await buildDailySegments(input([[entry(a!.name, '2026-11-19T17:40:00+0100')], [entry(b!.name, '2026-11-19T17:52:00+0100')]]))
     expect(segs.map((s) => `${s.segment.from.name}>${s.segment.to.name}`)).toEqual([`${a!.name}>${b!.name}`, `${b!.name}>${c!.name}`])
     expect(segs[0]!.segment).toMatchObject({ resolvedShipName: 'Panta Rhei', internalCourseNumber: 'BAT 3', officialCourseNumber: '3732', destination: c!.name })
+    expect(segs[0]!.segment.destinationArrival?.toISOString()).toBe('2026-11-19T17:05:00.000Z')
     // The second leg starts where the first ended: the ship waits there from its arrival.
     expect(segs[1]!.segment.arrivalAtFromStation.toISOString()).toBe('2026-11-19T16:50:00.000Z')
   })
@@ -49,6 +50,7 @@ describe('positions', () => {
     const sailing = await at('2026-11-19T16:45:00Z')
     expect(sailing).toHaveLength(1)
     expect(sailing[0]).toMatchObject({ status: 'driving', name: 'Panta Rhei', fromStation: a!.name, toStation: b!.name, destination: c!.name })
+    expect(sailing[0]!.destinationArrival?.toISOString()).toBe('2026-11-19T17:05:00.000Z')
     expect(sailing[0]!.latitude).toBeGreaterThan(Math.min(a!.latitude, b!.latitude) - 0.01)
     expect((await at('2026-11-19T16:51:00Z'))[0]).toMatchObject({ status: 'at_station', toStation: c!.name })
     expect(await at('2026-11-19T17:10:00Z')).toEqual([])

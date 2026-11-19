@@ -18,7 +18,10 @@ export interface ApiShip {
   to: string
   nextStop: string
   departure: string | null
+  /** Arrival at the next stop. */
   arrival: string | null
+  /** Arrival at the final destination. */
+  destinationArrival: string | null
 }
 
 const SCHEDULE_TTL_MS = 6 * 60 * 60_000
@@ -40,6 +43,7 @@ export function toApiShips(positions: ShipPosition[]): ApiShip[] {
       nextStop: p.toStation ?? p.nextStop,
       departure: p.departureTime ? p.departureTime.toISOString() : null,
       arrival: p.arrivalTime ? p.arrivalTime.toISOString() : null,
+      destinationArrival: p.destinationArrival ? p.destinationArrival.toISOString() : null,
     }))
 }
 
