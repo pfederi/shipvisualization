@@ -9,6 +9,8 @@ export interface ApiShip {
   name: string
   /** Course number without letters and leading zeros, e.g. «7». */
   course: string
+  /** Sailing between two stations, or waiting at `from` until `departure`. */
+  status: 'sailing' | 'waiting'
   lat: number
   lon: number
   /** Bearing in degrees, 0 = north. */
@@ -31,10 +33,10 @@ const shortCourse = (p: ShipPosition) => (p.internalCourseNumber || p.officialCo
 
 export function toApiShips(positions: ShipPosition[]): ApiShip[] {
   return positions
-    .filter((p) => p.status === 'driving')
     .map((p) => ({
       name: p.name,
       course: shortCourse(p),
+      status: p.status === 'driving' ? ('sailing' as const) : ('waiting' as const),
       lat: p.latitude,
       lon: p.longitude,
       heading: p.course,
@@ -122,7 +124,7 @@ async function departuresFrom(lakeId: string, segments: { segment: ScheduleSegme
   return schedule(lakeId, tomorrow).then(({ segments: next }) => upcomingDepartures(next, now), () => [])
 }
 
-/** Ships sailing now on a lake, cached 30 s; the day's timetable is built once per 6 h. */
+/** Ships sailing or waiting at a station now on a lake, cached 30 s; the day's timetable is built once per 6 h. */
 export function getLakePositions(
   lakeId: string,
   now = new Date(),
