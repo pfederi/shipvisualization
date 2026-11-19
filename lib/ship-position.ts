@@ -1,6 +1,9 @@
 // Logik zur Berechnung der Schiffsposition basierend auf Fahrplan
 import { getShipNameByRoute, getShipNameByCourseNumber } from './ship-names-api'
 import { ShipRouteData, RouteCoordinate } from './geojson-routes'
+import { getZurichseeRouteBonus, shouldDebugZurichseeRoute } from './lakes/zurichsee-routes'
+import { findGreifenseeRoute, shouldDebugGreifenseeRoute } from './lakes/greifensee-routes'
+import { findAegeriseeRoute, shouldDebugAegeriseeRoute } from './lakes/aegerisee-routes'
 
 export interface ShipPosition {
   id: string
@@ -18,6 +21,10 @@ export interface ShipPosition {
   internalCourseNumber?: string // Interne Nummer für Schiffsnamen (z.B. 64)
   officialCourseNumber?: string // Explizite ZVV Nummer (z.B. 3732)
   status?: 'driving' | 'at_station'
+  /** Final destination of the journey (stationboard «to»). */
+  destination?: string
+  /** Arrival at the final destination. */
+  destinationArrival?: Date | null
 }
 
 export interface RouteSegment {
@@ -127,7 +134,6 @@ function findRouteBetweenStations(
         
         // Seespezifische Bonuspunkte
         if (lakeId === 'zurichsee') {
-          const { getZurichseeRouteBonus } = require('./lakes/zurichsee-routes')
           nameBonus += getZurichseeRouteBonus(routeName, courseNumber)
         }
 
@@ -362,14 +368,12 @@ export async function calculateShipPosition(
         const lakeId = segment.lakeId
         
         if (lakeId === 'greifensee') {
-          const { findGreifenseeRoute } = require('./lakes/greifensee-routes')
           routeCoordinates = findGreifenseeRoute(geoJSONRoutes, 
             segment.from,
             segment.to,
             segment.courseNumber
           )
         } else if (lakeId === 'aegerisee') {
-          const { findAegeriseeRoute } = require('./lakes/aegerisee-routes')
           routeCoordinates = findAegeriseeRoute(geoJSONRoutes, 
             segment.from,
             segment.to,
@@ -663,7 +667,6 @@ export function createRouteSegmentFromStationboard(
   
   if (lakeId === 'aegerisee') {
     // Ägerisee: Verwende spezielle Rundfahrten-Logik
-    const { findAegeriseeRoute } = require('./lakes/aegerisee-routes')
     routeCoordinates = findAegeriseeRoute(geoJSONRoutes, 
       { lat: fromCoords.lat, lon: fromCoords.lon, name: fromStation },
       { lat: toCoords.lat, lon: toCoords.lon, name: toStation },
@@ -671,7 +674,6 @@ export function createRouteSegmentFromStationboard(
     )
   } else if (lakeId === 'greifensee') {
     // Greifensee: Verwende spezielle Rundfahrten-Logik
-    const { findGreifenseeRoute } = require('./lakes/greifensee-routes')
     routeCoordinates = findGreifenseeRoute(geoJSONRoutes, 
       { lat: fromCoords.lat, lon: fromCoords.lon, name: fromStation },
       { lat: toCoords.lat, lon: toCoords.lon, name: toStation },
@@ -694,7 +696,6 @@ export function createRouteSegmentFromStationboard(
     let shouldDebug = geoJSONRoutes.length === 0
     
     if (lakeId === 'aegerisee') {
-      const { shouldDebugAegeriseeRoute } = require('./lakes/aegerisee-routes')
       if (shouldDebugAegeriseeRoute(fromStation, toStation)) {
         shouldDebug = true
         console.warn(`⚠️ Keine GeoJSON-Route gefunden für ${fromStation} -> ${toStation} (Kurs ${courseNumber})`)
@@ -703,7 +704,6 @@ export function createRouteSegmentFromStationboard(
         console.log(`   Verfügbare Routen: ${geoJSONRoutes.length}`)
       }
     } else if (lakeId === 'greifensee') {
-      const { shouldDebugGreifenseeRoute } = require('./lakes/greifensee-routes')
       if (shouldDebugGreifenseeRoute(fromStation, toStation)) {
         shouldDebug = true
         console.warn(`⚠️ Keine GeoJSON-Route gefunden für ${fromStation} -> ${toStation} (Kurs ${courseNumber})`)
@@ -714,7 +714,6 @@ export function createRouteSegmentFromStationboard(
     }
     
     if (lakeId === 'zurichsee') {
-      const { shouldDebugZurichseeRoute } = require('./lakes/zurichsee-routes')
       if (shouldDebugZurichseeRoute(courseNumber, internalCourseNumber)) {
         shouldDebug = true
       }
@@ -761,7 +760,6 @@ export function createRouteSegmentFromStationboard(
   } else {
     // Seespezifische Success-Logs
     if (lakeId === 'zurichsee') {
-      const { shouldDebugZurichseeRoute } = require('./lakes/zurichsee-routes')
       if (shouldDebugZurichseeRoute(courseNumber, internalCourseNumber)) {
         console.log(`✅ GeoJSON-Route gefunden für ${fromStation} -> ${toStation} (Kurs ${courseNumber}): ${routeCoordinates.length} Punkte`)
       }

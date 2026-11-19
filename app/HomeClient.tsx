@@ -6,8 +6,9 @@ import dynamic from 'next/dynamic'
 import { RotateCcw, Ship } from 'lucide-react'
 
 // Types & Libs
-import { ShipPosition, calculateShipPosition } from '@/lib/ship-position'
-import { getStationCoordinates, normalizeStationName, LAKES, loadLakeData, Station, getConnectedLakes, getCombinedLakeBounds } from '@/lib/lakes-config'
+import { ShipPosition } from '@/lib/ship-position'
+import { buildDailySegments, computePositions, nameLookupDay, zurichDate } from '@/lib/positions'
+import { getStationCoordinates, LAKES, loadLakeData, Station, getConnectedLakes, getCombinedLakeBounds } from '@/lib/lakes-config'
 import { useI18n } from '@/lib/i18n-context'
 import { useTheme } from '@/lib/theme'
 import ThemeLanguageToggle from '@/components/ThemeLanguageToggle'
@@ -26,8 +27,6 @@ const SchedulePanel = dynamic(() => import('@/components/SchedulePanel'), {
 // --- CONFIGURATION ---
 const INITIAL_TIME = "13:32"
 const UPDATE_INTERVAL_MS = 1000
-const PRE_DEPARTURE_DWELL_MS = 1 * 60 * 1000 // 1 Minute für Schiffe, die von der Werft kommen
-const POST_ARRIVAL_GRACE_MS = 0 // Kein Puffer mehr nötig, da wir Segmente verknüpfen
 
 function HomeContent() {
   const { t, language } = useI18n()
@@ -211,7 +210,7 @@ function HomeContent() {
   }
 
   const loadDailySchedule = useCallback(async (targetDate: Date, force = false) => {
-    const dateStr = targetDate.toISOString().split('T')[0]
+    const dateStr = zurichDate(targetDate)
     const modeKey = isLiveMode ? 'live' : 'sim'
     const currentKey = `${dateStr}-${modeKey}${force ? '-force' : ''}`
     
@@ -238,12 +237,10 @@ function HomeContent() {
 
       const [
         { getCachedGeoJSONRoutes },
-        { createRouteSegmentFromStationboard },
         { getShipNameByCourseNumber, getCachedShipData },
         { getAllStationsStationboard }
       ] = await Promise.all([
         import('@/lib/geojson-routes'),
-        import('@/lib/ship-position'),
         import('@/lib/ship-names-api'),
         import('@/lib/transport-api')
       ])
@@ -279,316 +276,14 @@ function HomeContent() {
       // Speichere Stationboard-Daten für Station-Ansicht
       setStationboardData(stationboardMap)
       
-      const processedSegments: any[] = []
-      const debugStats = {
-        totalEntries: 0,
-        skippedNoPassList: 0,
-        skippedNoDeparture: 0,
-        skippedNoArrival: 0,
-        created: 0
-      }
-      
-      for (const [stationId, entries] of stationboardMap.entries()) {
-        for (const entry of entries) {
-          debugStats.totalEntries++
-          
-          if (!entry.name || !entry.passList || entry.passList.length < 2) {
-            debugStats.skippedNoPassList++
-            continue
-          }
-          
-          // Extrahiere Kursnummer - WICHTIG: Speichere VOLLE Nummer für eindeutige Identifikation
-          // Kürze nur für die API-Abfrage, aber behalte die volle Nummer für die Deduplizierung
-          const internalNumRaw = entry.name.match(/\d+/)?.[0] || "0"
-          const internalNumShort = internalNumRaw.replace(/^0+/, '') || "0" // Gekürzt für API-Abfrage
-          const officialNumRaw = entry.number || internalNumRaw
-          const officialNumShort = officialNumRaw.replace(/^0+/, '') || internalNumShort
-          
-          // DEBUG: Zeige die ersten 3 Einträge
-          if (debugStats.totalEntries <= 3) {
-            console.log(`🔍 Kursnummer-Extraktion Entry ${debugStats.totalEntries}:`, {
-              'entry.name': entry.name,
-              'entry.number': entry.number,
-              internalNumRaw,
-              internalNumShort,
-              officialNumRaw,
-              officialNumShort
-            })
-          }
-
-          const shipName = selectedLake.hasShipNames 
-            ? await getShipNameByCourseNumber(internalNumShort, targetDate)
-            : null
-            
-          // Wenn kein Schiffsname gefunden wurde, zeige nur "Schiff" ohne Kursnummer
-          // (Die Kursnummer wird separat als Chip angezeigt)
-          const displayName = shipName || `Schiff`
-
-          for (let i = 0; i < entry.passList.length - 1; i++) {
-            const currentPass = entry.passList[i]
-            
-            // WICHTIG: Wenn station null ist, ist es die Startstation (die Station für die wir das Stationboard laden)
-            let fromName = normalizeStationName(currentPass.station?.name || "", combinedMapping)
-            if (!fromName) {
-              // Verwende die Hauptstation als Startpunkt
-              fromName = normalizeStationName(entry.stop.station.name, combinedMapping)
-            }
-            if (!fromName) continue
-            
-            // API-Bug Fix: Suche die tatsächliche Abfahrt für diese Station
-            let lastSameStationIdx = i
-            let bestDeparture: string | null = currentPass.departure || currentPass.arrival || null
-            
-            while (lastSameStationIdx + 1 < entry.passList.length && 
-                   normalizeStationName(entry.passList[lastSameStationIdx + 1].station?.name || "", combinedMapping) === fromName) {
-              lastSameStationIdx++
-              if (!bestDeparture) {
-                bestDeparture = entry.passList[lastSameStationIdx].departure || entry.passList[lastSameStationIdx].arrival || null
-              }
-            }
-            
-            // WICHTIG: Falls wir gerade an der Station sind, für die wir das Stationboard geladen haben,
-            // und im passList keine Zeit steht, nimm die Zeit aus dem Haupt-Entry
-            const normalizedMainStation = normalizeStationName(entry.stop.station.name, combinedMapping)
-            if (!bestDeparture && fromName === normalizedMainStation) {
-              bestDeparture = entry.stop.departure || entry.stop.arrival || null
-            }
-            
-            // ZUSÄTZLICHER FIX: Wenn immer noch keine Zeit, prüfe ob es eine Durchfahrt ist
-            // und nimm die Ankunftszeit als Abfahrtszeit (bei Durchfahrten sind beide gleich)
-            if (!bestDeparture && currentPass.arrival) {
-              bestDeparture = currentPass.arrival
-            }
-            
-            if (!bestDeparture) {
-              debugStats.skippedNoDeparture++
-              i = lastSameStationIdx
-              continue
-            }
-            
-            // Nächste Station suchen
-            let targetIdx = lastSameStationIdx + 1
-            if (targetIdx >= entry.passList.length) break
-            
-            const to = entry.passList[targetIdx]
-            const bestArrival = to.arrival || to.departure || null
-            
-            if (!to.station?.name || !bestArrival) {
-              debugStats.skippedNoArrival++
-              i = lastSameStationIdx
-              continue
-            }
-
-            const depTime = new Date(bestDeparture), arrTime = new Date(bestArrival)
-            if (isNaN(depTime.getTime())) {
-              i = lastSameStationIdx
-              continue
-            }
-
-            // Plausibilitätscheck für Fahrzeit
-            let finalArrTime = arrTime
-            if (isNaN(finalArrTime.getTime()) || finalArrTime <= depTime) {
-              finalArrTime = new Date(depTime.getTime() + 5 * 60 * 1000)
-            }
-
-            const toName = normalizeStationName(to.station.name, combinedMapping)
-            
-            // DEBUG: Zeige warum keine Segmente erstellt werden
-            if (debugStats.totalEntries <= 3) {
-              console.log(`🔍 Segment-Erstellung für Entry ${debugStats.totalEntries}:`, {
-                fromName,
-                toName,
-                fromNameRaw: currentPass.station?.name || entry.stop.station.name,
-                toNameRaw: to.station.name,
-                hasFromCoords: stationCoords.has(fromName),
-                hasToCoords: stationCoords.has(toName),
-                depTime: depTime.toISOString(),
-                arrTime: finalArrTime.toISOString()
-              })
-            }
-            
-            // DEBUG: Spezifisch für Neuhaus-Interlaken Route
-            if ((fromName?.includes('Neuhaus') && toName?.includes('Interlaken')) || 
-                (fromName?.includes('Interlaken') && toName?.includes('Neuhaus'))) {
-              console.log(`🔍 Neuhaus-Interlaken Route:`, {
-                fromName,
-                toName,
-                hasFromCoords: stationCoords.has(fromName),
-                hasToCoords: stationCoords.has(toName),
-                courseNumber: officialNumShort
-              })
-            }
-            
-            // DEBUG: Brienzersee - zeige alle Routen
-            if (selectedLakeId === 'brienzersee') {
-              console.log(`🔍 Brienzersee Route ${debugStats.totalEntries}:`, {
-                fromName,
-                toName,
-                fromNameRaw: currentPass.station?.name || entry.stop.station.name,
-                toNameRaw: to.station.name,
-                hasFromCoords: stationCoords.has(fromName),
-                hasToCoords: stationCoords.has(toName),
-                courseNumber: officialNumShort
-              })
-            }
-            
-            // DEBUG: Ägerisee - zeige alle Routen
-            if (selectedLakeId === 'aegerisee') {
-              console.log(`🔍 Ägerisee Route ${debugStats.totalEntries}:`, {
-                fromName,
-                toName,
-                fromNameRaw: currentPass.station?.name || entry.stop.station.name,
-                toNameRaw: to.station.name,
-                hasFromCoords: stationCoords.has(fromName),
-                hasToCoords: stationCoords.has(toName),
-                courseNumber: officialNumShort
-              })
-              
-              // Spezifisch für Morgarten-Naas
-              if ((fromName?.includes('Morgarten') && toName?.includes('Naas')) || 
-                  (fromName?.includes('Naas') && toName?.includes('Morgarten'))) {
-                console.log(`⚠️ MORGARTEN-NAAS ROUTE GEFUNDEN!`)
-              }
-            }
-            
-            const segment = createRouteSegmentFromStationboard(
-              fromName, toName,
-              depTime, officialNumShort, stationCoords, geoRoutes, finalArrTime, internalNumShort, selectedLakeId
-            )
-
-            if (segment) {
-              debugStats.created++
-              
-              // Intelligente Berechnung von arrivalAtFromStation:
-              // Prüfe, ob das Schiff VORHER an dieser Station angekommen ist
-              let arrivalAtFrom: Date | undefined = undefined
-              
-              // Durchsuche vorherige PassList-Einträge nach einer Ankunft an dieser Station
-              for (let j = 0; j < i; j++) {
-                const prevPass = entry.passList[j]
-                const prevStationName = normalizeStationName(prevPass.station?.name || "", combinedMapping)
-                if (prevStationName === fromName && prevPass.arrival) {
-                  const prevArrival = new Date(prevPass.arrival)
-                  // Nur verwenden, wenn die Ankunft VOR der Abfahrt liegt
-                  if (prevArrival.getTime() < depTime.getTime()) {
-                    arrivalAtFrom = prevArrival
-                  }
-                }
-              }
-              
-              // Fallback: Wenn keine vorherige Ankunft gefunden wurde, 1 Minute vor Abfahrt (Werft/Depot)
-              if (!arrivalAtFrom) {
-                arrivalAtFrom = new Date(depTime.getTime() - PRE_DEPARTURE_DWELL_MS)
-              }
-              
-              processedSegments.push({
-                segment: {
-                  ...segment,
-                  arrivalAtFromStation: arrivalAtFrom,
-                  // WICHTIG: Verwende entry.name für die Kursnummer-Anzeige (z.B. "B 29")
-                  resolvedShipName: displayName, 
-                  internalCourseNumber: entry.name, // Name aus API (z.B. "B 29")
-                  officialCourseNumber: entry.number  // Offizielle Nummer (z.B. "3732")
-                }
-              })
-            }
-            
-            // Weiter bei der neuen Station
-            i = lastSameStationIdx
-          }
-        }
-      }
-
-      // Deduplizierung: Entferne nur echte Duplikate (gleiche Fahrt, mehrfach geladen)
-      const uniqueMap = new Map()
-      const duplicateLog: string[] = []
-      
-      processedSegments.forEach(s => {
-        // Normalisiere Zeit auf volle Minute (60 Sekunden)
-        const roundedTime = Math.round(s.segment.departureTime.getTime() / 60000) * 60000
-        
-        // Key: Von + Nach + Abfahrtszeit + Ankunftszeit
-        // Das sollte eine eindeutige Fahrt identifizieren
-        const roundedArrival = Math.round(s.segment.arrivalTime.getTime() / 60000) * 60000
-        const key = `${s.segment.from.name}|${s.segment.to.name}|${roundedTime}|${roundedArrival}`
-        
-        // Bei Duplikaten: Behalte das Segment mit mehr Informationen (z.B. RouteCoordinates)
-        const existing = uniqueMap.get(key)
-        if (existing) {
-          const depStr = new Date(roundedTime).toLocaleTimeString('de-CH', { hour: '2-digit', minute: '2-digit' })
-          duplicateLog.push(`   Duplikat: ${s.segment.from.name} → ${s.segment.to.name} um ${depStr} (${s.segment.resolvedShipName})`)
-        }
-        
-        if (!existing || (s.segment.routeCoordinates && !existing.segment.routeCoordinates)) {
-          uniqueMap.set(key, s)
-        }
+      const finalSegments = await buildDailySegments({
+        stationboards: stationboardMap,
+        mapping: combinedMapping,
+        stationCoords,
+        geoRoutes,
+        lakeId: selectedLakeId,
+        shipNameFor: (course) => (selectedLake.hasShipNames ? getShipNameByCourseNumber(course, nameLookupDay(dateStr)) : Promise.resolve(null)),
       })
-      
-      if (duplicateLog.length > 0) {
-        console.log(`\n🔍 Gefundene Duplikate (${duplicateLog.length}):`)
-        duplicateLog.slice(0, 20).forEach(log => console.log(log))
-        if (duplicateLog.length > 20) {
-          console.log(`   ... und ${duplicateLog.length - 20} weitere`)
-        }
-      }
-      
-      const finalSegments = Array.from(uniqueMap.values())
-      
-      // NEUE LOGIK: Verknüpfe Segmente desselben Schiffs chronologisch
-      // Gruppiere Segmente nach Schiff
-      const segmentsByShipKey = new Map<string, typeof finalSegments>()
-      finalSegments.forEach(s => {
-        const shipKey = s.segment.resolvedShipName || s.segment.internalCourseNumber || s.segment.officialCourseNumber
-        if (!segmentsByShipKey.has(shipKey)) {
-          segmentsByShipKey.set(shipKey, [])
-        }
-        segmentsByShipKey.get(shipKey)!.push(s)
-      })
-      
-      // Für jedes Schiff: Sortiere Segmente chronologisch und aktualisiere arrivalAtFromStation
-      segmentsByShipKey.forEach((segments, shipKey) => {
-        // Sortiere nach Abfahrtszeit
-        segments.sort((a, b) => a.segment.departureTime.getTime() - b.segment.departureTime.getTime())
-        
-        // Verknüpfe Segmente: Wenn Segment N an Station X endet und Segment N+1 an Station X startet,
-        // dann verwende die Ankunftszeit von Segment N als arrivalAtFromStation für Segment N+1
-        for (let i = 0; i < segments.length - 1; i++) {
-          const currentSeg = segments[i].segment
-          const nextSeg = segments[i + 1].segment
-          
-          // Prüfe, ob das nächste Segment an der Station startet, wo das aktuelle endet
-          if (currentSeg.to.name === nextSeg.from.name) {
-            // Verwende die Ankunftszeit des aktuellen Segments als arrivalAtFromStation für das nächste
-            nextSeg.arrivalAtFromStation = currentSeg.arrivalTime
-          }
-        }
-      })
-      
-      console.log(`📊 Verarbeitungsstatistik:`)
-      console.log(`   Total Einträge: ${debugStats.totalEntries}`)
-      console.log(`   ❌ Übersprungen (kein passList): ${debugStats.skippedNoPassList}`)
-      console.log(`   ❌ Übersprungen (keine Abfahrtszeit): ${debugStats.skippedNoDeparture}`)
-      console.log(`   ❌ Übersprungen (keine Ankunftszeit): ${debugStats.skippedNoArrival}`)
-      console.log(`   ✅ Segmente erstellt: ${debugStats.created}`)
-      console.log(`   📦 Roh-Segmente: ${processedSegments.length}`)
-      console.log(`   🎯 Nach Deduplizierung: ${finalSegments.length}`)
-      
-      // Zeige Zusammenfassung pro Schiff
-      const segmentsByShip = new Map<string, any[]>()
-      finalSegments.forEach(s => {
-        const key = s.segment.resolvedShipName || s.segment.internalCourseNumber
-        if (!segmentsByShip.has(key)) segmentsByShip.set(key, [])
-        segmentsByShip.get(key)!.push(s)
-      })
-      
-      console.log(`\n🚢 Segmente pro Schiff:`)
-      for (const [shipName, segments] of segmentsByShip.entries()) {
-        const firstSeg = segments[0].segment
-        const lastSeg = segments[segments.length - 1].segment
-        const firstTime = new Date(firstSeg.departureTime).toLocaleTimeString('de-CH', { hour: '2-digit', minute: '2-digit' })
-        const lastTime = new Date(lastSeg.arrivalTime).toLocaleTimeString('de-CH', { hour: '2-digit', minute: '2-digit' })
-        console.log(`   ${shipName}: ${segments.length} Segmente (${firstTime} - ${lastTime})`)
-      }
       
       setRouteSegments(finalSegments)
       setGeoJSONRoutes(geoRoutes)
@@ -714,116 +409,7 @@ function HomeContent() {
     }
 
     // Berechne alle Positionen parallel für maximale Performance
-    const activePromises = routeSegments.map(async ({ segment }) => {
-      const { from, to, departureTime, arrivalTime, arrivalAtFromStation, resolvedShipName, internalCourseNumber, officialCourseNumber } = segment
-      const shipId = `ship-${internalCourseNumber}-${departureTime.getTime()}`
-      const depTime = departureTime.getTime()
-      const arrTime = arrivalTime.getTime()
-      
-      // Berechne Dwell-Time: Entweder aus API oder Fallback
-      const startDwellTime = arrivalAtFromStation ? arrivalAtFromStation.getTime() : (depTime - PRE_DEPARTURE_DWELL_MS)
-      const endGraceTime = arrTime + POST_ARRIVAL_GRACE_MS
-
-      // 1. Am Abfahrtsort wartend
-      if (nowTime >= startDwellTime && nowTime < depTime) {
-        return {
-          id: shipId, name: resolvedShipName, latitude: from.lat, longitude: from.lon,
-          course: 0, speed: 0, nextStop: to.name, status: 'at_station',
-          departureTime, arrivalTime, fromStation: from.name, toStation: to.name,
-          internalCourseNumber, officialCourseNumber
-        } as ShipPosition
-      } 
-      // 2. In Fahrt (nicht mehr bis zur Ankunftszeit inklusiv, sondern strikt kleiner)
-      else if (nowTime >= depTime && nowTime < arrTime) {
-        const pos = await calculateShipPosition([segment], now, geoJSONRoutes)
-        if (pos) {
-          return { ...pos, id: shipId, name: resolvedShipName, status: 'driving', internalCourseNumber, officialCourseNumber } as ShipPosition
-        }
-      } 
-      // 3. Am Zielort angekommen (kurzer Puffer nach Ankunft)
-      else if (nowTime >= arrTime && nowTime < endGraceTime) {
-        return {
-          id: shipId, name: resolvedShipName, latitude: to.lat, longitude: to.lon,
-          course: 0, speed: 0, nextStop: 'Angekommen', status: 'at_station',
-          departureTime, arrivalTime, fromStation: from.name, toStation: to.name,
-          internalCourseNumber, officialCourseNumber
-        } as ShipPosition
-      }
-      return null
-    })
-
-    const results = await Promise.all(activePromises)
-    const activePositions = results.filter((p): p is ShipPosition => p !== null)
-    
-    // Debug: Zeige Statistik nur beim ersten Mal
-    if (!isInitialCalcDone) {
-      console.log(`\n⏰ Positionsberechnung für ${now.toLocaleTimeString('de-CH')}:`)
-      console.log(`   Geprüfte Segmente: ${routeSegments.length}`)
-      console.log(`   Aktive Positionen: ${activePositions.length}`)
-    }
-
-    const finalMap = new Map<string, ShipPosition>()
-    activePositions.forEach(p => {
-      // WICHTIG: Verwende Schiffsname + VOLLE Kursnummer (ohne Kürzung) als eindeutigen Key
-      // So werden Kurs 29 und Kurs 2529 als unterschiedliche Schiffe behandelt
-      const fullCourseNum = p.internalCourseNumber || p.officialCourseNumber || p.courseNumber || ""
-      const key = `${p.name}|${fullCourseNum}`
-      const existing = finalMap.get(key)
-      
-      if (!existing) {
-        finalMap.set(key, p)
-        return
-      }
-
-      // Prioritäten-Logik bei Duplikaten:
-      // 1. Fahrende Schiffe haben IMMER Vorrang vor stehenden
-      if (p.status === 'driving' && existing.status === 'at_station') {
-        finalMap.set(key, p)
-        return
-      }
-      if (existing.status === 'driving' && p.status === 'at_station') {
-        return 
-      }
-      
-      // 2. Wenn beide stehen (at_station): Bevorzuge das Segment, das zeitlich näher an "jetzt" ist
-      if (p.status === 'at_station' && existing.status === 'at_station') {
-        // Berechne Distanz zur aktuellen Zeit für beide Segmente
-        const pDepTime = p.departureTime?.getTime() || 0
-        const existingDepTime = existing.departureTime?.getTime() || 0
-        const pArrTime = p.arrivalTime?.getTime() || 0
-        const existingArrTime = existing.arrivalTime?.getTime() || 0
-        
-        // Für "bereitstehende" Schiffe: Wie weit ist die Abfahrt entfernt?
-        // Für "angekommene" Schiffe: Wie lange ist die Ankunft her?
-        const pDistanceToNow = Math.min(
-          Math.abs(nowTime - pDepTime),  // Distanz zur Abfahrt
-          Math.abs(nowTime - pArrTime)   // Distanz zur Ankunft
-        )
-        const existingDistanceToNow = Math.min(
-          Math.abs(nowTime - existingDepTime),
-          Math.abs(nowTime - existingArrTime)
-        )
-        
-        // Bevorzuge das Segment, das zeitlich näher liegt
-        if (pDistanceToNow < existingDistanceToNow) {
-          finalMap.set(key, p)
-        }
-        return
-      }
-      
-      // 3. Wenn beide fahren: Das Segment mit der SPÄTEREN Abfahrtszeit gewinnt (aktuellere Fahrt)
-      if (p.departureTime && existing.departureTime && p.departureTime.getTime() > existing.departureTime.getTime()) {
-        finalMap.set(key, p)
-      }
-    })
-    
-    const finalShips = Array.from(finalMap.values()).sort((a, b) => {
-      // Sortiere nach Abfahrtszeit (früheste zuerst)
-      if (!a.departureTime && !b.departureTime) return 0
-      if (!a.departureTime) return 1
-      if (!b.departureTime) return -1
-      return a.departureTime.getTime() - b.departureTime.getTime()
-    })
+    const finalShips = await computePositions(routeSegments, geoJSONRoutes, now)
     
     // Logge nur wenn sich etwas Relevantes ändert oder alle X Sekunden
     const shipsString = finalShips.map(s => `${s.name} (${s.status})`).sort().join(', ')
